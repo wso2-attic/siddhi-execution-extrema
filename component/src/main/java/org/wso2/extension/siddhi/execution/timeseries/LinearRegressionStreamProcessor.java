@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c)  2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.siddhi.extension.timeseries;
+package org.wso2.extension.siddhi.execution.timeseries;
 
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.core.event.ComplexEvent;
@@ -29,9 +29,9 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.extension.timeseries.linreg.MultipleLinearRegressionCalculator;
-import org.wso2.siddhi.extension.timeseries.linreg.RegressionCalculator;
-import org.wso2.siddhi.extension.timeseries.linreg.SimpleLinearRegressionCalculator;
+import org.wso2.extension.siddhi.execution.timeseries.linreg.MultipleLinearRegressionCalculator;
+import org.wso2.extension.siddhi.execution.timeseries.linreg.RegressionCalculator;
+import org.wso2.extension.siddhi.execution.timeseries.linreg.SimpleLinearRegressionCalculator;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
