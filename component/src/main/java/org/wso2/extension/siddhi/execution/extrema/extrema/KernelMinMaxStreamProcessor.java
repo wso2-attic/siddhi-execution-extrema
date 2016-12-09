@@ -16,10 +16,10 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.execution.timeseries.extrema;
+package org.wso2.extension.siddhi.execution.extrema.extrema;
 
 
-import org.wso2.extension.siddhi.execution.timeseries.extrema.util.ExtremaCalculator;
+import org.wso2.extension.siddhi.execution.extrema.extrema.util.ExtremaCalculator;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.core.event.ComplexEventChunk;
 import org.wso2.siddhi.core.event.stream.StreamEvent;

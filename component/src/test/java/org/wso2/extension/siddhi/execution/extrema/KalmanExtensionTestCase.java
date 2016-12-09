@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.execution.timeseries;
+package org.wso2.extension.siddhi.execution.extrema;
 
 import junit.framework.Assert;
 import org.apache.log4j.Logger;
@@ -46,7 +46,7 @@ public class KalmanExtensionTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
 
         String inStreamDefinition = "define stream inputStream (id int ,price double);";
-        String query = ("@info(name = 'query1') from inputStream#timeseries:kalmanMinMax(price, 0.000001,0.0001, 25, 'min')  " +
+        String query = ("@info(name = 'query1') from inputStream#extrema:kalmanMinMax(price, 0.000001,0.0001, 25, 'min')  " +
                 "select price, extremaType, id " +
                 "insert into outputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inStreamDefinition + query);
@@ -188,7 +188,7 @@ public class KalmanExtensionTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
 
         String inStreamDefinition = "define stream inputStream (id int, price double);";
-        String query = ("@info(name = 'query1') from inputStream#timeseries:kalmanMinMax(price, 0.000001,0.0001, 25, 'max')  " +
+        String query = ("@info(name = 'query1') from inputStream#extrema:kalmanMinMax(price, 0.000001,0.0001, 25, 'max')  " +
                 "select price, extremaType, id " +
                 "insert into outputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inStreamDefinition + query);
@@ -334,7 +334,7 @@ public class KalmanExtensionTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
 
         String inStreamDefinition = "define stream inputStream (id int , price double);";
-        String query = ("@info(name = 'query1') from inputStream#timeseries:kalmanMinMax(price, 0.000001,0.0001, 25, 'minmax')  " +
+        String query = ("@info(name = 'query1') from inputStream#extrema:kalmanMinMax(price, 0.000001,0.0001, 25, 'minmax')  " +
                 "select price, extremaType, id " +
                 "insert into outputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inStreamDefinition + query);

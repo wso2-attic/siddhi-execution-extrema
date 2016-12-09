@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.execution.timeseries;
+package org.wso2.extension.siddhi.execution.extrema;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -48,7 +48,7 @@ public class LinearRegressionTestcase {
         siddhiManager = new SiddhiManager();
         String inputStream = "define stream InputStream (y int, x int);";
 
-        String executionPlan = ("@info(name = 'query1') from InputStream#timeseries:regress(1, 100, 0.95, y, x) "
+        String executionPlan = ("@info(name = 'query1') from InputStream#extrema:regress(1, 100, 0.95, y, x) "
                 + "select * "
                 + "insert into OutputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inputStream + executionPlan);
@@ -133,7 +133,7 @@ public class LinearRegressionTestcase {
         siddhiManager = new SiddhiManager();
         String inputStream = "define stream InputStream (a int, b int, c int, d int, e int);";
 
-        String eventFuseExecutionPlan = ("@info(name = 'query2') from InputStream#timeseries:regress(a, c, b, e) "
+        String eventFuseExecutionPlan = ("@info(name = 'query2') from InputStream#extrema:regress(a, c, b, e) "
                 + "select * "
                 + "insert into OutputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inputStream + eventFuseExecutionPlan);
@@ -218,7 +218,7 @@ public class LinearRegressionTestcase {
         siddhiManager = new SiddhiManager();
         String inputStream = "define stream InputStream (y double, symbol string, x double);";
 
-        String executionPlan = ("@info(name = 'query1') from InputStream#timeseries:forecast(2, 1000, 0.95, x+2, y, x) "
+        String executionPlan = ("@info(name = 'query1') from InputStream#extrema:forecast(2, 1000, 0.95, x+2, y, x) "
                 + "select * "
                 + "insert into OutputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inputStream + executionPlan);
@@ -304,7 +304,7 @@ public class LinearRegressionTestcase {
         siddhiManager = new SiddhiManager();
         String inputStream = "define stream InputStream (y double, x double);";
 
-        String executionPlan = ("@info(name = 'query1') from InputStream#timeseries:outlier(1, y, x) "
+        String executionPlan = ("@info(name = 'query1') from InputStream#extrema:outlier(1, y, x) "
                 + "select * "
                 + "insert into OutputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inputStream + executionPlan);
@@ -401,7 +401,7 @@ public class LinearRegressionTestcase {
                 + " select y, t, 0 as dum1"
                 + " insert into tempStream2;"
                 + ""
-                + " @info(name = 'query1') from tempStream2#timeseries:regress( 1, 1000, 0.95, y, dum1)"
+                + " @info(name = 'query1') from tempStream2#extrema:regress( 1, 1000, 0.95, y, dum1)"
                 + " select *  "
                 + " insert into RegressionResult;"
         );
@@ -467,7 +467,7 @@ public class LinearRegressionTestcase {
                 + " select y, x, math:sin(x) as sinx"
                 + " insert into tempStream;"
                 + ""
-                + " @info(name = 'query2') from tempStream#timeseries:regress( y, x, sinx)"
+                + " @info(name = 'query2') from tempStream#extrema:regress( y, x, sinx)"
                 + " select *  "
                 + " insert into RegressionResult;"
         );

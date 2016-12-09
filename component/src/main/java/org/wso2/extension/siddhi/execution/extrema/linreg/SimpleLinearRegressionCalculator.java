@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.extension.siddhi.execution.timeseries.linreg;
+package org.wso2.extension.siddhi.execution.extrema.linreg;
 
 import org.apache.commons.math3.distribution.TDistribution;
 

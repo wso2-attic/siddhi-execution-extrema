@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.execution.timeseries;
+package org.wso2.extension.siddhi.execution.extrema;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -48,7 +48,7 @@ public class LengthTimeLinearRegressionOutlierTestcase {
         String inputStream = "define stream InputStream (y double, x double);";
 
         // Limit number of events based on length window (query):
-        String executionPlan = ("@info(name = 'query1') from InputStream#timeseries:lengthTimeOutlier(20 min, 20, 1, y, x) "
+        String executionPlan = ("@info(name = 'query1') from InputStream#extrema:lengthTimeOutlier(20 min, 20, 1, y, x) "
                 + "select * " + "insert into OutputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager
                 .createExecutionPlanRuntime(inputStream + executionPlan);
@@ -135,7 +135,7 @@ public class LengthTimeLinearRegressionOutlierTestcase {
         String inputStream = "define stream InputStream (y double, x double);";
 
         // Limit number of events based on time window (query):
-        String executionPlan = ("@info(name = 'query1') from InputStream#timeseries:lengthTimeOutlier(200, 10000, 1, y, x) "
+        String executionPlan = ("@info(name = 'query1') from InputStream#extrema:lengthTimeOutlier(200, 10000, 1, y, x) "
                 + "select * " + "insert into OutputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager
                 .createExecutionPlanRuntime(inputStream + executionPlan);

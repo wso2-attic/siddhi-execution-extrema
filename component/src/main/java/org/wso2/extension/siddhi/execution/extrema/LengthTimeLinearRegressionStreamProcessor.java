@@ -15,8 +15,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.extension.siddhi.execution.timeseries;
+package org.wso2.extension.siddhi.execution.extrema;
 
+import org.wso2.extension.siddhi.execution.extrema.linreg.LengthTimeMultipleLinearRegression;
+import org.wso2.extension.siddhi.execution.extrema.linreg.LengthTimeRegressionCalculator;
+import org.wso2.extension.siddhi.execution.extrema.linreg.LengthTimeSimpleLinearRegressionCalculator;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.core.event.ComplexEventChunk;
 import org.wso2.siddhi.core.event.stream.StreamEvent;
@@ -27,39 +30,38 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.extension.siddhi.execution.timeseries.linreg.LengthTimeRegressionCalculator;
-import org.wso2.extension.siddhi.execution.timeseries.linreg.LengthTimeSimpleLinearRegressionCalculator;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import java.util.ArrayList;
 import java.util.List;
 
 /*
- * Sample Query1 (time window, length window, nextX, y, x):
- * from InputStream#timeseries:lengthTimeOutlier(20 min, 20, x+2, y, x)
+ * Sample Query1 (time window, length window, y, x):
+ * from InputStream#extrema:lengthTimeOutlier(20 min, 20, y, x)
  * select *
  * insert into OutputStream;
  *
- * Sample Query2 (time window, length window, nextX, calculation interval, confidence interval, y, x):
- * from InputStream#timeseries:lengthTimeOutlier(20 min, 20, x+2, 2, 0.9, y, x)
+ * Sample Query2 (time window, length window, calculation interval, confidence interval, y, x1, x2):
+ * from InputStream#extrema:lengthTimeOutlier(20 min, 20, 2, 0.9, y, x1, x2)
  * select *
  * insert into OutputStream;
  *
- * This class performs enables users to forecast future events using linear regression
+ * This class performs linear regression.
  * Number of data points could be constrained using both time and length windows.
  */
-public class LengthTimeLinearRegressionForecastStreamProcessor extends StreamProcessor {
+public class LengthTimeLinearRegressionStreamProcessor extends StreamProcessor {
     private int paramCount; // Number of x variables +1
     private long duration; // Time window to consider for regression calculation
     private int calcInterval = 1; // The frequency of regression calculation
-    private double ci = 0.95; // Confidence Interval simple linear forecast
+    private double ci = 0.95; // Confidence Interval
+    // simple linear regression
     private LengthTimeRegressionCalculator regressionCalculator = null;
     private int yParameterPosition;
     private static final int SIMPLE_LINREG_INPUT_PARAM_COUNT = 2; //Number of input parameters in
                                                                   // simple linear regression
 
     /**
-     * The init method of the LinearRegressionOutlierStreamProcessor,
+     * The init method of the LinearRegressionStreamProcessor,
      * this method will be called before other methods
      *
      * @param inputDefinition the incoming stream definition
@@ -71,10 +73,8 @@ public class LengthTimeLinearRegressionForecastStreamProcessor extends StreamPro
     protected List<Attribute> init(AbstractDefinition inputDefinition,
                                    ExpressionExecutor[] attributeExpressionExecutors,
                                    ExecutionPlanContext executionPlanContext) {
-        paramCount = attributeExpressionLength -3; // First three events are time window, length
-                                                   // window and x value for forecasting y
-        yParameterPosition = 3;
-        // Capture Constant inputs
+        paramCount = attributeExpressionLength - 2; // First two events are time, length windows.
+        yParameterPosition = 2;
         // Capture duration
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
             if (attributeExpressionExecutors[0].getReturnType() == Attribute.Type.INT) {
@@ -95,42 +95,41 @@ public class LengthTimeLinearRegressionForecastStreamProcessor extends StreamPro
         int batchSize; // Maximum # of events, used for regression calculation
         if (attributeExpressionExecutors[1] instanceof ConstantExpressionExecutor) {
             if (attributeExpressionExecutors[1].getReturnType() == Attribute.Type.INT) {
-                batchSize = (Integer) ((ConstantExpressionExecutor)
-                        attributeExpressionExecutors[1]).getValue();
+                batchSize = (Integer)
+                        ((ConstantExpressionExecutor) attributeExpressionExecutors[1]).getValue();
             } else {
-                throw new ExecutionPlanCreationException
-                        ("Size parameter should be int, but found "
-                                + attributeExpressionExecutors[1].getReturnType());
+                throw new ExecutionPlanCreationException("Size parameter should be int, but found "
+                        + attributeExpressionExecutors[1].getReturnType());
             }
         } else {
             throw new ExecutionPlanCreationException("Size parameter must be a constant");
         }
         // Capture calculation interval and ci if provided by user
         // Default values would be used otherwise
-        if (attributeExpressionExecutors[3] instanceof ConstantExpressionExecutor) {
+        if (attributeExpressionExecutors[2] instanceof ConstantExpressionExecutor) {
             paramCount = paramCount - 2; // When calcInterval and ci are given by user,
                                          // parameter count must exclude those two as well
-            yParameterPosition = 5;
-            if (attributeExpressionExecutors[3].getReturnType() == Attribute.Type.INT) {
-                calcInterval = (Integer) ((ConstantExpressionExecutor)
-                        attributeExpressionExecutors[3]).getValue();
+            yParameterPosition = 4;
+            if (attributeExpressionExecutors[2].getReturnType() == Attribute.Type.INT) {
+                calcInterval = (Integer)
+                        ((ConstantExpressionExecutor) attributeExpressionExecutors[2]).getValue();
             } else {
-                throw new ExecutionPlanCreationException
-                        ("Calculation interval should be int, but found "
-                                + attributeExpressionExecutors[3].getReturnType());
+                throw new ExecutionPlanCreationException("Calculation interval should be " +
+                                                         "int, but found "
+                        + attributeExpressionExecutors[2].getReturnType());
             }
-            if (attributeExpressionExecutors[4] instanceof ConstantExpressionExecutor) {
-                if (attributeExpressionExecutors[4].getReturnType() == Attribute.Type.DOUBLE) {
+            if (attributeExpressionExecutors[3] instanceof ConstantExpressionExecutor) {
+                if (attributeExpressionExecutors[3].getReturnType() == Attribute.Type.DOUBLE) {
                     ci = (Double) ((ConstantExpressionExecutor)
-                            attributeExpressionExecutors[4]).getValue();
+                            attributeExpressionExecutors[3]).getValue();
                     if (!(0 <= ci && ci <= 1)) {
-                        throw new ExecutionPlanCreationException
-                                ("Confidence interval should be a value between 0 and 1");
+                        throw new ExecutionPlanCreationException(
+                                "Confidence interval should be a value between 0 and 1");
                     }
                 } else {
-                    throw new ExecutionPlanCreationException
-                            ("Confidence interval should be double, but found "
-                                    + attributeExpressionExecutors[4].getReturnType());
+                    throw new ExecutionPlanCreationException("Confidence interval should " +
+                            "be double, but found "
+                            + attributeExpressionExecutors[3].getReturnType());
                 }
             } else {
                 throw new ExecutionPlanCreationException("Confidence interval must be a constant");
@@ -138,21 +137,20 @@ public class LengthTimeLinearRegressionForecastStreamProcessor extends StreamPro
         }
         // Pick the appropriate regression calculator
         if (paramCount > SIMPLE_LINREG_INPUT_PARAM_COUNT) {
-            throw new ExecutionPlanCreationException(
-                    "Forecast Function is available only for simple linear regression");
+            regressionCalculator = new LengthTimeMultipleLinearRegression(paramCount,
+                    duration, batchSize, calcInterval, ci);
         } else {
             regressionCalculator = new LengthTimeSimpleLinearRegressionCalculator(paramCount,
                     duration, batchSize, calcInterval, ci);
         }
-        // Create attributes for standard error and all beta values and the Forecast Y value
+        // Add attributes for standard error and all beta values
         String betaVal;
-        List<Attribute> attributes = new ArrayList<Attribute>(paramCount + 2);
+        List<Attribute> attributes = new ArrayList<Attribute>(paramCount + 1);
         attributes.add(new Attribute("stderr", Attribute.Type.DOUBLE));
         for (int itr = 0; itr < paramCount; itr++) {
             betaVal = "beta" + itr;
             attributes.add(new Attribute(betaVal, Attribute.Type.DOUBLE));
         }
-        attributes.add(new Attribute("forecastY", Attribute.Type.DOUBLE));
         return attributes;
     }
 
@@ -167,36 +165,22 @@ public class LengthTimeLinearRegressionForecastStreamProcessor extends StreamPro
      */
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
-                           StreamEventCloner streamEventCloner,
-                           ComplexEventPopulater complexEventPopulater) {
+                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 StreamEvent streamEvent = streamEventChunk.next();
                 long currentTime = executionPlanContext.getTimestampGenerator().currentTime();
                 long eventExpiryTime = currentTime + duration;
                 Object[] inputData = new Object[paramCount];
-                // Obtain position of next x value (xDashPosition)
-                final int xDashPosition;
-                xDashPosition = 2;
-                // Obtain x value (xDash) that user wants to use to forecast Y
-                // This could be a constant or an expression
-                double xDash =
-                        ((Number) attributeExpressionExecutors[xDashPosition].execute(streamEvent)).doubleValue();
                 for (int i = yParameterPosition; i < attributeExpressionLength; i++) {
-                    inputData[i - yParameterPosition] =
-                            attributeExpressionExecutors[i].execute(streamEvent);
+                    inputData[i - yParameterPosition] = attributeExpressionExecutors[i].execute(streamEvent);
                 }
-                Object[] coefficients = regressionCalculator.calculateLinearRegression(inputData,
+                Object[] outputData = regressionCalculator.calculateLinearRegression(inputData,
                         eventExpiryTime);
-                if (coefficients == null) {
+                // Skip processing if user has specified calculation interval
+                if (outputData == null) {
                     streamEventChunk.remove();
                 } else {
-                    Object[] outputData = new Object[coefficients.length + 1];
-                    System.arraycopy(coefficients, 0, outputData, 0, coefficients.length);
-                    // Calculating forecast Y based on regression equation and given x
-                    outputData[coefficients.length] =
-                            ((Number) coefficients[coefficients.length - 2]).doubleValue() +
-                                    ((Number) coefficients[coefficients.length - 1]).doubleValue() * xDash;
                     complexEventPopulater.populateComplexEvent(streamEvent, outputData);
                 }
             }

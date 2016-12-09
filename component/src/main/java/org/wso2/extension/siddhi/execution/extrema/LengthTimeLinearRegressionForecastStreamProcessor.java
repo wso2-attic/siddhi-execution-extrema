@@ -15,9 +15,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.extension.siddhi.execution.timeseries;
+package org.wso2.extension.siddhi.execution.extrema;
 
-import org.wso2.extension.siddhi.execution.timeseries.linreg.LengthTimeSimpleLinearRegressionCalculator;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.core.event.ComplexEventChunk;
 import org.wso2.siddhi.core.event.stream.StreamEvent;
@@ -28,34 +27,34 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.extension.siddhi.execution.timeseries.linreg.LengthTimeRegressionCalculator;
+import org.wso2.extension.siddhi.execution.extrema.linreg.LengthTimeRegressionCalculator;
+import org.wso2.extension.siddhi.execution.extrema.linreg.LengthTimeSimpleLinearRegressionCalculator;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import java.util.ArrayList;
 import java.util.List;
 
 /*
- * Sample Query1 (time window, length window, range, y, x):
- * from InputStream#timeseries:lengthTimeOutlier(20 min, 20, 1, y, x)
+ * Sample Query1 (time window, length window, nextX, y, x):
+ * from InputStream#extrema:lengthTimeOutlier(20 min, 20, x+2, y, x)
  * select *
  * insert into OutputStream;
  *
- * Sample Query2 (time window, length window, range, calculation interval, confidence interval, y, x):
- * from InputStream#timeseries:lengthTimeOutlier(20 min, 20, 1, 2, 0.9, y, x)
+ * Sample Query2 (time window, length window, nextX, calculation interval, confidence interval, y, x):
+ * from InputStream#extrema:lengthTimeOutlier(20 min, 20, x+2, 2, 0.9, y, x)
  * select *
  * insert into OutputStream;
  *
- * This class detects outliers based on simple linear regression.
+ * This class performs enables users to forecast future events using linear regression
  * Number of data points could be constrained using both time and length windows.
  */
-public class LengthTimeLinearRegressionOutlierStreamProcessor extends StreamProcessor {
+public class LengthTimeLinearRegressionForecastStreamProcessor extends StreamProcessor {
     private int paramCount; // Number of x variables +1
     private long duration; // Time window to consider for regression calculation
     private int calcInterval = 1; // The frequency of regression calculation
-    private double ci = 0.95; // Confidence Interval simple linear regression
+    private double ci = 0.95; // Confidence Interval simple linear forecast
     private LengthTimeRegressionCalculator regressionCalculator = null;
     private int yParameterPosition;
-    private Object[] coefficients;
     private static final int SIMPLE_LINREG_INPUT_PARAM_COUNT = 2; //Number of input parameters in
                                                                   // simple linear regression
 
@@ -72,9 +71,10 @@ public class LengthTimeLinearRegressionOutlierStreamProcessor extends StreamProc
     protected List<Attribute> init(AbstractDefinition inputDefinition,
                                    ExpressionExecutor[] attributeExpressionExecutors,
                                    ExecutionPlanContext executionPlanContext) {
-        paramCount = attributeExpressionLength - 3; // First three events are time window, length
-                                                    // window and range
+        paramCount = attributeExpressionLength -3; // First three events are time window, length
+                                                   // window and x value for forecasting y
         yParameterPosition = 3;
+        // Capture Constant inputs
         // Capture duration
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
             if (attributeExpressionExecutors[0].getReturnType() == Attribute.Type.INT) {
@@ -138,13 +138,13 @@ public class LengthTimeLinearRegressionOutlierStreamProcessor extends StreamProc
         }
         // Pick the appropriate regression calculator
         if (paramCount > SIMPLE_LINREG_INPUT_PARAM_COUNT) {
-            throw new ExecutionPlanCreationException("Outlier Function is available only for " +
-                    "simple linear regression");
+            throw new ExecutionPlanCreationException(
+                    "Forecast Function is available only for simple linear regression");
         } else {
             regressionCalculator = new LengthTimeSimpleLinearRegressionCalculator(paramCount,
                     duration, batchSize, calcInterval, ci);
         }
-        // Create attributes for standard error and all beta values and the outlier result
+        // Create attributes for standard error and all beta values and the Forecast Y value
         String betaVal;
         List<Attribute> attributes = new ArrayList<Attribute>(paramCount + 2);
         attributes.add(new Attribute("stderr", Attribute.Type.DOUBLE));
@@ -152,7 +152,7 @@ public class LengthTimeLinearRegressionOutlierStreamProcessor extends StreamProc
             betaVal = "beta" + itr;
             attributes.add(new Attribute(betaVal, Attribute.Type.DOUBLE));
         }
-        attributes.add(new Attribute("outlier", Attribute.Type.BOOL));
+        attributes.add(new Attribute("forecastY", Attribute.Type.DOUBLE));
         return attributes;
     }
 
@@ -167,52 +167,36 @@ public class LengthTimeLinearRegressionOutlierStreamProcessor extends StreamProc
      */
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
-                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
+                           StreamEventCloner streamEventCloner,
+                           ComplexEventPopulater complexEventPopulater) {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 StreamEvent streamEvent = streamEventChunk.next();
                 long currentTime = executionPlanContext.getTimestampGenerator().currentTime();
                 long eventExpiryTime = currentTime + duration;
-                Boolean result = false; // Becomes true if its an outlier
                 Object[] inputData = new Object[paramCount];
-                //Capture range: number of standard deviations from the regression equation
-                final int rangePosition;
-                rangePosition = 2;
-                double range = ((Number)
-                        attributeExpressionExecutors[rangePosition].execute(streamEvent)).doubleValue();
+                // Obtain position of next x value (xDashPosition)
+                final int xDashPosition;
+                xDashPosition = 2;
+                // Obtain x value (xDash) that user wants to use to forecast Y
+                // This could be a constant or an expression
+                double xDash =
+                        ((Number) attributeExpressionExecutors[xDashPosition].execute(streamEvent)).doubleValue();
                 for (int i = yParameterPosition; i < attributeExpressionLength; i++) {
                     inputData[i - yParameterPosition] =
                             attributeExpressionExecutors[i].execute(streamEvent);
                 }
-                if (coefficients != null) {
-                    // Get the current Y value and X value
-                    double nextY = ((Number) inputData[0]).doubleValue();
-                    double nextX = ((Number) inputData[1]).doubleValue();
-                    // Get the last computed regression coefficients
-                    double stdError = ((Number) coefficients[0]).doubleValue();
-                    double beta0 = ((Number) coefficients[1]).doubleValue();
-                    double beta1 = ((Number) coefficients[2]).doubleValue();
-                    // Forecast Y based on current coefficients and next X value
-                    double forecastY = beta0 + beta1 * nextX;
-                    // Create the normal range based on user provided range parameter and current
-                    // std error
-                    double upLimit = forecastY + range * stdError;
-                    double downLimit = forecastY - range * stdError;
-                    // Check whether next Y value is an outlier based on the next X value and the
-                    // current regression equation
-                    if (nextY < downLimit || nextY > upLimit) {
-                        result = true;
-                    }
-                }
-                // Perform regression including X and Y of current event
-                coefficients = regressionCalculator.calculateLinearRegression(inputData,
+                Object[] coefficients = regressionCalculator.calculateLinearRegression(inputData,
                         eventExpiryTime);
                 if (coefficients == null) {
                     streamEventChunk.remove();
                 } else {
                     Object[] outputData = new Object[coefficients.length + 1];
                     System.arraycopy(coefficients, 0, outputData, 0, coefficients.length);
-                    outputData[coefficients.length] = result;
+                    // Calculating forecast Y based on regression equation and given x
+                    outputData[coefficients.length] =
+                            ((Number) coefficients[coefficients.length - 2]).doubleValue() +
+                                    ((Number) coefficients[coefficients.length - 1]).doubleValue() * xDash;
                     complexEventPopulater.populateComplexEvent(streamEvent, outputData);
                 }
             }

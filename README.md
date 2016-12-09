@@ -1,1 +1,1 @@
-# siddhi-execution-timeseries
+# siddhi-execution-extrema

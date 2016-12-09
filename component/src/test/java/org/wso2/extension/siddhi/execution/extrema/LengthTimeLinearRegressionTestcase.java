@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.execution.timeseries;
+package org.wso2.extension.siddhi.execution.extrema;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -48,7 +48,7 @@ public class LengthTimeLinearRegressionTestcase {
         String inputStream = "define stream InputStream (y int, x int);";
 
         // Limit number of events based on length window (query):
-        String executionPlan = ("@info(name = 'query1') from InputStream#timeseries:lengthTimeRegress(1 day, 20, y, x) "
+        String executionPlan = ("@info(name = 'query1') from InputStream#extrema:lengthTimeRegress(1 day, 20, y, x) "
                 + "select * " + "insert into OutputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager
                 .createExecutionPlanRuntime(inputStream + executionPlan);
@@ -135,7 +135,7 @@ public class LengthTimeLinearRegressionTestcase {
         String inputStream = "define stream InputStream (y int, x int);";
 
         // Limit number of events based on time window (query):
-        String executionPlan = ("@info(name = 'query1') from InputStream#timeseries:lengthTimeRegress(200, 10000, y, x) "
+        String executionPlan = ("@info(name = 'query1') from InputStream#extrema:lengthTimeRegress(200, 10000, y, x) "
                 + "select * " + "insert into OutputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager
                 .createExecutionPlanRuntime(inputStream + executionPlan);
@@ -270,7 +270,7 @@ public class LengthTimeLinearRegressionTestcase {
         String inputStream = "define stream InputStream (a int, b int, c int, d int, e int);";
 
         // Limit number of events based on length window (query):
-        String eventFuseExecutionPlan = ("@info(name = 'query2') from InputStream#timeseries:lengthTimeRegress(20 days, 30, 1, 0.95, a, c, b, e) "
+        String eventFuseExecutionPlan = ("@info(name = 'query2') from InputStream#extrema:lengthTimeRegress(20 days, 30, 1, 0.95, a, c, b, e) "
                 + "select * " + "insert into OutputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager
                 .createExecutionPlanRuntime(inputStream + eventFuseExecutionPlan);
@@ -356,7 +356,7 @@ public class LengthTimeLinearRegressionTestcase {
         String inputStream = "define stream InputStream (a int, b int, c int, d int, e int);";
 
         // Limit number of events based on time window (query):
-        String eventFuseExecutionPlan = ("@info(name = 'query2') from InputStream#timeseries:lengthTimeRegress(200, 10000, 1, 0.95, a, c, b, e) "
+        String eventFuseExecutionPlan = ("@info(name = 'query2') from InputStream#extrema:lengthTimeRegress(200, 10000, 1, 0.95, a, c, b, e) "
                 + "select * " + "insert into OutputStream;");
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager
                 .createExecutionPlanRuntime(inputStream + eventFuseExecutionPlan);

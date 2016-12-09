@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.execution.timeseries.linreg;
+package org.wso2.extension.siddhi.execution.extrema.linreg;
 
 import java.util.LinkedList;
 import java.util.List;
