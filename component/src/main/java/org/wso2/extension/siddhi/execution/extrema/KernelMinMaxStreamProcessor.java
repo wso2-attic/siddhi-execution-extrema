@@ -16,10 +16,10 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.execution.extrema.extrema;
+package org.wso2.extension.siddhi.execution.extrema;
 
 
-import org.wso2.extension.siddhi.execution.extrema.extrema.util.ExtremaCalculator;
+import org.wso2.extension.siddhi.execution.extrema.util.ExtremaCalculator;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.core.event.ComplexEventChunk;
 import org.wso2.siddhi.core.event.stream.StreamEvent;
@@ -41,10 +41,6 @@ import java.util.Queue;
 
 public class KernelMinMaxStreamProcessor extends StreamProcessor {
 
-    public enum ExtremaType {
-        MIN, MAX, MINMAX
-    }
-
     ExtremaType extremaType;
     int[] variablePosition;
     double bw = 0;
@@ -52,9 +48,9 @@ public class KernelMinMaxStreamProcessor extends StreamProcessor {
     LinkedList<StreamEvent> eventStack = null;
     Queue<Double> valueStack = null;
     Queue<StreamEvent> uniqueQueue = null;
+    ExtremaCalculator extremaCalculator = null;
     private int minEventPos;
     private int maxEventPos;
-    ExtremaCalculator extremaCalculator = null;
 
     @Override
     protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors,
@@ -238,5 +234,9 @@ public class KernelMinMaxStreamProcessor extends StreamProcessor {
         eventStack = (LinkedList<StreamEvent>) state[0];
         valueStack = (Queue<Double>) state[1];
         uniqueQueue = (Queue<StreamEvent>) state[2];
+    }
+
+    public enum ExtremaType {
+        MIN, MAX, MINMAX
     }
 }

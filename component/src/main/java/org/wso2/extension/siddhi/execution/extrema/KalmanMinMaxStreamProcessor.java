@@ -16,10 +16,10 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.execution.extrema.extrema;
+package org.wso2.extension.siddhi.execution.extrema;
 
 
-import org.wso2.extension.siddhi.execution.extrema.extrema.util.ExtremaCalculator;
+import org.wso2.extension.siddhi.execution.extrema.util.ExtremaCalculator;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.core.event.ComplexEventChunk;
 import org.wso2.siddhi.core.event.stream.StreamEvent;
@@ -41,11 +41,8 @@ import java.util.Queue;
 
 public class KalmanMinMaxStreamProcessor extends StreamProcessor {
 
-    public enum ExtremaType {
-        MIN, MAX, MINMAX
-    }
-
     ExtremaType extremaType;
+    ExtremaCalculator extremaCalculator = null;
     private int[] variablePosition;
     private int windowSize = 0;
     private LinkedList<StreamEvent> eventStack = null;
@@ -55,7 +52,6 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
     private double R;
     private int minEventPos;
     private int maxEventPos;
-    ExtremaCalculator extremaCalculator = null;
 
     @Override
     protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
@@ -206,7 +202,6 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
         return null;
     }
 
-
     private StreamEvent getExtremaEvent(Integer eventPosition) {
         StreamEvent extremaEvent = eventStack.get(eventPosition);
         if (!uniqueQueue.contains(extremaEvent)) {
@@ -240,6 +235,10 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
         eventStack = (LinkedList<StreamEvent>) state[0];
         valueStack = (Queue<Double>) state[1];
         uniqueQueue = (Queue<StreamEvent>) state[2];
+    }
+
+    public enum ExtremaType {
+        MIN, MAX, MINMAX
     }
 
 

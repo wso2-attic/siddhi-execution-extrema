@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.execution.extrema.extrema.util;
+package org.wso2.extension.siddhi.execution.extrema.util;
 
 
 import java.util.Iterator;
