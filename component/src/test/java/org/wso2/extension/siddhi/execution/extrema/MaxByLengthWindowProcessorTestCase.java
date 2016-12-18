@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -15,7 +15,6 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
 package org.wso2.extension.siddhi.execution.extrema;
@@ -36,9 +35,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 
-/**
- * Created by mathuriga on 01/10/16.
- */
 public class MaxByLengthWindowProcessorTestCase {
     private static final Logger log = Logger.getLogger(MaxByLengthWindowProcessorTestCase.class);
     int count;
@@ -68,7 +64,7 @@ public class MaxByLengthWindowProcessorTestCase {
 
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
 
                     for (Event event : events) {
@@ -98,19 +94,15 @@ public class MaxByLengthWindowProcessorTestCase {
         String query = "@info(name = 'query1') from cseEventStream#window.extrema:maxByLength(price, 2) select symbol,price," +
                 "volume insert into outputStream ;";
         ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(cseEventStream + query);
-//        results.add(new Object[]{"IBM", 700f, 14});
-//        results.add(new Object[]{"IBM", 700f, 14});
-//        results.add(new Object[]{"WSO2", 790f, 1});
         try {
             executionPlanRuntime.addCallback("outputStream", new StreamCallback() {
 
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
 
                     for (Event event : events) {
-                        //  assertArrayEquals((Object[]) results.get(count), event.getData());
                         count++;
                     }
                 }
@@ -147,7 +139,7 @@ public class MaxByLengthWindowProcessorTestCase {
             executionPlanRuntime.addCallback("outputStream", new StreamCallback() {
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                     for (Event event : events) {
                         assertArrayEquals((Object[]) results.get(count), event.getData());
@@ -193,9 +185,8 @@ public class MaxByLengthWindowProcessorTestCase {
             executionPlanRuntime.addCallback("outputStream", new StreamCallback() {
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
-
                     for (Event event : events) {
                         assertArrayEquals((Object[]) results.get(count), event.getData());
                         count++;
@@ -242,8 +233,7 @@ public class MaxByLengthWindowProcessorTestCase {
 
                 @Override
                 public void receive(Event[] events) {
-
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                 }
             });
@@ -289,13 +279,7 @@ public class MaxByLengthWindowProcessorTestCase {
 
                 @Override
                 public void receive(Event[] events) {
-
-                    System.out.print("output event: ");
-//                    if(events==null){
-//                        System.out.println("There is no output events");
-//                    }
                     EventPrinter.print(events);
-
                 }
             });
             InputHandler cseEventStreamHandler = executionPlanRuntime.getInputHandler("cseEventStream");
@@ -308,7 +292,6 @@ public class MaxByLengthWindowProcessorTestCase {
             twitterStreamHandler.send(new Object[]{100, "Hello World", "XXX"});
             twitterStreamHandler.send(new Object[]{101, "Hello SIDDHI", "WSO2"});
             twitterStreamHandler.send(new Object[]{104, "Hello CEP", "WSO2"});
-
 
         } finally {
             executionPlanRuntime.shutdown();
@@ -351,12 +334,8 @@ public class MaxByLengthWindowProcessorTestCase {
             twitterStreamHandler.send(new Object[]{100, "Hello World", "XXX"});
             twitterStreamHandler.send(new Object[]{101, "Hello SIDDHI", "WSO2"});
             Thread.sleep(100);
-            System.out.println(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,");
-
             cseEventStreamHandler.send(new Object[]{"WSO2", 900f, 14});
-            System.out.println("------------------------------------");
             cseEventStreamHandler.send(new Object[]{"XXX", 70.5f, 2});
-
 
         } finally {
             executionPlanRuntime.shutdown();

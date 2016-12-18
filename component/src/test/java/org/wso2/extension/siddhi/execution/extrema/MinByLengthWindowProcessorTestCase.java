@@ -1,6 +1,5 @@
-
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -15,7 +14,6 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
 package org.wso2.extension.siddhi.execution.extrema;
@@ -35,9 +33,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 
-/**
- * Created by mathuriga on 30/09/16.
- */
 public class MinByLengthWindowProcessorTestCase {
 
     private static final Logger log = Logger.getLogger(MinByLengthWindowProcessorTestCase.class);
@@ -68,7 +63,7 @@ public class MinByLengthWindowProcessorTestCase {
 
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
 
                     for (Event event : events) {
@@ -106,10 +101,9 @@ public class MinByLengthWindowProcessorTestCase {
             executionPlanRuntime.addCallback("outputStream", new StreamCallback() {
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                     for (Event event : events) {
-                        // assertArrayEquals((Object[]) results.get(count), event.getData());
                         count++;
                     }
                 }
@@ -154,7 +148,7 @@ public class MinByLengthWindowProcessorTestCase {
             executionPlanRuntime.addCallback("outputStream", new StreamCallback() {
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
 
                     for (Event event : events) {

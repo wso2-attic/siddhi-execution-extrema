@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -15,7 +15,6 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
 package org.wso2.extension.siddhi.execution.extrema;
@@ -35,9 +34,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 
-/**
- * Created by mathuriga on 28/09/16.
- */
 public class MaxByLengthBatchWindowProcessorTestCase {
     private static final Logger log = Logger.getLogger(MaxByLengthBatchWindowProcessorTestCase.class);
     private int count;
@@ -62,7 +58,7 @@ public class MaxByLengthBatchWindowProcessorTestCase {
 
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                     Object[] results = new Object[]{"dg", 900f, 24};
                     assertArrayEquals(results, events[0].getData());
@@ -102,7 +98,7 @@ public class MaxByLengthBatchWindowProcessorTestCase {
                 @Override
                 public void receive(Event[] events) {
 
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                     for (Event event : events) {
                         assertArrayEquals((Object[]) results.get(count), event.getData());
@@ -147,7 +143,7 @@ public class MaxByLengthBatchWindowProcessorTestCase {
                 @Override
                 public void receive(Event[] events) {
 
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                     for (Event event : events) {
                         assertArrayEquals((Object[]) results.get(count), event.getData());
@@ -162,7 +158,6 @@ public class MaxByLengthBatchWindowProcessorTestCase {
             inputHandler.send(new Object[]{"ABC", 60.5f, 2});
             inputHandler.send(new Object[]{"AAA", 700f, 142});
             inputHandler.send(new Object[]{"ACD", 60.5f, 21});
-            System.out.println("-------------------");
             inputHandler.send(new Object[]{"RTE", 700f, 1});
             inputHandler.send(new Object[]{"YTX", 60.5f, 24});
             inputHandler.send(new Object[]{"DGF", 60.5f, 21});
@@ -200,7 +195,7 @@ public class MaxByLengthBatchWindowProcessorTestCase {
                 @Override
                 public void receive(Event[] events) {
 
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                 }
             });
@@ -247,7 +242,7 @@ public class MaxByLengthBatchWindowProcessorTestCase {
                 @Override
                 public void receive(Event[] events) {
 
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                 }
             });
@@ -293,10 +288,8 @@ public class MaxByLengthBatchWindowProcessorTestCase {
 
                 @Override
                 public void receive(Event[] events) {
-
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
-
                 }
             });
             InputHandler cseEventStreamHandler = executionPlanRuntime.getInputHandler("cseEventStream");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -14,7 +14,6 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
 package org.wso2.extension.siddhi.execution.extrema;
@@ -119,11 +118,7 @@ public class MaxByTimeBatchWindowTestCase {
         inputHandler.send(new Object[]{"IBM", 700f, 1});
         inputHandler.send(new Object[]{"WSO2", 888f, 1});
         inputHandler.send(new Object[]{"MIT", 700f, 1});
-        Thread.sleep(1100);
-        System.out.println();
-        Thread.sleep(1100);
-        System.out.println();
-        Thread.sleep(1100);
+        Thread.sleep(3300);
         inputHandler.send(new Object[]{"WSO2", 60.5f, 2});
         inputHandler.send(new Object[]{"IBM", 777f, 3});
         inputHandler.send(new Object[]{"WSO2", 234.5f, 4});

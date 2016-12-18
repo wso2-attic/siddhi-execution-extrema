@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -14,7 +14,6 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
 package org.wso2.extension.siddhi.execution.extrema;
@@ -164,8 +163,6 @@ public abstract class MaxByMinByLengthWindowProcessor extends WindowProcessor im
                     //add the event which is to be expired
                     internalWindowChunk.add(streamEventCloner.copyStreamEvent(outputStreamEvent));
                     toBeExpiredEvent = outputStreamEvent;
-
-                    //System.out.println(outputStreamEventChunk);
                     if (outputStreamEventChunk.getFirst() != null) {
                         streamEventChunks.add(outputStreamEventChunk);
                     }
@@ -197,7 +194,6 @@ public abstract class MaxByMinByLengthWindowProcessor extends WindowProcessor im
                         internalWindowChunk.add(streamEventCloner.copyStreamEvent(outputStreamEvent));
                         toBeExpiredEvent = outputStreamEvent;
 
-                        //                        System.out.println(outputStreamEventChunk);
                         if (outputStreamEventChunk.getFirst() != null) {
                             streamEventChunks.add(outputStreamEventChunk);
                         }
@@ -207,8 +203,6 @@ public abstract class MaxByMinByLengthWindowProcessor extends WindowProcessor im
                 }
             }
         }
-
-        System.out.println(outputStreamEventChunk);
         for (ComplexEventChunk<StreamEvent> outputStreamEventChunk : streamEventChunks) {
             nextProcessor.process(outputStreamEventChunk);
         }

@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -15,7 +15,6 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
 package org.wso2.extension.siddhi.execution.extrema;
@@ -35,9 +34,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 
-/**
- * Created by mathuriga on 29/09/16.
- */
 public class MinByLengthBatchWindowProcessorTestCase {
 
     private static final Logger log = Logger.getLogger(MinByLengthBatchWindowProcessorTestCase.class);
@@ -66,7 +62,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
 
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                     Object[] results = new Object[]{"IBM", 50.5f, 2};
                     assertArrayEquals(results, events[0].getData());
@@ -106,7 +102,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
 
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                     Object[] results1 = new Object[]{"IBM", 60.5f, 2};
                     for (Event event : events) {
@@ -151,7 +147,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
 
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                     Object[] results1 = new Object[]{"IBM", 60.5f, 2};
                     for (Event event : events) {
@@ -193,7 +189,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
 
                 @Override
                 public void receive(Event[] events) {
-                    System.out.print("output event: ");
+                    log.info("output event: ");
                     EventPrinter.print(events);
                     Object[] results = null;
                     assertArrayEquals(results, events[0].getData());

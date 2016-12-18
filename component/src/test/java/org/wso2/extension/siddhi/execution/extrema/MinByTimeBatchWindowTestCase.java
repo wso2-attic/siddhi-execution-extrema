@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -14,7 +14,6 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
 package org.wso2.extension.siddhi.execution.extrema;
@@ -87,9 +86,7 @@ public class MinByTimeBatchWindowTestCase {
         Thread.sleep(1100);
         inputHandler.send(new Object[]{"IBM", 90f, 5});
         inputHandler.send(new Object[]{"WSO2", 765f, 6});
-        Thread.sleep(1100);
-        System.out.println();
-        Thread.sleep(1100);
+        Thread.sleep(2200);
         Assert.assertEquals(3, inEventCount);
         Assert.assertTrue(eventArrived);
         executionPlanRuntime.shutdown();
