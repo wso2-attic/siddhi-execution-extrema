@@ -17,3 +17,13 @@
 #
 kalmanMinMax=org.wso2.extension.siddhi.execution.extrema.KalmanMinMaxStreamProcessor
 kernelMinMax=org.wso2.extension.siddhi.execution.extrema.KernelMinMaxStreamProcessor
+
+minByLengthBatch=org.wso2.extension.siddhi.execution.extrema.MinByLengthBatchWindowProcessor
+maxByLengthBatch=org.wso2.extension.siddhi.execution.extrema.MaxByLengthBatchWindowProcessor
+minByLength=org.wso2.extension.siddhi.execution.extrema.MinByLengthWindowProcessor
+maxByLength=org.wso2.extension.siddhi.execution.extrema.MaxByLengthWindowProcessor
+
+minbytimebatch=org.wso2.extension.siddhi.execution.extrema.MinByTimeBatchWindowProcessor
+maxbytimebatch=org.wso2.extension.siddhi.execution.extrema.MaxByTimeBatchWindowProcessor
+minbytime=org.wso2.extension.siddhi.execution.extrema.MinByTimeWindowProcessor
+maxbytime=org.wso2.extension.siddhi.execution.extrema.MaxByTimeWindowProcessor
