@@ -1,24 +1,24 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
- *
- * WSO2 Inc. licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.extension.siddhi.execution.extrema;
 
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
+import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.extension.siddhi.execution.extrema.util.Counter;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.core.event.ComplexEvent;
@@ -74,10 +74,11 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
     private VariableExpressionExecutor attrVariableExpressionExecutor;
     private AbstractTopKBottomKFinder<Object> topKBottomKFinder;
 
+    private long nextEmitTime = -1;
+    private boolean isStartTimeEnabled = false;
     private Object[] lastOutputData;
-    private StreamEvent lastStreamEvent = null;     // Used for returning the topK/bottomK items and frequencies
-    private StreamEvent resetEvent = null;
-    private ComplexEventChunk<StreamEvent> expiredEventChunk = null;
+    private StreamEvent lastStreamEvent;     // Used for returning the topK/bottomK items and frequencies
+    private ComplexEventChunk<StreamEvent> expiredEventChunk;
 
     @Override
     protected List<Attribute> init(AbstractDefinition abstractDefinition,
@@ -100,7 +101,7 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
         } else {
             throw new ExecutionPlanValidationException("Attribute for ordering in " +
                     getExtensionNamePrefix() +
-                    "KTimeBatchStreamProcessor should be a variable. but found a constant attribute " +
+                    "KTimeBatchStreamProcessor should be a variable, but found a constant attribute " +
                     attributeExpressionExecutors[1].getClass().getCanonicalName()
             );
         }
@@ -115,13 +116,19 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
             } else {
                 throw new ExecutionPlanValidationException(
                         "Window time parameter for " + getExtensionNamePrefix() +
-                        "KTimeBatchStreamProcessor should be INT or LONG. but found " + attributeType
+                        "KTimeBatchStreamProcessor should be INT or LONG, but found " + attributeType
+                );
+            }
+            if (windowTime <= 0) {
+                throw new ExecutionPlanValidationException(
+                        "Window time parameter for " + getExtensionNamePrefix() +
+                        "KTimeBatchStreamProcessor should be greater than 0, but found " + attributeType
                 );
             }
         } else {
             throw new ExecutionPlanValidationException(
                     "Window time parameter for " + getExtensionNamePrefix() +
-                    "KTimeBatchStreamProcessor should be a constant. but found a dynamic attribute " +
+                    "KTimeBatchStreamProcessor should be a constant, but found a dynamic attribute " +
                     attributeExpressionExecutors[1].getClass().getCanonicalName()
             );
         }
@@ -131,16 +138,22 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
             Attribute.Type attributeType = attributeExpressionExecutors[2].getReturnType();
             if (attributeType == Attribute.Type.INT) {
                 querySize = (Integer) ((ConstantExpressionExecutor) attributeExpressionExecutors[2]).getValue();
+                if (querySize <= 0) {
+                    throw new ExecutionPlanValidationException(
+                            "Query size parameter for " + getExtensionNamePrefix() +
+                            "KLengthBatchStreamProcessor should be greater than 0, but found " + attributeType
+                    );
+                }
             } else {
                 throw new ExecutionPlanValidationException(
                         "Query size parameter for " + getExtensionNamePrefix() +
-                        "KTimeBatchStreamProcessor should be INT. but found " + attributeType
+                        "KTimeBatchStreamProcessor should be INT, but found " + attributeType
                 );
             }
         } else {
             throw new ExecutionPlanValidationException(
                     "Query size parameter for " + getExtensionNamePrefix() +
-                    "KTimeBatchStreamProcessor should be a constant. but found a dynamic attribute " +
+                    "KTimeBatchStreamProcessor should be a constant, but found a dynamic attribute " +
                     attributeExpressionExecutors[2].getClass().getCanonicalName()
             );
         }
@@ -149,12 +162,20 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
             if (attributeExpressionExecutors[3] instanceof ConstantExpressionExecutor) {
                 Attribute.Type attributeType = attributeExpressionExecutors[3].getReturnType();
                 if (attributeType == Attribute.Type.INT) {
+                    isStartTimeEnabled = true;
                     startTime = executionPlanContext.getTimestampGenerator().currentTime() +
                             (Integer) ((ConstantExpressionExecutor) attributeExpressionExecutors[3]).getValue();
+                    if (startTime < 0) {
+                        throw new ExecutionPlanValidationException(
+                                "Start time parameter for " + getExtensionNamePrefix() +
+                                "KTimeBatchStreamProcessor should be greater than or equal to 0," +
+                                "but found " + attributeType
+                        );
+                    }
                 } else {
                     throw new ExecutionPlanValidationException(
                             "Start time parameter for " + getExtensionNamePrefix() +
-                            "KTimeBatchStreamProcessor should be INT. but found " + attributeType
+                            "KTimeBatchStreamProcessor should be INT, but found " + attributeType
                     );
                 }
             }
@@ -164,10 +185,12 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
         List<Attribute> newAttributes = new ArrayList<Attribute>();
         for (int i = 0; i < querySize; i++) {
             newAttributes.add(new Attribute(
-                    getExtensionNamePrefix() + (i + 1) + "Element", attrVariableExpressionExecutor.getReturnType())
+                    getExtensionNamePrefix() + (i + 1) + Constants.TOP_K_BOTTOM_K_ELEMENT,
+                    attrVariableExpressionExecutor.getReturnType())
             );
             newAttributes.add(new Attribute(
-                    getExtensionNamePrefix() + (i + 1) + "Frequency", Attribute.Type.LONG)
+                    getExtensionNamePrefix() + (i + 1) + Constants.TOP_K_BOTTOM_K_FREQUENCY,
+                    Attribute.Type.LONG)
             );
         }
         return newAttributes;
@@ -178,84 +201,92 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
                            StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
         ComplexEventChunk<StreamEvent> outputStreamEventChunk = new ComplexEventChunk<StreamEvent>(true);
         synchronized (this) {
+            if (nextEmitTime == -1) {   // In the first time process method is called
+                long currentTime = executionPlanContext.getTimestampGenerator().currentTime();
+                if (isStartTimeEnabled) {
+                    long elapsedTimeSinceLastEmit = (currentTime - startTime) % windowTime;
+                    nextEmitTime = currentTime + (windowTime - elapsedTimeSinceLastEmit);
+                } else {
+                    nextEmitTime = executionPlanContext.getTimestampGenerator().currentTime() + windowTime;
+                }
+                topKBottomKFinder = createNewTopKBottomKFinder();
+                scheduler.notifyAt(nextEmitTime);
+            }
+
             long currentTime = executionPlanContext.getTimestampGenerator().currentTime();
+            boolean sendEvents = false;
+            if (currentTime >= nextEmitTime) {
+                nextEmitTime += windowTime;
+                scheduler.notifyAt(nextEmitTime);
+                sendEvents = true;
+            }
+
             if (currentTime >= startTime) {
                 while (streamEventChunk.hasNext()) {
                     StreamEvent streamEvent = streamEventChunk.next();
-                    StreamEvent clonedStreamEvent = streamEventCloner.copyStreamEvent(streamEvent);
-
-                    // Starting the time batch windows
-                    if (topKBottomKFinder == null) {
-                        topKBottomKFinder = createNewTopKBottomKFinder();
-                        scheduler.notifyAt(currentTime + windowTime);
-                    }
 
                     // New current event tasks
                     if (streamEvent.getType() == ComplexEvent.Type.CURRENT) {
                         lastStreamEvent = streamEventCloner.copyStreamEvent(streamEvent);
-                        topKBottomKFinder.offer(attrVariableExpressionExecutor.execute(clonedStreamEvent));
-                    }
-
-                    // End of window tasks
-                    if (streamEvent.getType() == ComplexEvent.Type.TIMER) {
-                        if (expiredEventChunk.getFirst() != null) {
-                            // Adding the expired events
-                            if (outputExpectsExpiredEvents) {
-                                outputStreamEventChunk.add(expiredEventChunk.getFirst());
-                                expiredEventChunk.clear();
-                            }
-
-                            // Adding the reset event
-                            outputStreamEventChunk.add(resetEvent);
-                            resetEvent = null;
-                        }
-
-                        // Adding the last event with the topK frequencies for the window
-                        if (lastStreamEvent != null) {
-                            Object[] outputStreamEventData = new Object[2 * querySize];
-                            List<Counter<Object>> topKCounters = topKBottomKFinder.get(querySize);
-                            boolean sendEvents = false;
-                            int i = 0;
-                            while (i < topKCounters.size()) {
-                                Counter<Object> topKCounter = topKCounters.get(i);
-                                outputStreamEventData[2 * i] = topKCounter.getItem();
-                                outputStreamEventData[2 * i + 1] = topKCounter.getCount();
-                                if (lastOutputData == null ||
-                                        lastOutputData[2 * i] != outputStreamEventData[2 * i] ||
-                                        lastOutputData[2 * i + 1] != outputStreamEventData[2 * i + 1]) {
-                                    sendEvents = true;
-                                }
-                                i++;
-                            }
-                            if (sendEvents) {
-                                lastOutputData = outputStreamEventData;
-                                complexEventPopulater.populateComplexEvent(lastStreamEvent, outputStreamEventData);
-                                outputStreamEventChunk.add(lastStreamEvent);
-
-                                // Setting the event to be expired in the next window
-                                StreamEvent expiredStreamEvent = streamEventCloner.copyStreamEvent(lastStreamEvent);
-                                expiredStreamEvent.setTimestamp(currentTime);
-                                expiredStreamEvent.setType(ComplexEvent.Type.EXPIRED);
-                                expiredEventChunk.add(expiredStreamEvent);
-                            }
-                        }
-
-                        // Resetting window
-                        topKBottomKFinder = createNewTopKBottomKFinder();
-                        scheduler.notifyAt(currentTime + windowTime);
-
-                        // Setting the reset event to be used in the end of the window
-                        if (resetEvent == null) {
-                            resetEvent = streamEventCloner.copyStreamEvent(streamEventChunk.getFirst());
-                            resetEvent.setType(ComplexEvent.Type.RESET);
-                        }
+                        topKBottomKFinder.offer(attrVariableExpressionExecutor.execute(lastStreamEvent));
                     }
                 }
+            }
+
+            // End of window tasks
+            if (sendEvents) {
+                if (expiredEventChunk.getFirst() != null) {
+                    // Adding the expired events
+                    if (outputExpectsExpiredEvents) {
+                        expiredEventChunk.getFirst().setTimestamp(currentTime);
+                        outputStreamEventChunk.add(expiredEventChunk.getFirst());
+                        expiredEventChunk.clear();
+                    }
+
+                    // Adding the reset event
+                    StreamEvent resetEvent = streamEventCloner.copyStreamEvent(lastStreamEvent);
+                    resetEvent.setType(ComplexEvent.Type.RESET);
+                    outputStreamEventChunk.add(resetEvent);
+                }
+
+                // Adding the last event with the topK frequencies for the window
+                if (lastStreamEvent != null) {
+                    Object[] outputStreamEventData = new Object[2 * querySize];
+                    List<Counter<Object>> topKCounters = topKBottomKFinder.get(querySize);
+                    boolean isSameAsLastEmission = true;
+                    int i = 0;
+                    while (i < topKCounters.size()) {
+                        Counter<Object> topKCounter = topKCounters.get(i);
+                        outputStreamEventData[2 * i] = topKCounter.getItem();
+                        outputStreamEventData[2 * i + 1] = topKCounter.getCount();
+                        if (lastOutputData == null ||
+                                lastOutputData[2 * i] != outputStreamEventData[2 * i] ||
+                                lastOutputData[2 * i + 1] != outputStreamEventData[2 * i + 1]) {
+                            isSameAsLastEmission = false;
+                        }
+                        i++;
+                    }
+                    if (!isSameAsLastEmission) {
+                        lastOutputData = outputStreamEventData;
+                        complexEventPopulater.populateComplexEvent(lastStreamEvent, outputStreamEventData);
+                        outputStreamEventChunk.add(lastStreamEvent);
+
+                        // Setting the event to be expired in the next window
+                        StreamEvent expiredStreamEvent = streamEventCloner.copyStreamEvent(lastStreamEvent);
+                        expiredStreamEvent.setType(ComplexEvent.Type.EXPIRED);
+                        expiredEventChunk.add(expiredStreamEvent);
+                    }
+                }
+
+                // Resetting window
+                topKBottomKFinder = createNewTopKBottomKFinder();
             }
         }
 
         if (outputStreamEventChunk.getFirst() != null) {
+            streamEventChunk.setBatch(true);
             nextProcessor.process(outputStreamEventChunk);
+            streamEventChunk.setBatch(false);
         }
     }
 
@@ -273,13 +304,11 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
     public Object[] currentState() {
         if (outputExpectsExpiredEvents) {
             return new Object[]{
-                    topKBottomKFinder, windowTime, querySize, startTime,
-                    lastStreamEvent, resetEvent, expiredEventChunk
+                    topKBottomKFinder, windowTime, querySize, startTime, lastStreamEvent, expiredEventChunk
             };
         } else {
             return new Object[]{
-                    topKBottomKFinder, windowTime, querySize, startTime,
-                    lastStreamEvent, resetEvent
+                    topKBottomKFinder, windowTime, querySize, startTime, lastStreamEvent
             };
         }
     }
@@ -292,9 +321,8 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
         startTime = (Long) state[3];
 
         lastStreamEvent = (StreamEvent) state[4];
-        resetEvent = (StreamEvent) state[5];
-        if (state.length == 7) {
-            expiredEventChunk = (ComplexEventChunk<StreamEvent>) state[6];
+        if (state.length == 6) {
+            expiredEventChunk = (ComplexEventChunk<StreamEvent>) state[5];
         }
     }
 

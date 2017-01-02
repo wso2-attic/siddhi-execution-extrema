@@ -1,24 +1,24 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
- *
- * WSO2 Inc. licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.extension.siddhi.execution.extrema;
 
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
+import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.extension.siddhi.execution.extrema.util.Counter;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.core.event.ComplexEvent;
@@ -61,8 +61,8 @@ public abstract class AbstractKStreamProcessorExtension extends StreamProcessor 
     private AbstractTopKBottomKFinder<Object> topKBottomKFinder;
 
     private Object[] lastOutputData;
-    private StreamEvent lastStreamEvent = null;     // Event used for adding the topK/bottomK items and frequencies added to it
-    private ComplexEventChunk<StreamEvent> expiredEventChunk = null;
+    private StreamEvent lastStreamEvent;     // Event used for adding the topK/bottomK items and frequencies added to it
+    private ComplexEventChunk<StreamEvent> expiredEventChunk;
 
     @Override
     protected List<Attribute> init(AbstractDefinition abstractDefinition,
@@ -94,10 +94,16 @@ public abstract class AbstractKStreamProcessorExtension extends StreamProcessor 
             Attribute.Type attributeType = this.attributeExpressionExecutors[1].getReturnType();
             if (attributeType == Attribute.Type.INT) {
                 querySize = (Integer) ((ConstantExpressionExecutor) this.attributeExpressionExecutors[1]).getValue();
+                if (querySize <= 0) {
+                    throw new ExecutionPlanValidationException(
+                            "Query size parameter for " + getExtensionNamePrefix() +
+                            "KLengthBatchStreamProcessor should be greater than 0. but found " + attributeType
+                    );
+                }
             } else {
                 throw new ExecutionPlanValidationException(
                         "Query size parameter for " + getExtensionNamePrefix() +
-                                "KStreamProcessor should be INT. but found " + attributeType
+                        "KStreamProcessor should be INT. but found " + attributeType
                 );
             }
         } else {
@@ -112,10 +118,12 @@ public abstract class AbstractKStreamProcessorExtension extends StreamProcessor 
         List<Attribute> newAttributes = new ArrayList<Attribute>();
         for (int i = 0; i < querySize; i++) {
             newAttributes.add(new Attribute(
-                    getExtensionNamePrefix() + (i + 1) + "Element", attrVariableExpressionExecutor.getReturnType()
+                    getExtensionNamePrefix() + (i + 1) + Constants.TOP_K_BOTTOM_K_ELEMENT,
+                    attrVariableExpressionExecutor.getReturnType()
             ));
             newAttributes.add(new Attribute(
-                    getExtensionNamePrefix() + (i + 1) + "Frequency", Attribute.Type.LONG
+                    getExtensionNamePrefix() + (i + 1) + Constants.TOP_K_BOTTOM_K_FREQUENCY,
+                    Attribute.Type.LONG
             ));
         }
         return newAttributes;
@@ -127,20 +135,18 @@ public abstract class AbstractKStreamProcessorExtension extends StreamProcessor 
         ComplexEventChunk<StreamEvent> outputStreamEventChunk = new ComplexEventChunk<StreamEvent>(true);
         synchronized (this) {
             long currentTime = executionPlanContext.getTimestampGenerator().currentTime();
-            StreamEvent resetEvent = null;
             while (streamEventChunk.hasNext()) {
                 StreamEvent streamEvent = streamEventChunk.next();
                 StreamEvent clonedStreamEvent = streamEventCloner.copyStreamEvent(streamEvent);
 
                 // Current event arrival tasks
                 if (streamEvent.getType() == ComplexEvent.Type.CURRENT) {
-                    lastStreamEvent = streamEventCloner.copyStreamEvent(streamEvent);
+                    lastStreamEvent = clonedStreamEvent;
                     topKBottomKFinder.offer(attrVariableExpressionExecutor.execute(clonedStreamEvent));
                 } else if (streamEvent.getType() == ComplexEvent.Type.EXPIRED) {
                     topKBottomKFinder.offer(attrVariableExpressionExecutor.execute(clonedStreamEvent), -1);
                 } else if (streamEvent.getType() == ComplexEvent.Type.RESET) {
                     // Setting the reset event to be used in the end of the window
-                    resetEvent = streamEventCloner.copyStreamEvent(clonedStreamEvent);
 
                     // Resetting topK/bottomK finder for batch windows using RESET event
                     topKBottomKFinder = createNewTopKBottomKFinder();
@@ -149,12 +155,16 @@ public abstract class AbstractKStreamProcessorExtension extends StreamProcessor 
 
             // Adding expired events
             while (expiredEventChunk.hasNext()) {
-                outputStreamEventChunk.add(expiredEventChunk.next());
+                StreamEvent expiredEvent = expiredEventChunk.next();
+                expiredEvent.setTimestamp(currentTime);
+                outputStreamEventChunk.add(expiredEvent);
             }
             expiredEventChunk.clear();
 
             // Adding the reset event
-            if (resetEvent != null) {
+            if (lastStreamEvent != null) {
+                StreamEvent resetEvent = streamEventCloner.copyStreamEvent(lastStreamEvent);
+                resetEvent.setType(ComplexEvent.Type.RESET);
                 outputStreamEventChunk.add(resetEvent);
             }
 
@@ -181,7 +191,6 @@ public abstract class AbstractKStreamProcessorExtension extends StreamProcessor 
 
                 // Setting the event expired in this window
                 StreamEvent expiredStreamEvent = streamEventCloner.copyStreamEvent(lastStreamEvent);
-                expiredStreamEvent.setTimestamp(currentTime);
                 expiredStreamEvent.setType(ComplexEvent.Type.EXPIRED);
                 expiredEventChunk.add(expiredStreamEvent);
             }

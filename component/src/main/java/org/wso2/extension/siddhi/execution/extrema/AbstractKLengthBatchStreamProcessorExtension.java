@@ -1,23 +1,24 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
- *
- * WSO2 Inc. licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.extension.siddhi.execution.extrema;
 
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
+import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.extension.siddhi.execution.extrema.util.Counter;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.core.event.ComplexEvent;
@@ -71,9 +72,7 @@ public abstract class AbstractKLengthBatchStreamProcessorExtension
     private AbstractTopKBottomKFinder<Object> topKBottomKFinder;
 
     private Object[] lastOutputData;
-    private StreamEvent lastStreamEvent = null;     // Event used for adding the topK/bottomK items and frequencies added to it
-    private StreamEvent resetEvent = null;
-    private ComplexEventChunk<StreamEvent> expiredEventChunk = null;
+    private ComplexEventChunk<StreamEvent> expiredEventChunk;
 
     @Override
     protected List<Attribute> init(AbstractDefinition abstractDefinition,
@@ -105,6 +104,12 @@ public abstract class AbstractKLengthBatchStreamProcessorExtension
             Attribute.Type attributeType = attributeExpressionExecutors[1].getReturnType();
             if (attributeType == Attribute.Type.INT) {
                 windowLength = (Integer) ((ConstantExpressionExecutor) attributeExpressionExecutors[1]).getValue();
+                if (windowLength <= 0) {
+                    throw new ExecutionPlanValidationException(
+                            "Window length parameter for " + getExtensionNamePrefix() +
+                            "KLengthBatchStreamProcessor should be greater than 0. but found " + attributeType
+                    );
+                }
                 topKBottomKFinder = createNewTopKBottomKFinder();
             } else {
                 throw new ExecutionPlanValidationException(
@@ -125,6 +130,12 @@ public abstract class AbstractKLengthBatchStreamProcessorExtension
             Attribute.Type attributeType = attributeExpressionExecutors[2].getReturnType();
             if (attributeType == Attribute.Type.INT) {
                 querySize = (Integer) ((ConstantExpressionExecutor) attributeExpressionExecutors[2]).getValue();
+                if (querySize <= 0) {
+                    throw new ExecutionPlanValidationException(
+                            "Query size parameter for " + getExtensionNamePrefix() +
+                            "KLengthBatchStreamProcessor should be greater than 0. but found " + attributeType
+                    );
+                }
             } else {
                 throw new ExecutionPlanValidationException(
                         "Query size parameter for " + getExtensionNamePrefix() +
@@ -142,10 +153,12 @@ public abstract class AbstractKLengthBatchStreamProcessorExtension
         List<Attribute> newAttributes = new ArrayList<Attribute>();
         for (int i = 0; i < querySize; i++) {
             newAttributes.add(new Attribute(
-                    getExtensionNamePrefix() + (i + 1) + "Element", attrVariableExpressionExecutor.getReturnType()
+                    getExtensionNamePrefix() + (i + 1) + Constants.TOP_K_BOTTOM_K_ELEMENT,
+                    attrVariableExpressionExecutor.getReturnType()
             ));
             newAttributes.add(new Attribute(
-                    getExtensionNamePrefix() + (i + 1) + "Frequency", Attribute.Type.LONG
+                    getExtensionNamePrefix() + (i + 1) + Constants.TOP_K_BOTTOM_K_FREQUENCY,
+                    Attribute.Type.LONG
             ));
         }
         return newAttributes;
@@ -159,27 +172,29 @@ public abstract class AbstractKLengthBatchStreamProcessorExtension
             long currentTime = executionPlanContext.getTimestampGenerator().currentTime();
             while (streamEventChunk.hasNext()) {
                 StreamEvent streamEvent = streamEventChunk.next();
-                StreamEvent clonedStreamEvent = streamEventCloner.copyStreamEvent(streamEvent);
 
                 // Current event arrival tasks
                 if (streamEvent.getType() == ComplexEvent.Type.CURRENT) {
+                    topKBottomKFinder.offer(attrVariableExpressionExecutor.execute(streamEvent));
                     count++;
-                    lastStreamEvent = streamEventCloner.copyStreamEvent(streamEvent);
-                    topKBottomKFinder.offer(attrVariableExpressionExecutor.execute(clonedStreamEvent));
                 }
 
                 // Window end tasks
                 if (count == windowLength) {
+                    StreamEvent lastStreamEvent = streamEventCloner.copyStreamEvent(streamEvent);
+
                     if (expiredEventChunk.getFirst() != null) {
                         // Adding expired events
                         if (outputExpectsExpiredEvents) {
+                            expiredEventChunk.getFirst().setTimestamp(currentTime);
                             outputStreamEventChunk.add(expiredEventChunk.getFirst());
                             expiredEventChunk.clear();
                         }
 
                         // Adding the reset event
+                        StreamEvent resetEvent = streamEventCloner.copyStreamEvent(lastStreamEvent);
+                        resetEvent.setType(ComplexEvent.Type.RESET);
                         outputStreamEventChunk.add(resetEvent);
-                        resetEvent = null;
                     }
 
                     // Generating the list of additional attributes added to the events sent out
@@ -205,21 +220,13 @@ public abstract class AbstractKLengthBatchStreamProcessorExtension
 
                         // Setting the event expired in this window
                         StreamEvent expiredStreamEvent = streamEventCloner.copyStreamEvent(lastStreamEvent);
-                        expiredStreamEvent.setTimestamp(currentTime);
                         expiredStreamEvent.setType(ComplexEvent.Type.EXPIRED);
                         expiredEventChunk.add(expiredStreamEvent);
-                        lastStreamEvent = null;
                     }
 
                     // Resetting window
                     topKBottomKFinder = createNewTopKBottomKFinder();
                     count = 0;
-
-                    // Setting the reset event to be used in the end of the window
-                    if (resetEvent == null) {
-                        resetEvent = streamEventCloner.copyStreamEvent(streamEventChunk.getFirst());
-                        resetEvent.setType(ComplexEvent.Type.RESET);
-                    }
                 }
             }
         }
@@ -243,13 +250,11 @@ public abstract class AbstractKLengthBatchStreamProcessorExtension
     public Object[] currentState() {
         if (outputExpectsExpiredEvents) {
             return new Object[]{
-                    topKBottomKFinder, windowLength, querySize, count,
-                    lastStreamEvent, resetEvent, expiredEventChunk
+                    topKBottomKFinder, windowLength, querySize, count, expiredEventChunk
             };
         } else {
             return new Object[]{
-                    topKBottomKFinder, windowLength, querySize, count,
-                    lastStreamEvent, resetEvent
+                    topKBottomKFinder, windowLength, querySize, count
             };
         }
     }
@@ -261,10 +266,8 @@ public abstract class AbstractKLengthBatchStreamProcessorExtension
         querySize = (Integer) state[2];
         count = (Integer) state[3];
 
-        lastStreamEvent = (StreamEvent) state[4];
-        resetEvent = (StreamEvent) state[5];
-        if (state.length == 7) {
-            expiredEventChunk = (ComplexEventChunk<StreamEvent>) state[6];
+        if (state.length == 5) {
+            expiredEventChunk = (ComplexEventChunk<StreamEvent>) state[4];
         }
     }
 

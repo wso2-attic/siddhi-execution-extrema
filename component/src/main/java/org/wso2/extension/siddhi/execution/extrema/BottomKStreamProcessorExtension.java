@@ -15,11 +15,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.extension.siddhi.execution.extrema;
 
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.BottomKFinder;
+import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 
 public class BottomKStreamProcessorExtension extends AbstractKStreamProcessorExtension {
     @Override
@@ -29,6 +29,6 @@ public class BottomKStreamProcessorExtension extends AbstractKStreamProcessorExt
 
     @Override
     protected String getExtensionNamePrefix() {
-        return "Bottom";
+        return Constants.TOP_K_BOTTOM_K_BOTTOM;
     }
 }

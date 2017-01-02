@@ -6,7 +6,7 @@
  * in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -15,7 +15,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.extension.siddhi.execution.extrema.util;
 
 import java.util.ArrayList;
@@ -41,17 +40,17 @@ public class BottomKFinder<T> extends AbstractTopKBottomKFinder<T> {
      */
     @Override
     public List<Counter<T>> get(int k) {
-        List<Counter<T>> topK = new ArrayList<Counter<T>>(k);
+        List<Counter<T>> bottomK = new ArrayList<Counter<T>>(k);
         for (ListNode<Bucket> bNode = bucketList.head(); bNode != null; bNode = bNode.getNextNode()) {
             Bucket b = bNode.getValue();
-            for (Counter<T> c : b.getCounterList()) {
-                if (topK.size() == k) {
-                    return topK;
+            for (ListNode<Counter<T>> cNode = b.getCounterList().tail(); cNode != null; cNode = cNode.getPreviousNode()) {
+                bottomK.add(cNode.getValue());
+                if (bottomK.size() == k) {
+                    return bottomK;
                 }
-                topK.add(c);
             }
         }
-        return topK;
+        return bottomK;
     }
 
     /**

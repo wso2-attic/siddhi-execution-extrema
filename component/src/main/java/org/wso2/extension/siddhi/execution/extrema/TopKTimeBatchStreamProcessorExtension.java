@@ -15,10 +15,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.extension.siddhi.execution.extrema;
 
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
+import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.extension.siddhi.execution.extrema.util.TopKFinder;
 
 public class TopKTimeBatchStreamProcessorExtension extends AbstractKTimeBatchStreamProcessorExtension {
@@ -29,6 +29,6 @@ public class TopKTimeBatchStreamProcessorExtension extends AbstractKTimeBatchStr
 
     @Override
     protected String getExtensionNamePrefix() {
-        return "Top";
+        return Constants.TOP_K_BOTTOM_K_TOP;
     }
 }
