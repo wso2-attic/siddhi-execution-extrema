@@ -143,7 +143,6 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                             + Attribute.Type.INT + " or " + Attribute.Type.LONG + " but found "
                             + attributeExpressionExecutors[0].getReturnType().toString());
         }
-        // TODO: 1/3/17 get the value. same in kalman
         try {
             maxPreBound = Integer.parseInt(
                     String.valueOf(((ConstantExpressionExecutor) attributeExpressionExecutors[1]).getValue()));
@@ -197,10 +196,8 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                                 + postBoundChange);
             }
         }
-        // TODO: 1/3/17 trim
         String extremaType = ((String) ((ConstantExpressionExecutor) attributeExpressionExecutors[5]).getValue())
                 .trim();
-        // TODO: 1/3/17 if any other value give warning
         if ("min".equalsIgnoreCase(extremaType)) {
             this.extremaType = ExtremaType.MIN;
         } else if ("max".equalsIgnoreCase(extremaType)) {
@@ -215,8 +212,6 @@ public class MinMaxStreamProcessor extends StreamProcessor {
         eventStack = new LinkedList<StreamEvent>();
         valueStack = new LinkedList<AttributeDetails>();
 
-        // TODO: 1/3/17 preBound, postBound, maxPreBound-input, preBoundChange: preBoundChange
-        // TODO: 1/3/17 check with kalman, maxPreBound, maxPostBound=0
         List<Attribute> attributeList = new ArrayList<Attribute>();
         attributeList.add(new Attribute("extremaType", Attribute.Type.STRING));
         attributeList.add(new Attribute("preBound", Attribute.Type.INT));
@@ -242,7 +237,6 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                 streamEventChunk.remove();
 
                 // Variable value of the latest event
-                // TODO: 1/3/17 cast to double directly
                 double value = ((Number) attributeExpressionExecutors[0].execute(event)).doubleValue();
                 eventStack.add(event);
 
@@ -264,7 +258,6 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                     // so
                     if (newInput.getValue() <= currentMax.getMaxThreshold() && !currentMax.isOutputAsRealMax()
                             && currentMax.isEligibleForRealMax()) {
-                        // TODO: 1/3/17 comment
                         StreamEvent returnEvent = findIfActualMax(newInput);
                         if (returnEvent != null) {
                             returnEventChunk.add(returnEvent);
@@ -429,7 +422,6 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                         || possibleMaxValue.getValue() <= valueRemoved.getValue()) {
                     if (possibleMaxValue.getValue() < valObject.getValue()) {
                         iterator.remove();
-                        // TODO: 1/3/17 check first element only
                     } else if (valueRemoved.equals(possibleMaxValue)) {
                         // If expired value is in maxDeque, it must be removed
                         iterator.remove();
