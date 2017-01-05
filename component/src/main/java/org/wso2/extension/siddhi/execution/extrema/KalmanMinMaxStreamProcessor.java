@@ -43,7 +43,6 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
 
     ExtremaType extremaType;
     ExtremaCalculator extremaCalculator = null;
-    private int[] variablePosition;
     private int windowSize = 0;
     private LinkedList<StreamEvent> eventStack = null;
     private Queue<Double> valueStack = null;
@@ -65,7 +64,6 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
                     "required " + Attribute.Type.DOUBLE + " or " + Attribute.Type.FLOAT + " or " + Attribute.Type.INT + " or " +
                     Attribute.Type.LONG + " but found " + attributeExpressionExecutors[0].getReturnType().toString());
         }
-        variablePosition = ((VariableExpressionExecutor) attributeExpressionExecutors[0]).getPosition();
 
         try {
             Q = Double.parseDouble(String.valueOf(((ConstantExpressionExecutor) attributeExpressionExecutors[1]).getValue()));
@@ -114,7 +112,7 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
 
                 StreamEvent event = streamEventChunk.next();
                 streamEventChunk.remove();
-                Double eventKey = (Double) event.getAttribute(variablePosition);
+                Double eventKey = (Double) attributeExpressionExecutors[0].execute(event);
                 extremaCalculator = new ExtremaCalculator(Q, R);
                 eventStack.add(event);
                 valueStack.add(eventKey);
