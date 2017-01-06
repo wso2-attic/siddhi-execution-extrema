@@ -39,37 +39,41 @@ import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.exception.ExecutionPlanValidationException;
 
 /*
- * This class finds minimum and/or maximum value within a given length window (l+L), where following conditions are met.
+ * This class finds minimum and/or maximum value within a given length window (maxPreBound+maxPostBound), where following conditions are met.
  *
  * For minimum:
- * an event at least d% greater than minimum event must have arrived prior to minimum, within an l length window
- * an event at least D% greater than minimum event must arrive after minimum, within L length window
+ * an event at least preBoundChange% greater than minimum event must have arrived prior to minimum, within maxPreBound length window
+ * an event at least postBoundChange% greater than minimum event must arrive after minimum, within maxPostBound length window
  *
  * For maximum:
- * an event at least d% less than maximum event must have arrived prior to maximum, within an l length window
- * an event at least D% less than maximum event must arrive after maximum, within L length window
+ * an event at least preBoundChange% less than maximum event must have arrived prior to maximum, within maxPreBound length window
+ * an event at least postBoundChange% less than maximum event must arrive after maximum, within maxPostBound length window
  *
- * Sample Query (variable, l, L, d, D, extrema type):
+ * Sample Query (variable, maxPreBound, maxPostBound, preBoundChange, postBoundChange, extrema type):
  * from inputStream#timeseries:minMax(price, 4, 4, 1, 2, 'minmax')
  * select *
  * insert into outputStream;
  */
 public class MinMaxStreamProcessor extends StreamProcessor {
     private ExtremaType extremaType; // Whether to find min and/or max
-    private LinkedList<StreamEvent> eventStack = null; // Stores all the events within l + L window
-    private LinkedList<attributeDetails> valueStack = null; // Stores all the values within l + L window
-    private attributeDetails valueRemoved = null; // Expired event
-    private Deque<attributeDetails> maxDeque = new LinkedList<attributeDetails>(); // Stores all the values which could
-                                                               // be next max (including current max)
-    private Deque<attributeDetails> minDeque = new LinkedList<attributeDetails>(); // Stores all the values which could
-                                                               // be next min (including current min)
-    private attributeDetails currentMax = null; // Current max (before testing d, D conditions)
-    private attributeDetails currentMin = null; // Current min (before testing d, D conditions)
-    private int[] variablePosition; // Position of variable to be executed
-    private int l; // l window length
-    private int L; // L window length
-    private double d; // d percentage
-    private double D; // D percentage
+    private LinkedList<StreamEvent> eventStack = null; // Stores all the events within maxPreBound + maxPostBound window
+    private LinkedList<AttributeDetails> valueStack = null; // Stores all the values within maxPreBound + maxPostBound
+                                                            // window
+    private AttributeDetails valueRemoved = null; // Expired event
+    private Deque<AttributeDetails> maxDeque = new LinkedList<AttributeDetails>(); // Stores all the values which could
+                                                                                   // be next max (including current
+                                                                                   // max)
+    private Deque<AttributeDetails> minDeque = new LinkedList<AttributeDetails>(); // Stores all the values which could
+                                                                                   // be next min (including current
+                                                                                   // min)
+    private AttributeDetails currentMax = null; // Current max (before testing preBoundChange, postBoundChange
+                                                // conditions)
+    private AttributeDetails currentMin = null; // Current min (before testing preBoundChange, postBoundChange
+                                                // conditions)
+    private int maxPreBound; // maxPreBound window length
+    private int maxPostBound; // maxPostBound window length
+    private double preBoundChange; // preBoundChange percentage
+    private double postBoundChange; // postBoundChange percentage
 
     private enum ExtremaType {
         MIN, MAX, MINMAX
@@ -81,24 +85,25 @@ public class MinMaxStreamProcessor extends StreamProcessor {
      *
      * Input parameters:
      * 1st parameter: variable
-     * 2nd parameter: l window length
-     * 3rd parameter: L window length
-     * 4th parameter: d percentage
-     * 5th parameter: D percentage
+     * 2nd parameter: maxPreBound window length
+     * 3rd parameter: maxPostBound window length
+     * 4th parameter: preBoundChange percentage
+     * 5th parameter: postBoundChange percentage
      * 6th parameter: extrema type
      *
      * Additional output attributes:
      * extremaType
-     * actual_l, actual_L: distance from min/max to where the threshold values occur (d%, D% values)
+     * preBound, postBound: distance from min/max to where the threshold values occur (preBoundChange%, postBoundChange%
+     * values)
      *
      * @param inputDefinition the incoming stream definition
      * @param attributeExpressionExecutors the executors of each function parameters
      * @param executionPlanContext the context of the execution plan
-     * @return the additional output attributes (extremaType, actual_l, actual_L) introduced by the function
+     * @return the additional output attributes (extremaType, preBound, postBound) introduced by the function
      */
     @Override
     protected List<Attribute> init(AbstractDefinition inputDefinition,
-                                   ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
+            ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
         if (attributeExpressionExecutors.length != 6) {
             throw new ExecutionPlanValidationException(
                     "Invalid no of arguments passed to MinMaxStreamProcessor, required 6, but found "
@@ -109,19 +114,19 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                     + " be a variable, but found " + attributeExpressionExecutors[0].getClass());
         }
         if (!(attributeExpressionExecutors[1] instanceof ConstantExpressionExecutor)) {
-            throw new ExecutionPlanValidationException("Constant value expected as the 2nd parameter (l)"
+            throw new ExecutionPlanValidationException("Constant value expected as the 2nd parameter (maxPreBound)"
                     + " but found " + attributeExpressionExecutors[1].getClass());
         }
         if (!(attributeExpressionExecutors[2] instanceof ConstantExpressionExecutor)) {
-            throw new ExecutionPlanValidationException("Constant value expected as the 3rd parameter (L)"
+            throw new ExecutionPlanValidationException("Constant value expected as the 3rd parameter (maxPostBound)"
                     + " but found " + attributeExpressionExecutors[2].getClass());
         }
         if (!(attributeExpressionExecutors[3] instanceof ConstantExpressionExecutor)) {
-            throw new ExecutionPlanValidationException("Constant value expected as the 4th parameter (d)"
+            throw new ExecutionPlanValidationException("Constant value expected as the 4th parameter (preBoundChange)"
                     + " but found " + attributeExpressionExecutors[3].getClass());
         }
         if (!(attributeExpressionExecutors[4] instanceof ConstantExpressionExecutor)) {
-            throw new ExecutionPlanValidationException("Constant value expected as the 5th parameter (D)"
+            throw new ExecutionPlanValidationException("Constant value expected as the 5th parameter (postBoundChange)"
                     + " but found " + attributeExpressionExecutors[4].getClass());
         }
         if (!(attributeExpressionExecutors[5] instanceof ConstantExpressionExecutor)) {
@@ -138,60 +143,79 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                             + Attribute.Type.INT + " or " + Attribute.Type.LONG + " but found "
                             + attributeExpressionExecutors[0].getReturnType().toString());
         }
-        variablePosition = ((VariableExpressionExecutor) attributeExpressionExecutors[0]).getPosition();
         try {
-            l = Integer.parseInt(
+            maxPreBound = Integer.parseInt(
                     String.valueOf(((ConstantExpressionExecutor) attributeExpressionExecutors[1]).getValue()));
         } catch (NumberFormatException e) {
             throw new ExecutionPlanValidationException(
-                    "Invalid parameter type found for the 2nd argument (l) of MinMaxStreamProcessor " + "required "
-                            + Attribute.Type.INT + " constant, but found "
+                    "Invalid parameter type found for the 2nd argument (maxPreBound) of MinMaxStreamProcessor "
+                            + "required " + Attribute.Type.INT + " constant, but found "
                             + attributeExpressionExecutors[1].getReturnType().toString());
         }
         try {
-            L = Integer.parseInt(
+            maxPostBound = Integer.parseInt(
                     String.valueOf(((ConstantExpressionExecutor) attributeExpressionExecutors[2]).getValue()));
         } catch (NumberFormatException e) {
             throw new ExecutionPlanValidationException(
-                    "Invalid parameter type found for the 3rd argument (L) of MinMaxStreamProcessor " + "required "
-                            + Attribute.Type.INT + " constant, but found "
+                    "Invalid parameter type found for the 3rd argument (maxPostBound) of MinMaxStreamProcessor "
+                            + "required " + Attribute.Type.INT + " constant, but found "
                             + attributeExpressionExecutors[2].getReturnType().toString());
         }
+        if (maxPreBound == 0 && maxPostBound == 0) {
+            throw new ExecutionPlanValidationException(
+                    "Both post bound limit and pre bound limit cannot be 0. At least one must have a positive integer value");
+        }
         try {
-            d = Double.parseDouble(
+            preBoundChange = Double.parseDouble(
                     String.valueOf(((ConstantExpressionExecutor) attributeExpressionExecutors[3]).getValue()));
         } catch (NumberFormatException e) {
             throw new ExecutionPlanValidationException(
-                    "Invalid parameter type found for the 4th argument (d) of MinMaxStreamProcessor " + "required "
-                            + Attribute.Type.DOUBLE + " constant, but found "
+                    "Invalid parameter type found for the 4th argument (preBoundChange) of MinMaxStreamProcessor "
+                            + "required " + Attribute.Type.DOUBLE + " constant, but found "
                             + attributeExpressionExecutors[3].getReturnType().toString());
         }
+        if (maxPreBound == 0) {
+            if (preBoundChange != 0) {
+                throw new ExecutionPlanValidationException("When pre bound limit is 0, the pre bound change percentage "
+                        + "should also be 0, but found " + preBoundChange);
+            }
+        }
         try {
-            D = Double.parseDouble(
+            postBoundChange = Double.parseDouble(
                     String.valueOf(((ConstantExpressionExecutor) attributeExpressionExecutors[4]).getValue()));
         } catch (NumberFormatException e) {
             throw new ExecutionPlanValidationException(
-                    "Invalid parameter type found for the 5th argument (D) of MinMaxStreamProcessor " + "required "
-                            + Attribute.Type.DOUBLE + " constant, but found "
+                    "Invalid parameter type found for the 5th argument (postBoundChange) of MinMaxStreamProcessor "
+                            + "required " + Attribute.Type.DOUBLE + " constant, but found "
                             + attributeExpressionExecutors[4].getReturnType().toString());
         }
-        String extremaType = (String) ((ConstantExpressionExecutor) attributeExpressionExecutors[5]).getValue();
-
+        if (maxPostBound == 0) {
+            if (postBoundChange != 0) {
+                throw new ExecutionPlanValidationException(
+                        "When post bound limit is 0, the post bound change percentage " + "should also be 0, but found "
+                                + postBoundChange);
+            }
+        }
+        String extremaType = ((String) ((ConstantExpressionExecutor) attributeExpressionExecutors[5]).getValue())
+                .trim();
         if ("min".equalsIgnoreCase(extremaType)) {
             this.extremaType = ExtremaType.MIN;
         } else if ("max".equalsIgnoreCase(extremaType)) {
             this.extremaType = ExtremaType.MAX;
-        } else {
+        } else if ("minmax".equalsIgnoreCase(extremaType)) {
             this.extremaType = ExtremaType.MINMAX;
+        } else {
+            throw new ExecutionPlanValidationException("Only 'min', 'max' and 'minmax' values are accepted as "
+                    + "extrema type, but found value " + extremaType);
         }
 
         eventStack = new LinkedList<StreamEvent>();
-        valueStack = new LinkedList<attributeDetails>();
+        valueStack = new LinkedList<AttributeDetails>();
 
         List<Attribute> attributeList = new ArrayList<Attribute>();
         attributeList.add(new Attribute("extremaType", Attribute.Type.STRING));
-        attributeList.add(new Attribute("actual_l", Attribute.Type.INT));
-        attributeList.add(new Attribute("actual_L", Attribute.Type.INT));
+        attributeList.add(new Attribute("preBound", Attribute.Type.INT));
+        attributeList.add(new Attribute("postBound", Attribute.Type.INT));
         return attributeList;
     }
 
@@ -205,7 +229,7 @@ public class MinMaxStreamProcessor extends StreamProcessor {
      */
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
-                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
+            StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
         ComplexEventChunk<StreamEvent> returnEventChunk = new ComplexEventChunk<StreamEvent>(false);
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
@@ -213,24 +237,25 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                 streamEventChunk.remove();
 
                 // Variable value of the latest event
-                double value = Double.parseDouble(String.valueOf(event.getAttribute(variablePosition)));
+                double value = ((Number) attributeExpressionExecutors[0].execute(event)).doubleValue();
                 eventStack.add(event);
 
                 // Create an object holding latest event value and insert into valueStack and valueStackLastL
-                attributeDetails newInput = new attributeDetails();
+                AttributeDetails newInput = new AttributeDetails();
                 newInput.setValue(value);
                 valueStack.add(newInput);
 
                 switch (extremaType) {
                 case MINMAX:
-                    // Retain only l+L events
-                    if (eventStack.size() > l + L) {
+                    // Retain only maxPreBound+maxPostBound events
+                    if (eventStack.size() > maxPreBound + maxPostBound) {
                         eventStack.remove();
                         valueRemoved = valueStack.remove();
                     }
                     currentMax = maxDequeIterator(newInput);
                     currentMin = minDequeIterator(newInput);
-                    // Find whether current max satisfies d, D conditions and output value if so
+                    // Find whether current max satisfies preBoundChange, postBoundChange conditions and output value if
+                    // so
                     if (newInput.getValue() <= currentMax.getMaxThreshold() && !currentMax.isOutputAsRealMax()
                             && currentMax.isEligibleForRealMax()) {
                         StreamEvent returnEvent = findIfActualMax(newInput);
@@ -238,7 +263,8 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                             returnEventChunk.add(returnEvent);
                         }
                     }
-                    // Find whether current min satisfies d, D conditions and output value if so
+                    // Find whether current min satisfies preBoundChange, postBoundChange conditions and output value if
+                    // so
                     if (newInput.getValue() >= currentMin.getMinThreshold() && !currentMin.isOutputAsRealMin()
                             && currentMin.isEligibleForRealMin()) {
                         StreamEvent returnEvent = findIfActualMin(newInput);
@@ -248,13 +274,14 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                     }
                     break;
                 case MAX:
-                    // Retain only l+L events
-                    if (eventStack.size() > l + L) {
+                    // Retain only maxPreBound+maxPostBound events
+                    if (eventStack.size() > maxPreBound + maxPostBound) {
                         eventStack.remove();
                         valueRemoved = valueStack.remove();
                     }
                     currentMax = maxDequeIterator(newInput);
-                    // Find whether current max satisfies d, D conditions and output value if so
+                    // Find whether current max satisfies preBoundChange, postBoundChange conditions and output value if
+                    // so
                     if (newInput.getValue() <= currentMax.getMaxThreshold() && !currentMax.isOutputAsRealMax()
                             && currentMax.isEligibleForRealMax()) {
                         StreamEvent returnEvent = findIfActualMax(newInput);
@@ -264,13 +291,14 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                     }
                     break;
                 case MIN:
-                    // Retain only l+L events
-                    if (eventStack.size() > l + L) {
+                    // Retain only maxPreBound+maxPostBound events
+                    if (eventStack.size() > maxPreBound + maxPostBound) {
                         eventStack.remove();
                         valueRemoved = valueStack.remove();
                     }
                     currentMin = minDequeIterator(newInput);
-                    // Find whether current min satisfies d, D conditions and output value if so
+                    // Find whether current min satisfies preBoundChange, postBoundChange conditions and output value if
+                    // so
                     if (newInput.getValue() >= currentMin.getMinThreshold() && !currentMin.isOutputAsRealMin()
                             && currentMin.isEligibleForRealMin()) {
                         StreamEvent returnEvent = findIfActualMin(newInput);
@@ -286,78 +314,94 @@ public class MinMaxStreamProcessor extends StreamProcessor {
     }
 
     /**
-     * Method to find whether a value d% greater than or equal to min exists within l length window,
-     * by looping through older events. It further verifies whether D condition is met within L window.
+     * Method to find whether a value preBoundChange% greater than or equal to min exists within maxPreBound length
+     * window, by looping through older events.
+     * It further verifies whether postBoundChange condition is met within maxPostBound window.
      * This method is called only if
-     * the latest event satisfies the D condition &&
+     * the latest event satisfies the postBoundChange condition &&
      * current min has not already been sent as output &&
-     * current min has not failed d, L condition previously
+     * current min has not failed preBoundChange, maxPostBound condition previously
      *
      * @param latestEvent object holding value of latest event
-     * @return if d, L conditions are met, send stream event output with
+     * @return if preBoundChange, maxPostBound conditions are met, send stream event output with
      *         extrema type,
-     *         actual_l (distance at which a value satisfying d condition is found),
-     *         actual_L (distance at which a value satisfying D condition is found)
+     *         preBound (distance at which a value satisfying preBoundChange condition is found),
+     *         postBound (distance at which a value satisfying postBoundChange condition is found)
      */
-    private StreamEvent findIfActualMin(attributeDetails latestEvent) {
+    private StreamEvent findIfActualMin(AttributeDetails latestEvent) {
         int indexCurrentMin = valueStack.indexOf(currentMin);
-        int actual_L = valueStack.indexOf(latestEvent) - indexCurrentMin;
-        // If latest event is at a distance greater than L from min, min is not eligible to be sent as output
-        if (actual_L > L) {
+        int postBound = valueStack.indexOf(latestEvent) - indexCurrentMin;
+        // If latest event is at a distance greater than maxPostBound from min, min is not eligible to be sent as output
+        if (postBound > maxPostBound) {
             currentMin.notEligibleForRealMin();
             return null;
         }
-        int actual_l = 1;
-        double dThreshold = currentMin.getValue() + currentMin.getValue() * d / 100;
-        while (actual_l <= l && indexCurrentMin - actual_l >= 0) {
-            if (valueStack.get(indexCurrentMin - actual_l).getValue() >= dThreshold) {
+        // If maxPreBound is 0, no need to check preBoundChange. Send output with postBound value
+        if (maxPreBound == 0) {
+            StreamEvent outputEvent = eventStack.get(indexCurrentMin);
+            complexEventPopulater.populateComplexEvent(outputEvent, new Object[] { "min", 0, postBound });
+            currentMin.sentOutputAsRealMin();
+            return outputEvent;
+        }
+        int preBound = 1;
+        double dThreshold = currentMin.getValue() + currentMin.getValue() * preBoundChange / 100;
+        while (preBound <= maxPreBound && indexCurrentMin - preBound >= 0) {
+            if (valueStack.get(indexCurrentMin - preBound).getValue() >= dThreshold) {
                 StreamEvent outputEvent = eventStack.get(indexCurrentMin);
-                complexEventPopulater.populateComplexEvent(outputEvent, new Object[] { "min", actual_l, actual_L });
+                complexEventPopulater.populateComplexEvent(outputEvent, new Object[] { "min", preBound, postBound });
                 currentMin.sentOutputAsRealMin();
                 return outputEvent;
             }
-            ++actual_l;
+            ++preBound;
         }
-        // Completed iterating through l older events. No events which satisfy d condition found.
+        // Completed iterating through maxPreBound older events. No events which satisfy preBoundChange condition found.
         // Therefore min is not eligible to be sent as output.
         currentMin.notEligibleForRealMin();
         return null;
     }
 
     /**
-     * Method to find whether a value d% less than or equal to max exists within l length window,
-     * by looping through older events. It further verifies whether D condition is met within L window.
+     * Method to find whether a value preBoundChange% less than or equal to max exists within maxPreBound length window,
+     * by looping through older events.
+     * It further verifies whether postBoundChange condition is met within maxPostBound window.
      * This method is called only if
-     * the latest event satisfies the D condition &&
+     * the latest event satisfies the postBoundChange condition &&
      * current max has not already been sent as output &&
-     * current max has not failed d, L condition previously
+     * current max has not failed preBoundChange, maxPostBound condition previously
      *
      * @param latestEvent object holding value of latest event
-     * @return if d, L conditions are met, send stream event output with
+     * @return if preBoundChange, maxPostBound conditions are met, send stream event output with
      *         extrema type,
-     *         actual_l (distance at which a value satisfying d condition is found),
-     *         actual_L (distance at which a value satisfying D condition is found)
+     *         preBound (distance at which a value satisfying preBoundChange condition is found),
+     *         postBound (distance at which a value satisfying postBoundChange condition is found)
      */
-    private StreamEvent findIfActualMax(attributeDetails latestEvent) {
+    private StreamEvent findIfActualMax(AttributeDetails latestEvent) {
         int indexCurrentMax = valueStack.indexOf(currentMax);
-        int actual_L = valueStack.indexOf(latestEvent) - indexCurrentMax;
-        // If latest event is at a distance greater than L from max, max is not eligible to be sent as output
-        if (actual_L > L) {
+        int postBound = valueStack.indexOf(latestEvent) - indexCurrentMax;
+        // If latest event is at a distance greater than maxPostBound from max, max is not eligible to be sent as output
+        if (postBound > maxPostBound) {
             currentMax.notEligibleForRealMax();
             return null;
         }
-        int actual_l = 1;
-        double dThreshold = currentMax.getValue() - currentMax.getValue() * d / 100;
-        while (actual_l <= l && indexCurrentMax - actual_l >= 0) {
-            if (valueStack.get(indexCurrentMax - actual_l).getValue() <= dThreshold) {
+        // If maxPreBound is 0, no need to check preBoundChange. Send output with postBound value
+        if (maxPreBound == 0) {
+            StreamEvent outputEvent = eventStack.get(indexCurrentMax);
+            complexEventPopulater.populateComplexEvent(outputEvent, new Object[] { "max", 0, postBound });
+            currentMax.sentOutputAsRealMax();
+            return outputEvent;
+        }
+        int preBound = 1;
+        double dThreshold = currentMax.getValue() - currentMax.getValue() * preBoundChange / 100;
+        while (preBound <= maxPreBound && indexCurrentMax - preBound >= 0) {
+            if (valueStack.get(indexCurrentMax - preBound).getValue() <= dThreshold) {
                 StreamEvent outputEvent = eventStack.get(indexCurrentMax);
-                complexEventPopulater.populateComplexEvent(outputEvent, new Object[] { "max", actual_l, actual_L });
+                complexEventPopulater.populateComplexEvent(outputEvent, new Object[] { "max", preBound, postBound });
                 currentMax.sentOutputAsRealMax();
                 return outputEvent;
             }
-            ++actual_l;
+            ++preBound;
         }
-        // Completed iterating through l older events. No events which satisfy d condition found.
+        // Completed iterating through maxPreBound older events. No events which satisfy preBoundChange condition found.
         // Therefore max is not eligible to be sent as output.
         currentMax.notEligibleForRealMax();
         return null;
@@ -365,29 +409,29 @@ public class MinMaxStreamProcessor extends StreamProcessor {
 
     /**
      * This method stores all the values possible to become next max, with current max (largest value)
-     * at the head. The value expiring from l + L window is removed if it's in maxDeque
+     * at the head. The value expiring from maxPreBound + maxPostBound window is removed if it's in maxDeque
      *
      * @param valObject latest incoming value
-     * @return maximum value (without checking d, D conditions)
+     * @return maximum value (without checking preBoundChange, postBoundChange conditions)
      */
-    private attributeDetails maxDequeIterator(attributeDetails valObject) {
+    private AttributeDetails maxDequeIterator(AttributeDetails valObject) {
         if (valueRemoved != null) {
-            for (Iterator<attributeDetails> iterator = maxDeque.descendingIterator(); iterator.hasNext();) {
-                double possibleMaxValue = iterator.next().getValue();
-                if (possibleMaxValue < valObject.getValue() || possibleMaxValue <= valueRemoved.getValue()) {
-                    if (possibleMaxValue < valObject.getValue()) {
+            for (Iterator<AttributeDetails> iterator = maxDeque.descendingIterator(); iterator.hasNext();) {
+                AttributeDetails possibleMaxValue = iterator.next();
+                if (possibleMaxValue.getValue() < valObject.getValue()
+                        || possibleMaxValue.getValue() <= valueRemoved.getValue()) {
+                    if (possibleMaxValue.getValue() < valObject.getValue()) {
                         iterator.remove();
-                    } else if (valueRemoved.getValue() == possibleMaxValue) {
+                    } else if (valueRemoved.equals(possibleMaxValue)) {
                         // If expired value is in maxDeque, it must be removed
                         iterator.remove();
-                        break;
                     }
                 } else {
                     break;
                 }
             }
         } else {
-            for (Iterator<attributeDetails> iterator = maxDeque.descendingIterator(); iterator.hasNext();) {
+            for (Iterator<AttributeDetails> iterator = maxDeque.descendingIterator(); iterator.hasNext();) {
                 if (iterator.next().getValue() < valObject.getValue()) {
                     iterator.remove();
                 } else {
@@ -402,29 +446,29 @@ public class MinMaxStreamProcessor extends StreamProcessor {
 
     /**
      * This method stores all the values possible to become next min, with current min (minimum value)
-     * at the head. The value expiring from l + L window is removed if it's in minDeque
+     * at the head. The value expiring from maxPreBound + maxPostBound window is removed if it's in minDeque
      *
      * @param valObject latest incoming value
-     * @return minimum value (without checking d, D conditions)
+     * @return minimum value (without checking preBoundChange, postBoundChange conditions)
      */
-    private attributeDetails minDequeIterator(attributeDetails valObject) {
+    private AttributeDetails minDequeIterator(AttributeDetails valObject) {
         if (valueRemoved != null) {
-            for (Iterator<attributeDetails> iterator = minDeque.descendingIterator(); iterator.hasNext();) {
-                double possibleMinValue = iterator.next().getValue();
-                if (possibleMinValue > valObject.getValue() || possibleMinValue >= valueRemoved.getValue()) {
-                    if (possibleMinValue > valObject.getValue()) {
+            for (Iterator<AttributeDetails> iterator = minDeque.descendingIterator(); iterator.hasNext();) {
+                AttributeDetails possibleMinValue = iterator.next();
+                if (possibleMinValue.getValue() > valObject.getValue()
+                        || possibleMinValue.getValue() >= valueRemoved.getValue()) {
+                    if (possibleMinValue.getValue() > valObject.getValue()) {
                         iterator.remove();
-                    } else if (valueRemoved.getValue() == possibleMinValue) {
+                    } else if (valueRemoved.equals(possibleMinValue)) {
                         // If removed value is in minDeque, it must be removed
                         iterator.remove();
-                        break;
                     }
                 } else {
                     break;
                 }
             }
         } else {
-            for (Iterator<attributeDetails> iterator = minDeque.descendingIterator(); iterator.hasNext();) {
+            for (Iterator<AttributeDetails> iterator = minDeque.descendingIterator(); iterator.hasNext();) {
                 if (iterator.next().getValue() > valObject.getValue()) {
                     iterator.remove();
                 } else {
@@ -473,25 +517,25 @@ public class MinMaxStreamProcessor extends StreamProcessor {
     @Override
     public void restoreState(Object[] state) {
         eventStack = (LinkedList<StreamEvent>) state[0];
-        valueStack = (LinkedList<attributeDetails>) state[1];
-        maxDeque = (Deque<attributeDetails>) state[2];
-        minDeque = (Deque<attributeDetails>) state[3];
-        valueRemoved = (attributeDetails) state[4];
-        currentMax = (attributeDetails) state[5];
-        currentMin = (attributeDetails) state[6];
+        valueStack = (LinkedList<AttributeDetails>) state[1];
+        maxDeque = (Deque<AttributeDetails>) state[2];
+        minDeque = (Deque<AttributeDetails>) state[3];
+        valueRemoved = (AttributeDetails) state[4];
+        currentMax = (AttributeDetails) state[5];
+        currentMin = (AttributeDetails) state[6];
     }
 
     /*
      * The POJO class which holds additional information which is useful in finding
      * whether min/max is eligible to be sent as output
      */
-    private class attributeDetails {
+    private class AttributeDetails {
         private double value; // Variable value
-        private double minThreshold; // If event is min, the D threshold to consider
-        private double maxThreshold; // If event is max, the D threshold to consider
-        private boolean eligibleForRealMax = true; // Max eligibility based on d, L conditions.
+        private double minThreshold; // If event is min, the postBoundChange threshold to consider
+        private double maxThreshold; // If event is max, the postBoundChange threshold to consider
+        private boolean eligibleForRealMax = true; // Max eligibility based on preBoundChange, maxPostBound conditions.
                                                    // Initially set to true
-        private boolean eligibleForRealMin = true; // Min eligibility based on d, L conditions.
+        private boolean eligibleForRealMin = true; // Min eligibility based on preBoundChange, maxPostBound conditions.
         private boolean outputAsRealMin = false; // Whether event was already sent as min output
         private boolean outputAsRealMax = false; // Whether event was already sent as max output
 
@@ -514,23 +558,23 @@ public class MinMaxStreamProcessor extends StreamProcessor {
         }
 
         /**
-         * Method to set threshold value which satisfies D condition, if this object becomes min
+         * Method to set threshold value which satisfies postBoundChange condition, if this object becomes min
          */
         private void setMinThreshold() {
-            minThreshold = value + value * D / 100;
+            minThreshold = value + value * postBoundChange / 100;
         }
 
         /**
-         * Method to set threshold value which satisfies D condition, if this object becomes max
+         * Method to set threshold value which satisfies postBoundChange condition, if this object becomes max
          */
         private void setMaxThreshold() {
-            maxThreshold = value - value * D / 100;
+            maxThreshold = value - value * postBoundChange / 100;
         }
 
         /**
          * Method to return threshold. If this object becomes min, compare it's threshold with latest event
          * 
-         * @return threshold satisfying D condition
+         * @return threshold satisfying postBoundChange condition
          */
         private double getMinThreshold() {
             return minThreshold;
@@ -539,32 +583,32 @@ public class MinMaxStreamProcessor extends StreamProcessor {
         /**
          * Method to return threshold. If this object becomes max, compare it's threshold with latest event
          * 
-         * @return threshold satisfying D condition
+         * @return threshold satisfying postBoundChange condition
          */
         private double getMaxThreshold() {
             return maxThreshold;
         }
 
         /**
-         * If d condition is checked when this object is max, and it fails,
+         * If preBoundChange condition is checked when this object is max, and it fails,
          * the object can be set as not eligible to be sent as max output.
-         * Furthermore, if D condition is not met within L events same can be done.
+         * Furthermore, if postBoundChange condition is not met within maxPostBound events same can be done.
          */
         private void notEligibleForRealMax() {
             eligibleForRealMax = false;
         }
 
         /**
-         * If d condition is checked when this object is min, and it fails,
+         * If preBoundChange condition is checked when this object is min, and it fails,
          * the object can be set as not eligible to be sent as min output.
-         * Furthermore, if D condition is not met within L events same can be done.
+         * Furthermore, if postBoundChange condition is not met within maxPostBound events same can be done.
          */
         private void notEligibleForRealMin() {
             eligibleForRealMin = false;
         }
 
         /**
-         * Method to return max eligibility based on d, L condition
+         * Method to return max eligibility based on preBoundChange, maxPostBound condition
          * 
          * @return eligibility to become max
          */
@@ -573,7 +617,7 @@ public class MinMaxStreamProcessor extends StreamProcessor {
         }
 
         /**
-         * Method to return min eligibility based on d, L condition
+         * Method to return min eligibility based on preBoundChange, maxPostBound condition
          * 
          * @return eligibility to become min
          */
