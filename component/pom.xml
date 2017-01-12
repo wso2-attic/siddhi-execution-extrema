@@ -85,11 +85,12 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Private-Package>
-                            Jama
+                            Jama.*,
+                            org.apache.commons.math3.*
                         </Private-Package>
                         <Export-Package>
                             !Jama.*,
-                            org.wso2.extension.siddhi.execution.extrema,
+                            !org.apache.commons.math3.*,
                             org.wso2.extension.siddhi.execution.extrema.*
                         </Export-Package>
                         <Import-Package>
