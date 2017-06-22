@@ -20,7 +20,26 @@ package org.wso2.extension.siddhi.execution.extrema;
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.BottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.Constants;
+import org.wso2.siddhi.annotation.Example;
+import org.wso2.siddhi.annotation.Extension;
 
+/**
+ * bottomK counts the frequency of different values of a specified attribute,
+ * and emits the lowest (k) number of frequency values.
+ */
+@Extension(
+        name = "bottomK",
+        namespace = "extrema",
+        description = "bottomK counts the frequency of different values of a specified attribute, " +
+                "and emits the lowest (k) number of frequency values.",
+        parameters = {},
+        examples = {
+                @Example(
+                        syntax = "TBD",
+                        description =  "TBD"
+                )
+        }
+)
 public class BottomKStreamProcessorExtension extends AbstractKStreamProcessorExtension {
     @Override
     protected AbstractTopKBottomKFinder<Object> createNewTopKBottomKFinder() {

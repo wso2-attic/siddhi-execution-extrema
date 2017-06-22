@@ -24,12 +24,12 @@ package org.wso2.extension.siddhi.execution.extrema.util;
 public class MaxByMinByConstants {
     public static final String MIN_BY = "MIN_BY";
     public static final String MAX_BY = "MAX_BY";
-    public static final String MinByTimeBatch = "MinByTimeBatch";
-    public static final String MaxByTimeBatch = "MaxByTimeBatch";
-    public static final String MinByTime = "MinByTime";
-    public static final String MaxByTime = "MaxByTime";
-    public static final String MinByLengthBatch = "MinByLengthBatch";
-    public static final String MaxByLengthBatch = "MaxByLengthBatch";
-    public static final String MinByLength = "MinByLength";
-    public static final String MaxByLength = "MaxByLength";
+    public static final String MIN_BY_TIME_BATCH = "MIN_BY_TIME_BATCH";
+    public static final String MAX_BY_TIME_BATCH = "MAX_BY_TIME_BATCH";
+    public static final String MIN_BY_TIME = "MIN_BY_TIME";
+    public static final String MAX_BY_TIME = "MAX_BY_TIME";
+    public static final String MIN_BY_LENGTH_BATCH = "MIN_BY_LENGTH_BATCH";
+    public static final String MAX_BY_LENGTH_BATCH = "MAX_BY_LENGTH_BATCH";
+    public static final String MIN_BY_LENGTH = "MIN_BY_LENGTH";
+    public static final String MAX_BY_LENGTH = "MAX_BY_LENGTH";
 }

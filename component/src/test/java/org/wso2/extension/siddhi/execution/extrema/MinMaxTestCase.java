@@ -19,23 +19,26 @@
 package org.wso2.extension.siddhi.execution.extrema;
 
 import org.apache.log4j.Logger;
-import org.junit.Before;
-import org.junit.Test;
-import org.wso2.siddhi.core.ExecutionPlanRuntime;
+import org.testng.AssertJUnit;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.wso2.extension.siddhi.execution.kalmanfilter.KalmanFilter;
+import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
 
-import junit.framework.Assert;
-
+/**
+ * Test case for MinMax extension.
+ */
 public class MinMaxTestCase {
     private static final Logger log = Logger.getLogger(MinMaxTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
 
-    @Before
+    @BeforeMethod
     public void init() {
         count = 0;
         eventArrived = false;
@@ -49,10 +52,10 @@ public class MinMaxTestCase {
         String inStreamDefinition = "define stream inputStream (id int ,price double);";
         String query = ("@info(name = 'query1') from inputStream#extrema:minMax(price, 4, 5, 1.0, 2.0, 'minmax')  "
                 + "select id, price, extremaType, preBound, postBound " + "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager
-                .createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager
+                .createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -61,30 +64,30 @@ public class MinMaxTestCase {
                     count++;
                     switch (count) {
                     case 1:
-                        Assert.assertEquals(98, event.getData(1));
-                        Assert.assertEquals("min", event.getData(2));
+                        AssertJUnit.assertEquals(98, event.getData(1));
+                        AssertJUnit.assertEquals("min", event.getData(2));
                         break;
                     case 2:
-                        Assert.assertEquals(103, event.getData(1));
-                        Assert.assertEquals("max", event.getData(2));
+                        AssertJUnit.assertEquals(103, event.getData(1));
+                        AssertJUnit.assertEquals("max", event.getData(2));
                         break;
                     case 3:
-                        Assert.assertEquals(102, event.getData(1));
-                        Assert.assertEquals("max", event.getData(2));
+                        AssertJUnit.assertEquals(102, event.getData(1));
+                        AssertJUnit.assertEquals("max", event.getData(2));
                         break;
                     case 4:
-                        Assert.assertEquals(107, event.getData(1));
-                        Assert.assertEquals("max", event.getData(2));
+                        AssertJUnit.assertEquals(107, event.getData(1));
+                        AssertJUnit.assertEquals("max", event.getData(2));
                         break;
                     default:
-                        org.junit.Assert.fail();
+                        AssertJUnit.fail();
                     }
                 }
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[] { 1, 101 });
         inputHandler.send(new Object[] { 2, 98.5 });
@@ -115,9 +118,9 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 27, 105 });
 
         Thread.sleep(1000);
-        Assert.assertEquals(4, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(4, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -128,10 +131,10 @@ public class MinMaxTestCase {
         String inStreamDefinition = "define stream inputStream (id int ,price double);";
         String query = ("@info(name = 'query1') from inputStream#extrema:minMax(price, 4, 5, 1.0, 2.0, 'max')  "
                 + "select id, price, extremaType, preBound, postBound " + "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager
-                .createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager
+                .createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -140,26 +143,26 @@ public class MinMaxTestCase {
                     count++;
                     switch (count) {
                     case 1:
-                        Assert.assertEquals(103, event.getData(1));
-                        Assert.assertEquals("max", event.getData(2));
+                        AssertJUnit.assertEquals(103, event.getData(1));
+                        AssertJUnit.assertEquals("max", event.getData(2));
                         break;
                     case 2:
-                        Assert.assertEquals(102, event.getData(1));
-                        Assert.assertEquals("max", event.getData(2));
+                        AssertJUnit.assertEquals(102, event.getData(1));
+                        AssertJUnit.assertEquals("max", event.getData(2));
                         break;
                     case 3:
-                        Assert.assertEquals(107, event.getData(1));
-                        Assert.assertEquals("max", event.getData(2));
+                        AssertJUnit.assertEquals(107, event.getData(1));
+                        AssertJUnit.assertEquals("max", event.getData(2));
                         break;
                     default:
-                        org.junit.Assert.fail();
+                        AssertJUnit.fail();
                     }
                 }
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[] { 1, 101 });
         inputHandler.send(new Object[] { 2, 98.5 });
@@ -190,9 +193,9 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 27, 105 });
 
         Thread.sleep(1000);
-        Assert.assertEquals(3, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(3, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -201,12 +204,13 @@ public class MinMaxTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
 
         String inStreamDefinition = "define stream inputStream (id int ,price double);";
-        String query = ("@info(name = 'query1') from inputStream#extrema:minMax(price, 4, 5, 1.0, 2.0, 'min')  "
+        String query = ("@info(name = 'query1') " +
+                "from inputStream#extrema:minMax(price, 4, 5, 1.0, 2.0, 'min')  "
                 + "select id, price, extremaType, preBound, postBound " + "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager
-                .createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager
+                .createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -215,18 +219,18 @@ public class MinMaxTestCase {
                     count++;
                     switch (count) {
                     case 1:
-                        Assert.assertEquals(98, event.getData(1));
-                        Assert.assertEquals("min", event.getData(2));
+                        AssertJUnit.assertEquals(98, event.getData(1));
+                        AssertJUnit.assertEquals("min", event.getData(2));
                         break;
                     default:
-                        org.junit.Assert.fail();
+                        AssertJUnit.fail();
                     }
                 }
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[] { 1, 101 });
         inputHandler.send(new Object[] { 2, 98.5 });
@@ -257,9 +261,9 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 27, 105 });
 
         Thread.sleep(1000);
-        Assert.assertEquals(1, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(1, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -272,10 +276,10 @@ public class MinMaxTestCase {
                 + "from inputStream#extrema:minMax(price, 4, 0, 1.0, 0, 'min')  "
                 + "select id, price, extremaType, preBound, postBound "
                 + "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager
-                .createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager
+                .createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -284,22 +288,22 @@ public class MinMaxTestCase {
                     count++;
                     switch (count) {
                     case 1:
-                        Assert.assertEquals(98.5, event.getData(1));
-                        Assert.assertEquals("min", event.getData(2));
+                        AssertJUnit.assertEquals(98.5, event.getData(1));
+                        AssertJUnit.assertEquals("min", event.getData(2));
                         break;
                     case 2:
-                        Assert.assertEquals(98, event.getData(1));
-                        Assert.assertEquals("min", event.getData(2));
+                        AssertJUnit.assertEquals(98, event.getData(1));
+                        AssertJUnit.assertEquals("min", event.getData(2));
                         break;
                     default:
-                        org.junit.Assert.fail();
+                        AssertJUnit.fail();
                     }
                 }
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[] { 1, 101 });
         inputHandler.send(new Object[] { 2, 98.5 });
@@ -330,9 +334,9 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 27, 105 });
 
         Thread.sleep(1000);
-        Assert.assertEquals(2, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(2, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -345,10 +349,10 @@ public class MinMaxTestCase {
                 + "from inputStream#extrema:minMax(price, 4, 0, 1.0, 0, 'max')  "
                 + "select id, price, extremaType, preBound, postBound "
                 + "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager
-                .createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager
+                .createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -357,30 +361,30 @@ public class MinMaxTestCase {
                     count++;
                     switch (count) {
                         case 1:
-                            Assert.assertEquals(103, event.getData(1));
-                            Assert.assertEquals("max", event.getData(2));
+                            AssertJUnit.assertEquals(103, event.getData(1));
+                            AssertJUnit.assertEquals("max", event.getData(2));
                             break;
                         case 2:
-                            Assert.assertEquals(102, event.getData(1));
-                            Assert.assertEquals("max", event.getData(2));
+                            AssertJUnit.assertEquals(102, event.getData(1));
+                            AssertJUnit.assertEquals("max", event.getData(2));
                             break;
                         case 3:
-                            Assert.assertEquals(107, event.getData(1));
-                            Assert.assertEquals("max", event.getData(2));
+                            AssertJUnit.assertEquals(107, event.getData(1));
+                            AssertJUnit.assertEquals("max", event.getData(2));
                             break;
                         case 4:
-                            Assert.assertEquals(106, event.getData(1));
-                            Assert.assertEquals("max", event.getData(2));
+                            AssertJUnit.assertEquals(106, event.getData(1));
+                            AssertJUnit.assertEquals("max", event.getData(2));
                             break;
                         default:
-                            org.junit.Assert.fail();
+                            AssertJUnit.fail();
                     }
                 }
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[] { 1, 101 });
         inputHandler.send(new Object[] { 2, 98.5 });
@@ -411,9 +415,9 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 27, 105 });
 
         Thread.sleep(1000);
-        Assert.assertEquals(4, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(4, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -426,10 +430,10 @@ public class MinMaxTestCase {
                 + "from inputStream#extrema:minMax(price, 0, 5, 0, 2.0, 'min')  "
                 + "select id, price, extremaType, preBound, postBound "
                 + "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager
-                .createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager
+                .createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -438,34 +442,34 @@ public class MinMaxTestCase {
                     count++;
                     switch (count) {
                         case 1:
-                            Assert.assertEquals(98, event.getData(1));
-                            Assert.assertEquals("min", event.getData(2));
+                            AssertJUnit.assertEquals(98, event.getData(1));
+                            AssertJUnit.assertEquals("min", event.getData(2));
                             break;
                         case 2:
-                            Assert.assertEquals(98, event.getData(1));
-                            Assert.assertEquals("min", event.getData(2));
+                            AssertJUnit.assertEquals(98, event.getData(1));
+                            AssertJUnit.assertEquals("min", event.getData(2));
                             break;
                         case 3:
-                            Assert.assertEquals(98, event.getData(1));
-                            Assert.assertEquals("min", event.getData(2));
+                            AssertJUnit.assertEquals(98, event.getData(1));
+                            AssertJUnit.assertEquals("min", event.getData(2));
                             break;
                         case 4:
-                            Assert.assertEquals(98, event.getData(1));
-                            Assert.assertEquals("min", event.getData(2));
+                            AssertJUnit.assertEquals(98, event.getData(1));
+                            AssertJUnit.assertEquals("min", event.getData(2));
                             break;
                         case 5:
-                            Assert.assertEquals(98, event.getData(1));
-                            Assert.assertEquals("min", event.getData(2));
+                            AssertJUnit.assertEquals(98, event.getData(1));
+                            AssertJUnit.assertEquals("min", event.getData(2));
                             break;
                         default:
-                            org.junit.Assert.fail();
+                            AssertJUnit.fail();
                     }
                 }
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[] { 1, 101 });
         inputHandler.send(new Object[] { 2, 98.5 });
@@ -496,9 +500,9 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 27, 105 });
 
         Thread.sleep(1000);
-        Assert.assertEquals(5, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(5, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -511,10 +515,10 @@ public class MinMaxTestCase {
                 + "from inputStream#extrema:minMax(price, 0, 5, 0, 2.0, 'max')  "
                 + "select id, price, extremaType, preBound, postBound "
                 + "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager
-                .createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager
+                .createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -523,38 +527,38 @@ public class MinMaxTestCase {
                     count++;
                     switch (count) {
                         case 1:
-                            Assert.assertEquals(101, event.getData(1));
-                            Assert.assertEquals("max", event.getData(2));
+                            AssertJUnit.assertEquals(101, event.getData(1));
+                            AssertJUnit.assertEquals("max", event.getData(2));
                             break;
                         case 2:
-                            Assert.assertEquals(103, event.getData(1));
-                            Assert.assertEquals("max", event.getData(2));
+                            AssertJUnit.assertEquals(103, event.getData(1));
+                            AssertJUnit.assertEquals("max", event.getData(2));
                             break;
                         case 3:
-                            Assert.assertEquals(102, event.getData(1));
-                            Assert.assertEquals("max", event.getData(2));
+                            AssertJUnit.assertEquals(102, event.getData(1));
+                            AssertJUnit.assertEquals("max", event.getData(2));
                             break;
                         case 4:
-                            Assert.assertEquals(101, event.getData(1));
-                            Assert.assertEquals("max", event.getData(2));
+                            AssertJUnit.assertEquals(101, event.getData(1));
+                            AssertJUnit.assertEquals("max", event.getData(2));
                             break;
                         case 5:
-                            Assert.assertEquals(107, event.getData(1));
-                            Assert.assertEquals("max", event.getData(2));
+                            AssertJUnit.assertEquals(107, event.getData(1));
+                            AssertJUnit.assertEquals("max", event.getData(2));
                             break;
                         case 6:
-                            Assert.assertEquals(106, event.getData(1));
-                            Assert.assertEquals("max", event.getData(2));
+                            AssertJUnit.assertEquals(106, event.getData(1));
+                            AssertJUnit.assertEquals("max", event.getData(2));
                             break;
                         default:
-                            org.junit.Assert.fail();
+                            AssertJUnit.fail();
                     }
                 }
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[] { 1, 101 });
         inputHandler.send(new Object[] { 2, 98.5 });
@@ -585,27 +589,29 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 27, 105 });
 
         Thread.sleep(1000);
-        Assert.assertEquals(6, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(6, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
     public void testMinMaxWithKalman() throws InterruptedException {
         log.info("MinMax on Kalman smoothened function TestCase");
         SiddhiManager siddhiManager = new SiddhiManager();
+        siddhiManager.setExtension("kf:kalmanFilter", KalmanFilter.class);
 
         String inStreamDefinition = "define stream inputStream (id int ,price double);";
         String query = ("@info(name = 'query1') " + "from inputStream "
-                + "select id, kf:kalmanFilter(price) as kalmanEstimatedValue " + "insert into inputStream1;"
-                + "@info(name = 'query2') from inputStream1#extrema:minMax(kalmanEstimatedValue, 4, 5, 0.3, 0.3, 'minmax')  "
-                + "select id, kalmanEstimatedValue, extremaType, preBound, postBound " + "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager
-                .createExecutionPlanRuntime(inStreamDefinition + query);
+                + "select id, kf:kalmanFilter(price) as kalmanEstimatedValue insert into inputStream1;"
+                + "@info(name = 'query2') " +
+                "from inputStream1#extrema:minMax(kalmanEstimatedValue, 4, 5, 0.3, 0.3, 'minmax')  "
+                + "select id, kalmanEstimatedValue, extremaType, preBound, postBound insert into outputStream;");
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager
+                .createSiddhiAppRuntime(inStreamDefinition + query);
 
         // Uncomment the following if you wish to see the Kalman smoothened events
         /*
-         * executionPlanRuntime.addCallback("query1", new QueryCallback() {
+         * siddhiAppRuntime.addCallback("query1", new QueryCallback() {
          * 
          * @Override
          * public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
@@ -613,7 +619,7 @@ public class MinMaxTestCase {
          * }
          * });
          */
-        executionPlanRuntime.addCallback("query2", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query2", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -622,30 +628,30 @@ public class MinMaxTestCase {
                     count++;
                     switch (count) {
                     case 1:
-                        Assert.assertEquals(99.16666727781494, event.getData(1));
-                        Assert.assertEquals("min", event.getData(2));
+                        AssertJUnit.assertEquals(99.16666727781494, event.getData(1));
+                        AssertJUnit.assertEquals("min", event.getData(2));
                         break;
                     case 2:
-                        Assert.assertEquals(99.94444456173554, event.getData(1));
-                        Assert.assertEquals("max", event.getData(2));
+                        AssertJUnit.assertEquals(99.94444456173554, event.getData(1));
+                        AssertJUnit.assertEquals("max", event.getData(2));
                         break;
                     case 3:
-                        Assert.assertEquals(99.02941188062991, event.getData(1));
-                        Assert.assertEquals("min", event.getData(2));
+                        AssertJUnit.assertEquals(99.02941188062991, event.getData(1));
+                        AssertJUnit.assertEquals("min", event.getData(2));
                         break;
                     case 4:
-                        Assert.assertEquals(99.47222230710395, event.getData(1));
-                        Assert.assertEquals("max", event.getData(2));
+                        AssertJUnit.assertEquals(99.47222230710395, event.getData(1));
+                        AssertJUnit.assertEquals("max", event.getData(2));
                         break;
                     default:
-                        org.junit.Assert.fail();
+                        AssertJUnit.fail();
                     }
                 }
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[] { 1, 101.0 });
         inputHandler.send(new Object[] { 2, 98.5 });
@@ -676,8 +682,8 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 27, 105.0 });
 
         Thread.sleep(1000);
-        Assert.assertEquals(4, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(4, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 }

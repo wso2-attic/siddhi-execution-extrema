@@ -20,7 +20,26 @@ package org.wso2.extension.siddhi.execution.extrema;
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.extension.siddhi.execution.extrema.util.TopKFinder;
+import org.wso2.siddhi.annotation.Example;
+import org.wso2.siddhi.annotation.Extension;
 
+/**
+ * topKTimeBatch counts the frequency of different values of a specified attribute inside a time
+ * window, and emits the highest (k) number of frequency values.
+ */
+@Extension(
+        name = "topKTimeBatch",
+        namespace = "extrema",
+        description = "topKTimeBatch counts the frequency of different values of a specified attribute " +
+                "inside a time window, and emits the highest (k) number of frequency values.",
+        parameters = {},
+        examples = {
+                @Example(
+                        syntax = "TBD",
+                        description =  "TBD"
+                )
+        }
+)
 public class TopKTimeBatchStreamProcessorExtension extends AbstractKTimeBatchStreamProcessorExtension {
     @Override
     protected AbstractTopKBottomKFinder<Object> createNewTopKBottomKFinder() {

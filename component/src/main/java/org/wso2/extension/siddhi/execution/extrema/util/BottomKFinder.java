@@ -20,6 +20,10 @@ package org.wso2.extension.siddhi.execution.extrema.util;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class for finding bottom K items and their frequencies.
+ * @param <T> Type of items
+ */
 public class BottomKFinder<T> extends AbstractTopKBottomKFinder<T> {
     /**
      * Sets the capacity as Integer max
@@ -43,7 +47,9 @@ public class BottomKFinder<T> extends AbstractTopKBottomKFinder<T> {
         List<Counter<T>> bottomK = new ArrayList<Counter<T>>(k);
         for (ListNode<Bucket> bNode = bucketList.head(); bNode != null; bNode = bNode.getNextNode()) {
             Bucket b = bNode.getValue();
-            for (ListNode<Counter<T>> cNode = b.getCounterList().tail(); cNode != null; cNode = cNode.getPreviousNode()) {
+            for (ListNode<Counter<T>> cNode = b.getCounterList().tail();
+                 cNode != null;
+                 cNode = cNode.getPreviousNode()) {
                 bottomK.add(cNode.getValue());
                 if (bottomK.size() == k) {
                     return bottomK;

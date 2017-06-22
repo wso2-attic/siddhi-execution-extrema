@@ -20,26 +20,52 @@ package org.wso2.extension.siddhi.execution.extrema;
 
 
 import org.wso2.extension.siddhi.execution.extrema.util.ExtremaCalculator;
-import org.wso2.siddhi.core.config.ExecutionPlanContext;
+import org.wso2.siddhi.annotation.Example;
+import org.wso2.siddhi.annotation.Extension;
+import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.event.ComplexEventChunk;
 import org.wso2.siddhi.core.event.stream.StreamEvent;
 import org.wso2.siddhi.core.event.stream.StreamEventCloner;
 import org.wso2.siddhi.core.event.stream.populater.ComplexEventPopulater;
 import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
-import org.wso2.siddhi.core.executor.VariableExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
+import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.exception.ExecutionPlanValidationException;
+import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
+/**
+ * The kalmanMinMax function uses the kalman filter to smooth the time series values in the given
+ * window size, and then determine the maxima and minima of that set of values.
+ */
+@Extension(
+        name = "kalmanMinMax",
+        namespace = "extrema",
+        description = "The kalmanMinMax function uses the kalman filter to smooth the time series " +
+                "values in the given window size, and then determine the maxima and minima of that " +
+                "set of values.",
+        parameters = {},
+        examples = {
+                @Example(
+                        syntax = "TBD",
+                        description =  "TBD"
+                )
+        }
+)
 public class KalmanMinMaxStreamProcessor extends StreamProcessor {
+
+    private static final String EVENT_STACK = "eventStack";
+    private static final String VALUE_STACK = "valueStack";
+    private static final String UNIQUE_QUEUE = "uniqueQueue";
 
     ExtremaType extremaType;
     ExtremaCalculator extremaCalculator = null;
@@ -47,65 +73,14 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
     private LinkedList<StreamEvent> eventStack = null;
     private Queue<Double> valueStack = null;
     private Queue<StreamEvent> uniqueQueue = null;
-    private double Q;
-    private double R;
+    private double q;
+    private double r;
     private int minEventPos;
     private int maxEventPos;
 
     @Override
-    protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
-        if (attributeExpressionExecutors.length != 5) {
-            throw new ExecutionPlanValidationException("Invalid no of arguments passed to KalmanMinMaxStreamProcessor, required 5, but found " + attributeExpressionExecutors.length);
-        }
-
-        if (!(attributeExpressionExecutors[0].getReturnType() == Attribute.Type.DOUBLE || attributeExpressionExecutors[0].getReturnType() == Attribute.Type.INT
-                || attributeExpressionExecutors[0].getReturnType() == Attribute.Type.FLOAT || attributeExpressionExecutors[0].getReturnType() == Attribute.Type.LONG)) {
-            throw new ExecutionPlanValidationException("Invalid parameter type found for the 1st argument of KalmanMinMaxStreamProcessor, " +
-                    "required " + Attribute.Type.DOUBLE + " or " + Attribute.Type.FLOAT + " or " + Attribute.Type.INT + " or " +
-                    Attribute.Type.LONG + " but found " + attributeExpressionExecutors[0].getReturnType().toString());
-        }
-
-        try {
-            Q = Double.parseDouble(String.valueOf(((ConstantExpressionExecutor) attributeExpressionExecutors[1]).getValue()));
-        } catch (NumberFormatException e) {
-            throw new ExecutionPlanValidationException("Invalid parameter type found for the 2nd argument of KalmanMinMaxStreamProcessor " +
-                    "required " + Attribute.Type.DOUBLE + " constant, but found " + attributeExpressionExecutors[1].getReturnType().toString());
-        }
-        try {
-            R = Double.parseDouble(String.valueOf(((ConstantExpressionExecutor) attributeExpressionExecutors[2]).getValue()));
-        } catch (NumberFormatException e) {
-            throw new ExecutionPlanValidationException("Invalid parameter type found for the 3rd argument of KalmanMinMaxStreamProcessor " +
-                    "required " + Attribute.Type.DOUBLE + " constant, but found " + attributeExpressionExecutors[2].getReturnType().toString());
-        }
-        try {
-            windowSize = Integer.parseInt(String.valueOf(((ConstantExpressionExecutor) attributeExpressionExecutors[3]).getValue()));
-        } catch (NumberFormatException e) {
-            throw new ExecutionPlanValidationException("Invalid parameter type found for the 4th argument of KalmanMinMaxStreamProcessor " +
-                    "required " + Attribute.Type.INT + " constant, but found " + attributeExpressionExecutors[3].getReturnType().toString());
-        }
-
-        String extremeType = (String) ((ConstantExpressionExecutor) attributeExpressionExecutors[4]).getValue();
-
-        if ("min".equalsIgnoreCase(extremeType)) {
-            extremaType = ExtremaType.MIN;
-        } else if ("max".equalsIgnoreCase(extremeType)) {
-            extremaType = ExtremaType.MAX;
-        } else {
-            extremaType = ExtremaType.MINMAX;
-        }
-        eventStack = new LinkedList<StreamEvent>();
-        valueStack = new LinkedList<Double>();
-        uniqueQueue = new LinkedList<StreamEvent>();
-
-        List<Attribute> attributeList = new ArrayList<Attribute>();
-        attributeList.add(new Attribute("extremaType", Attribute.Type.STRING));
-        return attributeList;
-
-    }
-
-    @Override
-    protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor, StreamEventCloner streamEventCloner,
-                           ComplexEventPopulater complexEventPopulater) {
+    protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
+                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
         ComplexEventChunk<StreamEvent> returnEventChunk = new ComplexEventChunk<StreamEvent>(false);
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
@@ -113,7 +88,7 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
                 StreamEvent event = streamEventChunk.next();
                 streamEventChunk.remove();
                 Double eventKey = (Double) attributeExpressionExecutors[0].execute(event);
-                extremaCalculator = new ExtremaCalculator(Q, R);
+                extremaCalculator = new ExtremaCalculator(q, r);
                 eventStack.add(event);
                 valueStack.add(eventKey);
 
@@ -162,6 +137,70 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
         if (returnEventChunk.getFirst() != null) {
             nextProcessor.process(returnEventChunk);
         }
+    }
+
+    @Override
+    protected List<Attribute> init(AbstractDefinition inputDefinition,
+                                   ExpressionExecutor[] attributeExpressionExecutors,
+                                   ConfigReader configReader,
+                                   SiddhiAppContext siddhiAppContext) {
+        if (attributeExpressionExecutors.length != 5) {
+            throw new SiddhiAppValidationException("Invalid no of arguments passed to " +
+                    "KalmanMinMaxStreamProcessor, required 5, but found " + attributeExpressionExecutors.length);
+        }
+
+        if (!(attributeExpressionExecutors[0].getReturnType() == Attribute.Type.DOUBLE
+                || attributeExpressionExecutors[0].getReturnType() == Attribute.Type.INT
+                || attributeExpressionExecutors[0].getReturnType() == Attribute.Type.FLOAT
+                || attributeExpressionExecutors[0].getReturnType() == Attribute.Type.LONG)) {
+            throw new SiddhiAppValidationException("Invalid parameter type found for the 1st " +
+                    "argument of KalmanMinMaxStreamProcessor, required " + Attribute.Type.DOUBLE +
+                    " or " + Attribute.Type.FLOAT + " or " + Attribute.Type.INT + " or " +
+                    Attribute.Type.LONG + " but found " + attributeExpressionExecutors[0].getReturnType().toString());
+        }
+
+        try {
+            q = Double.parseDouble(String.valueOf(((ConstantExpressionExecutor)
+                    attributeExpressionExecutors[1]).getValue()));
+        } catch (NumberFormatException e) {
+            throw new SiddhiAppValidationException("Invalid parameter type found for the 2nd argument " +
+                    "of KalmanMinMaxStreamProcessor  required " + Attribute.Type.DOUBLE + " constant, " +
+                    "but found " + attributeExpressionExecutors[1].getReturnType().toString());
+        }
+        try {
+            r = Double.parseDouble(String.valueOf(((ConstantExpressionExecutor)
+                    attributeExpressionExecutors[2]).getValue()));
+        } catch (NumberFormatException e) {
+            throw new SiddhiAppValidationException("Invalid parameter type found for the 3rd argument of " +
+                    "KalmanMinMaxStreamProcessor required " + Attribute.Type.DOUBLE + " constant, but found " +
+                    attributeExpressionExecutors[2].getReturnType().toString());
+        }
+        try {
+            windowSize = Integer.parseInt(String.valueOf(((ConstantExpressionExecutor)
+                    attributeExpressionExecutors[3]).getValue()));
+        } catch (NumberFormatException e) {
+            throw new SiddhiAppValidationException("Invalid parameter type found for the 4th argument of " +
+                    "KalmanMinMaxStreamProcessor required " + Attribute.Type.INT + " constant, but found " +
+                    attributeExpressionExecutors[3].getReturnType().toString());
+        }
+
+        String extremeType = (String) ((ConstantExpressionExecutor) attributeExpressionExecutors[4]).getValue();
+
+        if ("min".equalsIgnoreCase(extremeType)) {
+            extremaType = ExtremaType.MIN;
+        } else if ("max".equalsIgnoreCase(extremeType)) {
+            extremaType = ExtremaType.MAX;
+        } else {
+            extremaType = ExtremaType.MINMAX;
+        }
+        eventStack = new LinkedList<StreamEvent>();
+        valueStack = new LinkedList<Double>();
+        uniqueQueue = new LinkedList<StreamEvent>();
+
+        List<Attribute> attributeList = new ArrayList<Attribute>();
+        attributeList.add(new Attribute("extremaType", Attribute.Type.STRING));
+        return attributeList;
+
     }
 
     private StreamEvent getMinEvent(Queue<Double> output) {
@@ -224,17 +263,31 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
     }
 
     @Override
-    public Object[] currentState() {
-        return new Object[]{eventStack, valueStack, uniqueQueue};
+    public Map<String, Object> currentState() {
+        synchronized (this) {
+            return new HashMap<String, Object>() {
+                {
+                    put(EVENT_STACK, eventStack);
+                    put(VALUE_STACK, valueStack);
+                    put(UNIQUE_QUEUE, uniqueQueue);
+                }
+            };
+        }
     }
 
     @Override
-    public void restoreState(Object[] state) {
-        eventStack = (LinkedList<StreamEvent>) state[0];
-        valueStack = (Queue<Double>) state[1];
-        uniqueQueue = (Queue<StreamEvent>) state[2];
+    public void restoreState(Map<String, Object> state) {
+        synchronized (this) {
+            eventStack = (LinkedList<StreamEvent>) state.get(EVENT_STACK);
+            valueStack = (Queue<Double>) state.get(VALUE_STACK);
+            uniqueQueue = (Queue<StreamEvent>) state.get(UNIQUE_QUEUE);
+        }
     }
 
+    /**
+     * Enum for Extrema Type.
+     * Extrema Type indicates whether the returned value is a min value or a max value.
+     */
     public enum ExtremaType {
         MIN, MAX, MINMAX
     }

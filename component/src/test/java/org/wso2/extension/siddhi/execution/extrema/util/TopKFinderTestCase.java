@@ -18,10 +18,10 @@
 
 package org.wso2.extension.siddhi.execution.extrema.util;
 
-import junit.framework.Assert;
 import org.apache.log4j.Logger;
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class TopKFinderTestCase {
     private static final Logger log = Logger.getLogger(TopKFinder.class);
     AbstractTopKBottomKFinder<String> topKFinder;
 
-    @Before
+    @BeforeMethod
     public void init() {
         topKFinder = new TopKFinder<String>(5);
     }
@@ -57,38 +57,38 @@ public class TopKFinderTestCase {
         topKFinder.offer("item7", 2);   // To replace item5
 
         List<Counter<String>> counters = topKFinder.get(3);
-        Assert.assertEquals(3, counters.size());
+        AssertJUnit.assertEquals(3, counters.size());
 
-        Assert.assertEquals("item1", counters.get(0).getItem());
-        Assert.assertEquals(4, counters.get(0).getCount());
-        Assert.assertEquals("item2", counters.get(1).getItem());
-        Assert.assertEquals(3, counters.get(1).getCount());
-        Assert.assertEquals("item7", counters.get(2).getItem());
-        Assert.assertEquals(2, counters.get(2).getCount());
+        AssertJUnit.assertEquals("item1", counters.get(0).getItem());
+        AssertJUnit.assertEquals(4, counters.get(0).getCount());
+        AssertJUnit.assertEquals("item2", counters.get(1).getItem());
+        AssertJUnit.assertEquals(3, counters.get(1).getCount());
+        AssertJUnit.assertEquals("item7", counters.get(2).getItem());
+        AssertJUnit.assertEquals(2, counters.get(2).getCount());
 
         topKFinder.offer("item1", -1);
         topKFinder.offer("item2", -1);
         topKFinder.offer("item3", -2);
 
         counters = topKFinder.get(3);
-        Assert.assertEquals(3, counters.size());
+        AssertJUnit.assertEquals(3, counters.size());
 
-        Assert.assertEquals("item1", counters.get(0).getItem());
-        Assert.assertEquals(3, counters.get(0).getCount());
-        Assert.assertEquals("item2", counters.get(1).getItem());
-        Assert.assertEquals(2, counters.get(1).getCount());
-        Assert.assertEquals("item7", counters.get(2).getItem());
-        Assert.assertEquals(2, counters.get(2).getCount());
+        AssertJUnit.assertEquals("item1", counters.get(0).getItem());
+        AssertJUnit.assertEquals(3, counters.get(0).getCount());
+        AssertJUnit.assertEquals("item2", counters.get(1).getItem());
+        AssertJUnit.assertEquals(2, counters.get(1).getCount());
+        AssertJUnit.assertEquals("item7", counters.get(2).getItem());
+        AssertJUnit.assertEquals(2, counters.get(2).getCount());
 
         topKFinder.offer("item6", -2);
         topKFinder.offer("item7", -2);
 
         counters = topKFinder.get(3);
-        Assert.assertEquals(2, counters.size());
+        AssertJUnit.assertEquals(2, counters.size());
 
-        Assert.assertEquals("item1", counters.get(0).getItem());
-        Assert.assertEquals(3, counters.get(0).getCount());
-        Assert.assertEquals("item2", counters.get(1).getItem());
-        Assert.assertEquals(2, counters.get(1).getCount());
+        AssertJUnit.assertEquals("item1", counters.get(0).getItem());
+        AssertJUnit.assertEquals(3, counters.get(0).getCount());
+        AssertJUnit.assertEquals("item2", counters.get(1).getItem());
+        AssertJUnit.assertEquals(2, counters.get(1).getCount());
     }
 }

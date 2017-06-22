@@ -19,6 +19,8 @@
 package org.wso2.extension.siddhi.execution.extrema;
 
 import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByConstants;
+import org.wso2.siddhi.annotation.Example;
+import org.wso2.siddhi.annotation.Extension;
 
 /**
  * Sample Query:
@@ -31,9 +33,22 @@ import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByConstants;
  * According to the given attribute it will give the maximum event during last windowTime period
  * and gets updated on every event arrival and expiry.
  */
+@Extension(
+        name = "maxbytime",
+        namespace = "extrema",
+        description = "TBD",
+        parameters = {},
+        examples = {
+                @Example(
+                        syntax = "TBD",
+                        description =  "TBD"
+                )
+        }
+)
+
 public class MaxByTimeWindowProcessor extends MaxByMinByTimeWindowProcessor {
     public MaxByTimeWindowProcessor() {
         maxByMinByType = MaxByMinByConstants.MAX_BY;
-        windowType = MaxByMinByConstants.MaxByTime;
+        windowType = MaxByMinByConstants.MAX_BY_TIME;
     }
 }

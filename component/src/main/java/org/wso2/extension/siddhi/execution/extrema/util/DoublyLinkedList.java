@@ -34,6 +34,7 @@ public class DoublyLinkedList<T> implements Iterable<T> {
      * Add a node with value after the last node in the list
      *
      * @param value The value of the node to be added as the last node of the list
+     * @return The new list
      */
     public ListNode<T> addAfterLast(T value) {
         ListNode<T> node = new ListNode<T>(value);
@@ -62,6 +63,7 @@ public class DoublyLinkedList<T> implements Iterable<T> {
      * Add a node with value before the first node in the list
      *
      * @param value The value of the node to be added as the first node of the list
+     * @return The new list
      */
     public ListNode<T> addBeforeFirst(T value) {
         ListNode<T> node = new ListNode<T>(value);
@@ -91,7 +93,7 @@ public class DoublyLinkedList<T> implements Iterable<T> {
      *
      * @param node  The node after which the new node should be added
      * @param value The value of the node to be added
-     * @return
+     * @return The new list
      */
     public ListNode<T> addAfterNode(ListNode<T> node, T value) {
         ListNode<T> newNode = new ListNode<T>(value);
@@ -104,7 +106,6 @@ public class DoublyLinkedList<T> implements Iterable<T> {
      *
      * @param node    The node after which the new node should be added
      * @param newNode The node to be added
-     * @return
      */
     public void addAfterNode(ListNode<T> node, ListNode<T> newNode) {
         newNode.setNextNode(node.getNextNode());

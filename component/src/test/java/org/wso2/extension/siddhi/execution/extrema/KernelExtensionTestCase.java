@@ -18,24 +18,26 @@
 
 package org.wso2.extension.siddhi.execution.extrema;
 
-import junit.framework.Assert;
 import org.apache.log4j.Logger;
-import org.junit.Before;
-import org.junit.Test;
-import org.wso2.siddhi.core.ExecutionPlanRuntime;
+import org.testng.AssertJUnit;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
 
+/**
+ * Test case for KernelExtension extension.
+ */
 public class KernelExtensionTestCase {
-
-    static final Logger log = Logger.getLogger(KernelExtensionTestCase.class);
+    private static final Logger log = Logger.getLogger(KernelExtensionTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
 
-    @Before
+    @BeforeMethod
     public void init() {
         count = 0;
         eventArrived = false;
@@ -47,12 +49,14 @@ public class KernelExtensionTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
 
         String inStreamDefinition = "define stream inputStream (price double);";
-        String query = ("@info(name = 'query1') from inputStream#extrema:kernelMinMax(price, 4, 17, 'max') " +
+        String query = ("@info(name = 'query1') " +
+                "from inputStream#extrema:kernelMinMax(price, 4, 17, 'max') " +
                 "select *" +
                 "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -61,36 +65,36 @@ public class KernelExtensionTestCase {
                     count++;
                     switch (count) {
                         case 1:
-                            Assert.assertEquals(54.0, event.getData(0));
+                            AssertJUnit.assertEquals(54.0, event.getData(0));
                             break;
                         case 2:
-                            Assert.assertEquals(51.75, event.getData(0));
+                            AssertJUnit.assertEquals(51.75, event.getData(0));
                             break;
                         case 3:
-                            Assert.assertEquals(50.44, event.getData(0));
+                            AssertJUnit.assertEquals(50.44, event.getData(0));
                             break;
                         case 4:
-                            Assert.assertEquals(48.26, event.getData(0));
+                            AssertJUnit.assertEquals(48.26, event.getData(0));
                             break;
                         case 5:
-                            Assert.assertEquals(49.85, event.getData(0));
+                            AssertJUnit.assertEquals(49.85, event.getData(0));
                             break;
                         case 6:
-                            Assert.assertEquals(49.94, event.getData(0));
+                            AssertJUnit.assertEquals(49.94, event.getData(0));
                             break;
                         case 7:
-                            Assert.assertEquals(50.3, event.getData(0));
+                            AssertJUnit.assertEquals(50.3, event.getData(0));
                             break;
                         default:
-                            org.junit.Assert.fail();
+                            AssertJUnit.fail();
 
                     }
                 }
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[]{51.7d});
         inputHandler.send(new Object[]{51.07d});
@@ -193,9 +197,9 @@ public class KernelExtensionTestCase {
         inputHandler.send(new Object[]{48.35d});
 
         Thread.sleep(1000);
-        Assert.assertEquals(7, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(7, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
 
     }
 
@@ -206,12 +210,14 @@ public class KernelExtensionTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
 
         String inStreamDefinition = "define stream inputStream (id int, price double);";
-        String query = ("@info(name = 'query1') from inputStream#extrema:kernelMinMax(price, 3 , 16, 'minmax') " +
+        String query = ("@info(name = 'query1') " +
+                "from inputStream#extrema:kernelMinMax(price, 3 , 16, 'minmax') " +
                 "select price, extremaType , id " +
                 "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -220,66 +226,66 @@ public class KernelExtensionTestCase {
                     count++;
                     switch (count) {
                         case 1:
-                            Assert.assertEquals(54.0, event.getData(0));
-                            Assert.assertEquals("max", event.getData()[1]);
+                            AssertJUnit.assertEquals(54.0, event.getData(0));
+                            AssertJUnit.assertEquals("max", event.getData()[1]);
                             break;
                         case 2:
-                            Assert.assertEquals(50.35, event.getData(0));
-                            Assert.assertEquals("min", event.getData()[1]);
+                            AssertJUnit.assertEquals(50.35, event.getData(0));
+                            AssertJUnit.assertEquals("min", event.getData()[1]);
                             break;
                         case 3:
-                            Assert.assertEquals(51.75, event.getData(0));
-                            Assert.assertEquals("max", event.getData()[1]);
+                            AssertJUnit.assertEquals(51.75, event.getData(0));
+                            AssertJUnit.assertEquals("max", event.getData()[1]);
                             break;
                         case 4:
-                            Assert.assertEquals(47.95, event.getData(0));
-                            Assert.assertEquals("min", event.getData()[1]);
+                            AssertJUnit.assertEquals(47.95, event.getData(0));
+                            AssertJUnit.assertEquals("min", event.getData()[1]);
                             break;
                         case 5:
-                            Assert.assertEquals(50.44, event.getData(0));
-                            Assert.assertEquals("max", event.getData()[1]);
+                            AssertJUnit.assertEquals(50.44, event.getData(0));
+                            AssertJUnit.assertEquals("max", event.getData()[1]);
                             break;
                         case 6:
-                            Assert.assertEquals(45.6, event.getData(0));
-                            Assert.assertEquals("min", event.getData()[1]);
+                            AssertJUnit.assertEquals(45.6, event.getData(0));
+                            AssertJUnit.assertEquals("min", event.getData()[1]);
                             break;
                         case 7:
-                            Assert.assertEquals(48.26, event.getData(0));
-                            Assert.assertEquals("max", event.getData()[1]);
+                            AssertJUnit.assertEquals(48.26, event.getData(0));
+                            AssertJUnit.assertEquals("max", event.getData()[1]);
                             break;
                         case 8:
-                            Assert.assertEquals(49.85, event.getData(0));
-                            Assert.assertEquals("max", event.getData()[1]);
+                            AssertJUnit.assertEquals(49.85, event.getData(0));
+                            AssertJUnit.assertEquals("max", event.getData()[1]);
                             break;
                         case 9:
-                            Assert.assertEquals(46.9, event.getData(0));
-                            Assert.assertEquals("min", event.getData()[1]);
+                            AssertJUnit.assertEquals(46.9, event.getData(0));
+                            AssertJUnit.assertEquals("min", event.getData()[1]);
                             break;
                         case 10:
-                            Assert.assertEquals(48.05, event.getData(0));
-                            Assert.assertEquals("min", event.getData()[1]);
+                            AssertJUnit.assertEquals(48.05, event.getData(0));
+                            AssertJUnit.assertEquals("min", event.getData()[1]);
                             break;
                         case 11:
-                            Assert.assertEquals(49.94, event.getData(0));
-                            Assert.assertEquals("max", event.getData()[1]);
+                            AssertJUnit.assertEquals(49.94, event.getData(0));
+                            AssertJUnit.assertEquals("max", event.getData()[1]);
                             break;
                         case 12:
-                            Assert.assertEquals(48.5, event.getData(0));
-                            Assert.assertEquals("min", event.getData()[1]);
+                            AssertJUnit.assertEquals(48.5, event.getData(0));
+                            AssertJUnit.assertEquals("min", event.getData()[1]);
                             break;
                         case 13:
-                            Assert.assertEquals(50.3, event.getData(0));
-                            Assert.assertEquals("max", event.getData()[1]);
+                            AssertJUnit.assertEquals(50.3, event.getData(0));
+                            AssertJUnit.assertEquals("max", event.getData()[1]);
                             break;
                         default:
-                            org.junit.Assert.fail();
+                            AssertJUnit.fail();
                     }
                 }
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[]{1, 51.7d});
         inputHandler.send(new Object[]{2, 51.07d});
@@ -382,9 +388,9 @@ public class KernelExtensionTestCase {
         inputHandler.send(new Object[]{99, 48.35d});
 
         Thread.sleep(1000);
-        Assert.assertEquals(13, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(13, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
 
     }
 
@@ -394,12 +400,14 @@ public class KernelExtensionTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
 
         String inStreamDefinition = "define stream inputStream (price double);";
-        String query = ("@info(name = 'query1') from inputStream#extrema:kernelMinMax(price, 4, 16, 'min') " +
+        String query = ("@info(name = 'query1') " +
+                "from inputStream#extrema:kernelMinMax(price, 4, 16, 'min') " +
                 "select *" +
                 "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -408,29 +416,29 @@ public class KernelExtensionTestCase {
                     count++;
                     switch (count) {
                         case 1:
-                            Assert.assertEquals(50.35, event.getData(0));
+                            AssertJUnit.assertEquals(50.35, event.getData(0));
                             break;
                         case 2:
-                            Assert.assertEquals(47.95, event.getData(0));
+                            AssertJUnit.assertEquals(47.95, event.getData(0));
                             break;
                         case 3:
-                            Assert.assertEquals(45.6, event.getData(0));
+                            AssertJUnit.assertEquals(45.6, event.getData(0));
                             break;
                         case 4:
-                            Assert.assertEquals(48.05, event.getData(0));
+                            AssertJUnit.assertEquals(48.05, event.getData(0));
                             break;
                         case 5:
-                            Assert.assertEquals(48.5, event.getData(0));
+                            AssertJUnit.assertEquals(48.5, event.getData(0));
                             break;
                         default:
-                            org.junit.Assert.fail();
+                            AssertJUnit.fail();
                     }
                 }
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[]{51.7d});
         inputHandler.send(new Object[]{51.07d});
@@ -534,9 +542,9 @@ public class KernelExtensionTestCase {
 
 
         Thread.sleep(1000);
-        Assert.assertEquals(5, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(5, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
 
     }
 

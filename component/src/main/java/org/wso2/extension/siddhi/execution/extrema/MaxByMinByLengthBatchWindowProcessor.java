@@ -20,7 +20,7 @@ package org.wso2.extension.siddhi.execution.extrema;
 
 import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByConstants;
 import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByExecutor;
-import org.wso2.siddhi.core.config.ExecutionPlanContext;
+import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.event.ComplexEventChunk;
 import org.wso2.siddhi.core.event.state.StateEvent;
 import org.wso2.siddhi.core.event.stream.StreamEvent;
@@ -31,15 +31,18 @@ import org.wso2.siddhi.core.executor.VariableExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.window.FindableProcessor;
 import org.wso2.siddhi.core.query.processor.stream.window.WindowProcessor;
-import org.wso2.siddhi.core.table.EventTable;
-import org.wso2.siddhi.core.util.collection.operator.Finder;
-import org.wso2.siddhi.core.util.collection.operator.MatchingMetaStateHolder;
+import org.wso2.siddhi.core.table.Table;
+import org.wso2.siddhi.core.util.collection.operator.CompiledCondition;
+import org.wso2.siddhi.core.util.collection.operator.MatchingMetaInfoHolder;
+import org.wso2.siddhi.core.util.collection.operator.Operator;
+import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.core.util.parser.OperatorParser;
 import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.exception.ExecutionPlanValidationException;
+import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.wso2.siddhi.query.api.expression.Expression;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,13 +51,17 @@ import java.util.Map;
  */
 
 public abstract class MaxByMinByLengthBatchWindowProcessor extends WindowProcessor implements FindableProcessor {
+
+    private static final String RESULT_EVENT = "resultEvent";
+    private static final String EXPIRED_EVENTS = "expiredEvents";
+    private static final String COUNT = "count";
+    private static final String RESET_EVENT = "resetEvent";
+    protected String minByMaxByExecutorType;
     private int length;
     private int count = 0;
-    protected String minByMaxByExecutorType;
-    protected String minByMaxByExtensionType;
     private ExpressionExecutor minByMaxByExecutorAttribute;
     private ComplexEventChunk<StreamEvent> expiredEventChunk = new ComplexEventChunk<StreamEvent>(false);
-    private ExecutionPlanContext executionPlanContext;
+    private SiddhiAppContext siddhiAppContext;
     private VariableExpressionExecutor[] variableExpressionExecutors;
     private MaxByMinByExecutor minByMaxByExecutor;
     private StreamEvent oldEvent;
@@ -69,49 +76,45 @@ public abstract class MaxByMinByLengthBatchWindowProcessor extends WindowProcess
     /**
      * The init method of the WindowProcessor, this method will be called before other methods
      *
-     * @param expressionExecutors  the executors of each function parameters
-     * @param executionPlanContext the context of the execution plan
+     * @param attributeExpressionExecutors the executors of each function parameters
+     * @param siddhiAppContext             the context of the execution plan
      */
-    @Override protected void init(ExpressionExecutor[] expressionExecutors, ExecutionPlanContext executionPlanContext) {
+    @Override
+    protected void init(ExpressionExecutor[] attributeExpressionExecutors, ConfigReader configReader,
+                        boolean outputExpectsExpiredEvents, SiddhiAppContext siddhiAppContext) {
 
-        this.executionPlanContext = executionPlanContext;
+        this.siddhiAppContext = siddhiAppContext;
         minByMaxByExecutor = new MaxByMinByExecutor();
-        if (minByMaxByExecutorType == "MIN") {
-            minByMaxByExecutor.setMinByMaxByExecutorType(minByMaxByExecutorType);
-        } else {
-            minByMaxByExecutor.setMinByMaxByExecutorType(minByMaxByExecutorType);
-        }
+        minByMaxByExecutor.setMinByMaxByExecutorType(minByMaxByExecutorType);
 
-        if (attributeExpressionExecutors.length != 2) {
-            throw new ExecutionPlanValidationException(
+        if (this.attributeExpressionExecutors.length != 2) {
+            throw new SiddhiAppValidationException(
                     "Invalid no of arguments passed to minbymaxby:" + minByMaxByExecutorType + " window, "
-                            + "required 2, but found " + attributeExpressionExecutors.length);
+                            + "required 2, but found " + this.attributeExpressionExecutors.length);
         }
 
-        Attribute.Type attributeType = attributeExpressionExecutors[0].getReturnType();
+        Attribute.Type attributeType = this.attributeExpressionExecutors[0].getReturnType();
         if (!((attributeType == Attribute.Type.DOUBLE) || (attributeType == Attribute.Type.INT) || (attributeType
                 == Attribute.Type.STRING) || (attributeType == Attribute.Type.FLOAT) || (attributeType
                 == Attribute.Type.LONG))) {
-            throw new ExecutionPlanValidationException(
+            throw new SiddhiAppValidationException(
                     "Invalid parameter type found for the first argument of minbymaxby:" + minByMaxByExecutorType
                             + " window, " + "required " + Attribute.Type.INT + " or " + Attribute.Type.LONG + " or "
                             + Attribute.Type.FLOAT + " or " + Attribute.Type.DOUBLE + "or" + Attribute.Type.STRING
                             + ", but found " + attributeType.toString());
         }
-        attributeType = attributeExpressionExecutors[1].getReturnType();
+        attributeType = this.attributeExpressionExecutors[1].getReturnType();
         if (!((attributeType == Attribute.Type.LONG) || (attributeType == Attribute.Type.INT))) {
-            throw new ExecutionPlanValidationException(
+            throw new SiddhiAppValidationException(
                     "Invalid parameter type found for the second argument of minbymaxby:" + minByMaxByExecutorType
                             + " window, " + "required " + Attribute.Type.INT + " or " + Attribute.Type.LONG
                             + ", but found " + attributeType.toString());
         }
 
-        variableExpressionExecutors = new VariableExpressionExecutor[attributeExpressionExecutors.length - 1];
-        if (attributeExpressionExecutors.length == 2) {
-            variableExpressionExecutors[0] = (VariableExpressionExecutor) attributeExpressionExecutors[0];
-            minByMaxByExecutorAttribute = variableExpressionExecutors[0];
-            length = (Integer) (((ConstantExpressionExecutor) attributeExpressionExecutors[1]).getValue());
-        }
+        variableExpressionExecutors = new VariableExpressionExecutor[this.attributeExpressionExecutors.length - 1];
+        variableExpressionExecutors[0] = (VariableExpressionExecutor) this.attributeExpressionExecutors[0];
+        minByMaxByExecutorAttribute = variableExpressionExecutors[0];
+        length = (Integer) (((ConstantExpressionExecutor) this.attributeExpressionExecutors[1]).getValue());
 
     }
 
@@ -122,12 +125,13 @@ public abstract class MaxByMinByLengthBatchWindowProcessor extends WindowProcess
      * @param nextProcessor     the next processor to which the success events need to be passed
      * @param streamEventCloner helps to clone the incoming event for local storage or modification
      */
-    @Override protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
-            StreamEventCloner streamEventCloner) {
+    @Override
+    protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
+                           StreamEventCloner streamEventCloner) {
         List<ComplexEventChunk<StreamEvent>> streamEventChunks = new ArrayList<ComplexEventChunk<StreamEvent>>();
         synchronized (this) {
             ComplexEventChunk<StreamEvent> outputStreamEventChunk = new ComplexEventChunk<StreamEvent>(true);
-            long currentTime = executionPlanContext.getTimestampGenerator().currentTime();
+            long currentTime = siddhiAppContext.getTimestampGenerator().currentTime();
             while (streamEventChunk.hasNext()) {
                 StreamEvent streamEvent = streamEventChunk.next();
                 StreamEvent currentEvent = streamEventCloner.copyStreamEvent(streamEvent);
@@ -187,7 +191,8 @@ public abstract class MaxByMinByLengthBatchWindowProcessor extends WindowProcess
      * This will be called after initializing the system and before
      * starting to process the events.
      */
-    @Override public void start() {
+    @Override
+    public void start() {
         //do nothing
     }
 
@@ -196,7 +201,8 @@ public abstract class MaxByMinByLengthBatchWindowProcessor extends WindowProcess
      * the acquired resources for processing.
      * This will be called before shutting down the system.
      */
-    @Override public void stop() {
+    @Override
+    public void stop() {
         //do nothing
     }
 
@@ -206,68 +212,59 @@ public abstract class MaxByMinByLengthBatchWindowProcessor extends WindowProcess
      *
      * @return stateful objects of the processing element as an array
      */
-    @Override public Object[] currentState() {
+    @Override
+    public Map<String, Object> currentState() {
         return this.expiredEventChunk != null ?
-                new Object[] { this.resultEvent, this.expiredEventChunk.getFirst(), Integer.valueOf(this.count),
-                        this.resetEvent } :
-                new Object[] { this.resultEvent, Integer.valueOf(this.count), this.resetEvent };
+                new HashMap<String, Object>() {
+                    {
+                        put(RESULT_EVENT, resultEvent);
+                        put(EXPIRED_EVENTS, expiredEventChunk);
+                        put(COUNT, Integer.valueOf(count));
+                        put(RESET_EVENT, resetEvent);
+
+                    }
+                } :
+                new HashMap<String, Object>() {
+                    {
+                        put(RESULT_EVENT, resultEvent);
+                        put(COUNT, Integer.valueOf(count));
+                        put(RESET_EVENT, resetEvent);
+
+                    }
+                };
     }
 
     /**
      * Used to restore serialized state of the processing element, for reconstructing
      * the element to the same state as if was on a previous point of time.
      *
-     * @param state the stateful objects of the element as an array on
-     *              the same order provided by currentState().
+     * @param state the stateful objects of the element as a hashmap.
      */
-    @Override public void restoreState(Object[] state) {
-        if (state.length > 3) {
-            this.resultEvent = null;
-            Map.Entry<String, Object> stateEntry = (Map.Entry<String, Object>) state[0];
-            resultEvent = (StreamEvent) stateEntry.getValue();
-            Map.Entry<String, Object> stateEntry2 = (Map.Entry<String, Object>) state[1];
-            this.count = ((Integer) state[2]).intValue();
-            this.resetEvent = (StreamEvent) state[3];
-        } else {
-            this.resultEvent = null;
-            Map.Entry<String, Object> stateEntry = (Map.Entry<String, Object>) state[0];
-            resultEvent = (StreamEvent) stateEntry.getValue();
-            Map.Entry<String, Object> stateEntry2 = (Map.Entry<String, Object>) state[1];
-            this.count = ((Integer) state[1]).intValue();
-            this.resetEvent = (StreamEvent) state[2];
+    @Override
+    public synchronized void restoreState(Map<String, Object> state) {
+        resultEvent = (StreamEvent) state.get(RESULT_EVENT);
+        this.count = ((Integer) state.get(COUNT)).intValue();
+        this.resetEvent = (StreamEvent) state.get(RESET_EVENT);
+        if (state.size() > 3) {
+            expiredEventChunk = (ComplexEventChunk<StreamEvent>) state.get(EXPIRED_EVENTS);
         }
     }
 
-    /**
-     * To find events from the processor event pool, that the matches the matchingEvent based on finder logic.
-     *
-     * @param matchingEvent the event to be matched with the events at the processor
-     * @param finder        the execution element responsible for finding the corresponding events that matches
-     *                      the matchingEvent based on pool of events at Processor
-     * @return the matched events
-     */
-    @Override public StreamEvent find(StateEvent matchingEvent, Finder finder) {
-
-        return finder.find(matchingEvent, expiredEventChunk, streamEventCloner);
+    @Override
+    public synchronized StreamEvent find(StateEvent matchingEvent, CompiledCondition compiledCondition) {
+        return ((Operator) compiledCondition).find(matchingEvent, expiredEventChunk, streamEventCloner);
     }
 
-    /**
-     * To construct a finder having the capability of finding events at the processor that corresponds to the incoming
-     * matchingEvent and the given matching expression logic.
-     *
-     * @param expression              the matching expression
-     * @param matchingMetaStateHolder the meta structure of the incoming matchingEvent
-     * @param executionPlanContext    current execution plan context
-     * @param list                    the list of variable ExpressionExecutors already created
-     * @param map                     map of event tables
-     * @return finder having the capability of finding events at the processor against the expression and incoming
-     * matchingEvent
-     */
-    @Override public Finder constructFinder(Expression expression, MatchingMetaStateHolder matchingMetaStateHolder,
-            ExecutionPlanContext executionPlanContext, List<VariableExpressionExecutor> list,
-            Map<String, EventTable> map) {
-        return OperatorParser
-                .constructOperator(expiredEventChunk, expression, matchingMetaStateHolder, executionPlanContext, list,
-                        map);
+    @Override
+    public synchronized CompiledCondition compileCondition(Expression expression,
+                                                           MatchingMetaInfoHolder matchingMetaInfoHolder,
+                                              SiddhiAppContext siddhiAppContext,
+                                              List<VariableExpressionExecutor> variableExpressionExecutors,
+                                              Map<String, Table> tableMap, String queryName) {
+        if (expiredEventChunk == null) {
+            expiredEventChunk = new ComplexEventChunk<StreamEvent>(false);
+        }
+        return OperatorParser.constructOperator(expiredEventChunk, expression, matchingMetaInfoHolder,
+                siddhiAppContext, variableExpressionExecutors, tableMap, this.queryName);
     }
 }

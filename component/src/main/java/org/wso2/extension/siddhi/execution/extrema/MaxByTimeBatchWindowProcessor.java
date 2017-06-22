@@ -19,6 +19,8 @@
 package org.wso2.extension.siddhi.execution.extrema;
 
 import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByConstants;
+import org.wso2.siddhi.annotation.Example;
+import org.wso2.siddhi.annotation.Extension;
 
 /**
  * Sample Query:
@@ -30,10 +32,21 @@ import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByConstants;
  * In the sample query given, 1 sec is the duration of the window and attribute1 is the maxBy attribute.
  * According to the given attribute it will give the maximum event within given time.
  */
-
+@Extension(
+        name = "maxbytimebatch",
+        namespace = "extrema",
+        description = "TBD",
+        parameters = {},
+        examples = {
+                @Example(
+                        syntax = "TBD",
+                        description =  "TBD"
+                )
+        }
+)
 public class MaxByTimeBatchWindowProcessor extends MaxByMinByTimeBatchWindowProcessor {
     public MaxByTimeBatchWindowProcessor() {
         maxByMinByType = MaxByMinByConstants.MAX_BY;
-        windowType = MaxByMinByConstants.MaxByTimeBatch;
+        windowType = MaxByMinByConstants.MAX_BY_TIME_BATCH;
     }
 }
