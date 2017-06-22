@@ -44,7 +44,6 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
 
     @BeforeMethod
     public void init() {
-//        count = 0;
         count = new AtomicInteger(0);;
         eventArrived = false;
     }
@@ -209,7 +208,6 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
         inputHandler2.send(new Object[]{"item6", "credit card"});
         inputHandler2.send(new Object[]{"item4", "cash"});
 
-//        Thread.sleep(2000);
         SiddhiTestHelper.waitForEvents(2000, 2, count, 10000);
         AssertJUnit.assertEquals(2, count.get());
         AssertJUnit.assertTrue(eventArrived);

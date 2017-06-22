@@ -221,7 +221,6 @@ public abstract class MaxByMinByLengthBatchWindowProcessor extends WindowProcess
                         put(EXPIRED_EVENTS, expiredEventChunk);
                         put(COUNT, Integer.valueOf(count));
                         put(RESET_EVENT, resetEvent);
-
                     }
                 } :
                 new HashMap<String, Object>() {
@@ -229,7 +228,6 @@ public abstract class MaxByMinByLengthBatchWindowProcessor extends WindowProcess
                         put(RESULT_EVENT, resultEvent);
                         put(COUNT, Integer.valueOf(count));
                         put(RESET_EVENT, resetEvent);
-
                     }
                 };
     }
@@ -262,7 +260,7 @@ public abstract class MaxByMinByLengthBatchWindowProcessor extends WindowProcess
                                               List<VariableExpressionExecutor> variableExpressionExecutors,
                                               Map<String, Table> tableMap, String queryName) {
         if (expiredEventChunk == null) {
-            expiredEventChunk = new ComplexEventChunk<StreamEvent>(false);
+            expiredEventChunk = new ComplexEventChunk<StreamEvent>(true);
         }
         return OperatorParser.constructOperator(expiredEventChunk, expression, matchingMetaInfoHolder,
                 siddhiAppContext, variableExpressionExecutors, tableMap, this.queryName);

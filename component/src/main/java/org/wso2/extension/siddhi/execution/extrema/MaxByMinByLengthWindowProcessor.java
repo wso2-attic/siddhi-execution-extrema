@@ -241,7 +241,6 @@ public abstract class MaxByMinByLengthWindowProcessor extends WindowProcessor im
                 {
                     put("toBeExpiredEvent", toBeExpiredEvent);
                     put("count", count);
-
                 }
             };
         }

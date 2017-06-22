@@ -136,11 +136,6 @@ public abstract class AbstractKLengthBatchStreamProcessorExtension
                         i++;
                     }
                     if (sendEvents) {
-                        // Adding the reset event
-//                        StreamEvent resetEvent = streamEventCloner.copyStreamEvent(lastStreamEvent);
-//                        resetEvent.setType(ComplexEvent.Type.RESET);
-//                        outputStreamEventChunk.add(resetEvent);
-//
                         lastOutputData = outputStreamEventData;
                         complexEventPopulater.populateComplexEvent(lastStreamEvent, outputStreamEventData);
                         outputStreamEventChunk.add(lastStreamEvent);
@@ -276,7 +271,6 @@ public abstract class AbstractKLengthBatchStreamProcessorExtension
                         put(QUERY_SIZE, querySize);
                         put(COUNT, count);
                         put(EXPIRED_EVENT_CHUNK, expiredEventChunk);
-
                     }
                 };
             } else {
@@ -286,7 +280,6 @@ public abstract class AbstractKLengthBatchStreamProcessorExtension
                         put(WINDOW_LENGTH, windowLength);
                         put(QUERY_SIZE, querySize);
                         put(COUNT, count);
-
                     }
                 };
             }

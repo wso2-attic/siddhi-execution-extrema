@@ -303,7 +303,6 @@ public abstract class MaxByMinByTimeBatchWindowProcessor extends WindowProcessor
                         put("currentEvent", currentEvent);
                         put("expiredEventChunk", expiredEventChunk);
                         put("resetEvent", resetEvent);
-
                     }
                 };
             } else {
@@ -311,7 +310,6 @@ public abstract class MaxByMinByTimeBatchWindowProcessor extends WindowProcessor
                     {
                         put("currentEvent", currentEvent);
                         put("resetEvent", resetEvent);
-
                     }
                 };
             }
@@ -344,9 +342,12 @@ public abstract class MaxByMinByTimeBatchWindowProcessor extends WindowProcessor
     @Override
     public synchronized CompiledCondition compileCondition(Expression expression,
                                                            MatchingMetaInfoHolder matchingMetaInfoHolder,
-                                              SiddhiAppContext siddhiAppContext,
-                                              List<VariableExpressionExecutor> variableExpressionExecutors,
-                                              Map<String, Table> tableMap, String queryName) {
+                                                           SiddhiAppContext siddhiAppContext,
+                                                           List<VariableExpressionExecutor> variableExpressionExecutors,
+                                                           Map<String, Table> tableMap, String queryName) {
+        if (expiredEventChunk == null) {
+            expiredEventChunk = new ComplexEventChunk<StreamEvent>(false);
+        }
         return OperatorParser.constructOperator(expiredEventChunk, expression, matchingMetaInfoHolder,
                 siddhiAppContext, variableExpressionExecutors, tableMap, this.queryName);
     }

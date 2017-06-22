@@ -259,7 +259,6 @@ public abstract class MaxByMinByTimeWindowProcessor extends WindowProcessor
         return new HashMap<String, Object>() {
             {
                 put("sortedMap", minByMaxByExecutor.getSortedEventMap());
-
             }
         };
     }
