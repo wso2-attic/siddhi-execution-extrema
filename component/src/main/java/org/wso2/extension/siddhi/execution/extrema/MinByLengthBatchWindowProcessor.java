@@ -19,23 +19,36 @@
 package org.wso2.extension.siddhi.execution.extrema;
 
 import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByConstants;
+import org.wso2.siddhi.annotation.Example;
+import org.wso2.siddhi.annotation.Extension;
 
-/*
-* Sample Query:
-*
-* from inputStream#window.minbymaxby:minByLengthBatch(attribute1, 4)
-* select attribute1, attribute2
-* insert into outputStream;
-*
-* Description:
-* In the example query given, 4 is the number of events the window should tumble and attribute1 is the attribute
-* that need to be compared to find the event which has min value.
-* According to the given attribute it will give event which holds the minimum value.
-* */
+/**
+ * Sample Query:
+ * <p>
+ * from inputStream#window.minbymaxby:minByLengthBatch(attribute1, 4)
+ * select attribute1, attribute2
+ * insert into outputStream;
+ * <p>
+ * Description:
+ * In the example query given, 4 is the number of events the window should tumble and attribute1 is the attribute
+ * that need to be compared to find the event which has min value.
+ * According to the given attribute it will give event which holds the minimum value.
+ */
+@Extension(
+        name = "minByLengthBatch",
+        namespace = "extrema",
+        description = "TBD",
+        parameters = {},
+        examples = {
+                @Example(
+                        syntax = "TBD",
+                        description =  "TBD"
+                )
+        }
+)
 public class MinByLengthBatchWindowProcessor extends MaxByMinByLengthBatchWindowProcessor {
     public MinByLengthBatchWindowProcessor() {
         super.minByMaxByExecutorType = MaxByMinByConstants.MIN_BY;
-        super.minByMaxByExtensionType = MaxByMinByConstants.MinByLengthBatch;
     }
 
 }

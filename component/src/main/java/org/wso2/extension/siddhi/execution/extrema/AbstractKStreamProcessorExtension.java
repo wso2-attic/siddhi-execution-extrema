@@ -20,7 +20,7 @@ package org.wso2.extension.siddhi.execution.extrema;
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.extension.siddhi.execution.extrema.util.Counter;
-import org.wso2.siddhi.core.config.ExecutionPlanContext;
+import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.event.ComplexEvent;
 import org.wso2.siddhi.core.event.ComplexEventChunk;
 import org.wso2.siddhi.core.event.stream.StreamEvent;
@@ -31,12 +31,15 @@ import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.executor.VariableExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
+import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.exception.ExecutionPlanValidationException;
+import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Sample Query (For topKLengthBatch implementation):
@@ -51,12 +54,19 @@ import java.util.List;
  * <p>
  * Description:
  * In the example query given, 3 is the k-value and attribute1 is the attribute of which the frequency is counted.
- * The frequencies of the values received for the attribute given will be counted by this and the topK/bottomK values will be emitted
- * Events will be only emitted if there is a change in the topK/bottomK results for each received chunk of events
+ * The frequencies of the values received for the attribute given will be counted by this
+ * and the topK/bottomK values will be emitted
+ * Events will be only emitted if there is a change in the topK/bottomK results for each
+ * received chunk of events
  */
 public abstract class AbstractKStreamProcessorExtension extends StreamProcessor {
-    private int querySize;          // The K value
+    private static final String TOP_K_BOTTOM_K_FINDER = "topKBottomKFinder";
+    private static final String QUERY_SIZE = "querySize";
+    private static final String LAST_STREAM_EVENT = "lastStreamEvent";
+    private static final String LAST_OUTPUT_DATA = "lastOutputData";
+    private static final String EXPIRED_EVENT_CHUNK = "expiredEventChunk";
 
+    private int querySize;          // The K value
     private VariableExpressionExecutor attrVariableExpressionExecutor;
     private AbstractTopKBottomKFinder<Object> topKBottomKFinder;
 
@@ -65,76 +75,11 @@ public abstract class AbstractKStreamProcessorExtension extends StreamProcessor 
     private ComplexEventChunk<StreamEvent> expiredEventChunk;
 
     @Override
-    protected List<Attribute> init(AbstractDefinition abstractDefinition,
-                                   ExpressionExecutor[] attributeExpressionExecutors,
-                                   ExecutionPlanContext executionPlanContext) {
-        if (this.attributeExpressionExecutors.length == 2) {
-            expiredEventChunk = new ComplexEventChunk<StreamEvent>(true);
-            topKBottomKFinder = createNewTopKBottomKFinder();
-        } else {
-            throw new ExecutionPlanValidationException(
-                    "2 arguments should be " + "passed to " + getExtensionNamePrefix() +
-                    "KStreamProcessor, but found " + this.attributeExpressionExecutors.length
-            );
-        }
-
-        // Checking the topK/bottomK attribute
-        if (this.attributeExpressionExecutors[0] instanceof VariableExpressionExecutor) {
-            attrVariableExpressionExecutor = (VariableExpressionExecutor) this.attributeExpressionExecutors[0];
-        } else {
-            throw new ExecutionPlanValidationException(
-                    "Attribute for ordering in " + getExtensionNamePrefix() +
-                    "KStreamProcessor should be a variable. but found a constant attribute " +
-                    this.attributeExpressionExecutors[1].getClass().getCanonicalName()
-            );
-        }
-
-        // Checking the query size parameter
-        if (this.attributeExpressionExecutors[1] instanceof ConstantExpressionExecutor) {
-            Attribute.Type attributeType = this.attributeExpressionExecutors[1].getReturnType();
-            if (attributeType == Attribute.Type.INT) {
-                querySize = (Integer) ((ConstantExpressionExecutor) this.attributeExpressionExecutors[1]).getValue();
-                if (querySize <= 0) {
-                    throw new ExecutionPlanValidationException(
-                            "Query size parameter for " + getExtensionNamePrefix() +
-                            "KLengthBatchStreamProcessor should be greater than 0. but found " + attributeType
-                    );
-                }
-            } else {
-                throw new ExecutionPlanValidationException(
-                        "Query size parameter for " + getExtensionNamePrefix() +
-                        "KStreamProcessor should be INT. but found " + attributeType
-                );
-            }
-        } else {
-            throw new ExecutionPlanValidationException(
-                    "Query size parameter for " + getExtensionNamePrefix() +
-                    "KStreamProcessor should be a constant. but found a dynamic attribute " +
-                    this.attributeExpressionExecutors[2].getClass().getCanonicalName()
-            );
-        }
-
-        // Generating the list of additional attributes added to the events sent out
-        List<Attribute> newAttributes = new ArrayList<Attribute>();
-        for (int i = 0; i < querySize; i++) {
-            newAttributes.add(new Attribute(
-                    getExtensionNamePrefix() + (i + 1) + Constants.TOP_K_BOTTOM_K_ELEMENT,
-                    attrVariableExpressionExecutor.getReturnType()
-            ));
-            newAttributes.add(new Attribute(
-                    getExtensionNamePrefix() + (i + 1) + Constants.TOP_K_BOTTOM_K_FREQUENCY,
-                    Attribute.Type.LONG
-            ));
-        }
-        return newAttributes;
-    }
-
-    @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
                            StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
         ComplexEventChunk<StreamEvent> outputStreamEventChunk = new ComplexEventChunk<StreamEvent>(true);
         synchronized (this) {
-            long currentTime = executionPlanContext.getTimestampGenerator().currentTime();
+            long currentTime = siddhiAppContext.getTimestampGenerator().currentTime();
             while (streamEventChunk.hasNext()) {
                 StreamEvent streamEvent = streamEventChunk.next();
                 StreamEvent clonedStreamEvent = streamEventCloner.copyStreamEvent(streamEvent);
@@ -202,6 +147,72 @@ public abstract class AbstractKStreamProcessorExtension extends StreamProcessor 
     }
 
     @Override
+    protected List<Attribute> init(AbstractDefinition abstractDefinition,
+                                   ExpressionExecutor[] attributeExpressionExecutors,
+                                   ConfigReader configReader,
+                                   SiddhiAppContext siddhiAppContext) {
+        if (this.attributeExpressionExecutors.length == 2) {
+            expiredEventChunk = new ComplexEventChunk<StreamEvent>(true);
+            topKBottomKFinder = createNewTopKBottomKFinder();
+        } else {
+            throw new SiddhiAppValidationException(
+                    "2 arguments should be " + "passed to " + getExtensionNamePrefix() +
+                            "KStreamProcessor, but found " + this.attributeExpressionExecutors.length
+            );
+        }
+
+        // Checking the topK/bottomK attribute
+        if (this.attributeExpressionExecutors[0] instanceof VariableExpressionExecutor) {
+            attrVariableExpressionExecutor = (VariableExpressionExecutor) this.attributeExpressionExecutors[0];
+        } else {
+            throw new SiddhiAppValidationException(
+                    "Attribute for ordering in " + getExtensionNamePrefix() +
+                            "KStreamProcessor should be a variable. but found a constant attribute " +
+                            this.attributeExpressionExecutors[1].getClass().getCanonicalName()
+            );
+        }
+
+        // Checking the query size parameter
+        if (this.attributeExpressionExecutors[1] instanceof ConstantExpressionExecutor) {
+            Attribute.Type attributeType = this.attributeExpressionExecutors[1].getReturnType();
+            if (attributeType == Attribute.Type.INT) {
+                querySize = (Integer) ((ConstantExpressionExecutor) this.attributeExpressionExecutors[1]).getValue();
+                if (querySize <= 0) {
+                    throw new SiddhiAppValidationException(
+                            "Query size parameter for " + getExtensionNamePrefix() +
+                                    "KLengthBatchStreamProcessor should be greater than 0. but found " + attributeType
+                    );
+                }
+            } else {
+                throw new SiddhiAppValidationException(
+                        "Query size parameter for " + getExtensionNamePrefix() +
+                                "KStreamProcessor should be INT. but found " + attributeType
+                );
+            }
+        } else {
+            throw new SiddhiAppValidationException(
+                    "Query size parameter for " + getExtensionNamePrefix() +
+                            "KStreamProcessor should be a constant. but found a dynamic attribute " +
+                            this.attributeExpressionExecutors[2].getClass().getCanonicalName()
+            );
+        }
+
+        // Generating the list of additional attributes added to the events sent out
+        List<Attribute> newAttributes = new ArrayList<Attribute>();
+        for (int i = 0; i < querySize; i++) {
+            newAttributes.add(new Attribute(
+                    getExtensionNamePrefix() + (i + 1) + Constants.TOP_K_BOTTOM_K_ELEMENT,
+                    attrVariableExpressionExecutor.getReturnType()
+            ));
+            newAttributes.add(new Attribute(
+                    getExtensionNamePrefix() + (i + 1) + Constants.TOP_K_BOTTOM_K_FREQUENCY,
+                    Attribute.Type.LONG
+            ));
+        }
+        return newAttributes;
+    }
+
+    @Override
     public void start() {
         // Do nothing
     }
@@ -212,27 +223,42 @@ public abstract class AbstractKStreamProcessorExtension extends StreamProcessor 
     }
 
     @Override
-    public Object[] currentState() {
-        if (outputExpectsExpiredEvents) {
-            return new Object[]{
-                    topKBottomKFinder, querySize, lastStreamEvent, lastOutputData, expiredEventChunk
-            };
-        } else {
-            return new Object[]{
-                    topKBottomKFinder, querySize, lastStreamEvent, lastOutputData
-            };
+    public Map<String, Object> currentState() {
+        synchronized (this) {
+            if (outputExpectsExpiredEvents) {
+                return new HashMap<String, Object>() {
+                    {
+                        put(TOP_K_BOTTOM_K_FINDER, topKBottomKFinder);
+                        put(QUERY_SIZE, querySize);
+                        put(LAST_STREAM_EVENT, lastStreamEvent);
+                        put(LAST_OUTPUT_DATA, lastOutputData);
+                        put(EXPIRED_EVENT_CHUNK, expiredEventChunk);
+                    }
+                };
+            } else {
+                return new HashMap<String, Object>() {
+                    {
+                        put(TOP_K_BOTTOM_K_FINDER, topKBottomKFinder);
+                        put(QUERY_SIZE, querySize);
+                        put(LAST_STREAM_EVENT, lastStreamEvent);
+                        put(LAST_OUTPUT_DATA, lastOutputData);
+                    }
+                };
+            }
         }
     }
 
     @Override
-    public void restoreState(Object[] state) {
-        topKBottomKFinder = (AbstractTopKBottomKFinder<Object>) state[0];
-        querySize = (Integer) state[1];
+    public void restoreState(Map<String, Object> state) {
+        synchronized (this) {
+            topKBottomKFinder = (AbstractTopKBottomKFinder<Object>) state.get(TOP_K_BOTTOM_K_FINDER);
+            querySize = (Integer) state.get(QUERY_SIZE);
 
-        lastStreamEvent = (StreamEvent) state[2];
-        lastOutputData = (Object[]) state[3];
-        if (state.length == 5) {
-            expiredEventChunk = (ComplexEventChunk<StreamEvent>) state[4];
+            lastStreamEvent = (StreamEvent) state.get(LAST_STREAM_EVENT);
+            lastOutputData = (Object[]) state.get(LAST_OUTPUT_DATA);
+            if (state.size() == 5) {
+                expiredEventChunk = (ComplexEventChunk<StreamEvent>) state.get(EXPIRED_EVENT_CHUNK);
+            }
         }
     }
 
@@ -245,8 +271,9 @@ public abstract class AbstractKStreamProcessorExtension extends StreamProcessor 
     protected abstract AbstractTopKBottomKFinder<Object> createNewTopKBottomKFinder();
 
     /**
-     * Return the name prefix that should be used in the returning extra parameters and in the exception that might get thrown
-     * Should be either "Top" or "Bottom" to indicate whether it is top K or bottom K
+     * Return the name prefix that should be used in the returning extra parameters and in the
+     * exception that might get thrown should be either "Top" or "Bottom" to indicate whether
+     * it is top K or bottom K
      *
      * @return Name prefix. Should be either "Top" or "Bottom"
      */

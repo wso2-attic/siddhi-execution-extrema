@@ -18,44 +18,53 @@
  */
 package org.wso2.extension.siddhi.execution.extrema;
 
-import junit.framework.Assert;
 import org.apache.log4j.Logger;
-import org.junit.Before;
-import org.junit.Test;
-import org.wso2.siddhi.core.ExecutionPlanRuntime;
+import org.testng.AssertJUnit;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
+import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Test case for BottomKTimeBatchStreamProcessorExtension extension.
+ */
 public class BottomKTimeBatchStreamProcessorExtensionTestCase {
     private static final Logger log = Logger.getLogger(BottomKTimeBatchStreamProcessorExtensionTestCase.class);
-    private volatile int count;
+    private AtomicInteger count;
     private volatile boolean eventArrived;
 
-    @Before
+    @BeforeMethod
     public void init() {
-        count = 0;
+        count = new AtomicInteger(0);;
         eventArrived = false;
     }
 
     @Test
-    public void testBottomKTimeBatchStreamProcessorExtensionWithoutStartTime() throws InterruptedException {
+    public void testBottomKTimeBatchStreamProcessorExtensionWithoutStartTime()
+            throws InterruptedException {
         log.info("BottomKTimeBatchStreamProcessor TestCase 1");
         SiddhiManager siddhiManager = new SiddhiManager();
 
         String inStreamDefinition = "define stream inputStream (item string, price long);";
-        String query = ("@info(name = 'query1') from inputStream#extrema:bottomKTimeBatch(item, 1 sec, 3)  " +
+        String query = ("@info(name = 'query1') " +
+                "from inputStream#extrema:bottomKTimeBatch(item, 1 sec, 3)  " +
                 "insert all events into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(inStreamDefinition + query);
 
-        addQueryCallbackForSimpleQuery(executionPlanRuntime);
+        addQueryCallbackForSimpleQuery(siddhiAppRuntime);
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[]{"item1", 10L});
         inputHandler.send(new Object[]{"item1", 13L});
@@ -79,9 +88,9 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
         Thread.sleep(1100);
 
         Thread.sleep(1000);
-        Assert.assertEquals(4, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(4, count.get());
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -90,14 +99,16 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
 
         String inStreamDefinition = "define stream inputStream (item string, price long);";
-        String query = ("@info(name = 'query1') from inputStream#extrema:bottomKTimeBatch(item, 1000, 3, 1000)  " +
+        String query = ("@info(name = 'query1') " +
+                "from inputStream#extrema:bottomKTimeBatch(item, 1000, 3, 1000)  " +
                 "insert all events into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(inStreamDefinition + query);
 
-        addQueryCallbackForSimpleQuery(executionPlanRuntime);
+        addQueryCallbackForSimpleQuery(siddhiAppRuntime);
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[]{"item3", 43L});
         inputHandler.send(new Object[]{"item3", 61L});
@@ -126,9 +137,9 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
         Thread.sleep(1100);
 
         Thread.sleep(1000);
-        Assert.assertEquals(4, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(4, count.get());
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -144,37 +155,37 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
                 "on stream1.Bottom1Element==stream2.item " +
                 "select stream2.item as item, stream2.type as type " +
                 "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("outputStream", new StreamCallback() {
             @Override
-            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
-                EventPrinter.print(timeStamp, inEvents, removeEvents);
+            public void receive(Event[] events) {
+                AssertJUnit.assertNotNull(events);
+                if (events.length < 1) {
+                    return;
+                }
                 eventArrived = true;
-                Assert.assertNotNull(inEvents);
-                for (Event event : inEvents) {
-                    if (count == 0) {
-                        Assert.assertEquals(
+                for (Event event : events) {
+                    if (count.get() == 0) {
+                        AssertJUnit.assertEquals(
                                 Arrays.asList("item3", "voucher"),
                                 Arrays.asList(event.getData())
                         );
-                        Assert.assertFalse(event.isExpired());
-                    } else if (count == 1) {
-                        Assert.assertEquals(
+                    } else if (count.get() == 1) {
+                        AssertJUnit.assertEquals(
                                 Arrays.asList("item6", "credit card"),
                                 Arrays.asList(event.getData())
                         );
-                        Assert.assertFalse(event.isExpired());
                     }
                 }
-                Assert.assertNull(removeEvents);
-                count++;
+                count.incrementAndGet();
             }
         });
 
-        InputHandler inputHandler1 = executionPlanRuntime.getInputHandler("inputStream1");
-        InputHandler inputHandler2 = executionPlanRuntime.getInputHandler("inputStream2");
-        executionPlanRuntime.start();
+        InputHandler inputHandler1 = siddhiAppRuntime.getInputHandler("inputStream1");
+        InputHandler inputHandler2 = siddhiAppRuntime.getInputHandler("inputStream2");
+        siddhiAppRuntime.start();
 
         inputHandler1.send(new Object[]{"item1", 10L});
         inputHandler1.send(new Object[]{"item1", 13L});
@@ -197,59 +208,59 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
         inputHandler2.send(new Object[]{"item6", "credit card"});
         inputHandler2.send(new Object[]{"item4", "cash"});
 
-        Thread.sleep(1100);
-        Assert.assertEquals(2, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        SiddhiTestHelper.waitForEvents(2000, 2, count, 10000);
+        AssertJUnit.assertEquals(2, count.get());
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
-    private void addQueryCallbackForSimpleQuery(ExecutionPlanRuntime executionPlanRuntime) {
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+    private void addQueryCallbackForSimpleQuery(SiddhiAppRuntime siddhiAppRuntime) {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
                 eventArrived = true;
-                if (count == 0) {
-                    Assert.assertNotNull(inEvents);
+                if (count.get() == 0) {
+                    AssertJUnit.assertNotNull(inEvents);
                     for (Event event : inEvents) {
-                        Assert.assertEquals(
+                        AssertJUnit.assertEquals(
                                 Arrays.asList("item3", 64L, "item3", 1L, "item2", 2L, "item1", 3L),
                                 Arrays.asList(event.getData())
                         );
-                        Assert.assertFalse(event.isExpired());
+                        AssertJUnit.assertFalse(event.isExpired());
                     }
-                    Assert.assertNull(removeEvents);
-                } else if (count == 1) {
-                    Assert.assertNull(inEvents);
-                    Assert.assertNotNull(removeEvents);
+                    AssertJUnit.assertNull(removeEvents);
+                } else if (count.get() == 1) {
+                    AssertJUnit.assertNull(inEvents);
+                    AssertJUnit.assertNotNull(removeEvents);
                     for (Event event : removeEvents) {
-                        Assert.assertEquals(
+                        AssertJUnit.assertEquals(
                                 Arrays.asList("item3", 64L, "item3", 1L, "item2", 2L, "item1", 3L),
                                 Arrays.asList(event.getData())
                         );
-                        Assert.assertTrue(event.isExpired());
+                        AssertJUnit.assertTrue(event.isExpired());
                     }
-                } else if (count == 2) {
-                    Assert.assertNotNull(inEvents);
+                } else if (count.get() == 2) {
+                    AssertJUnit.assertNotNull(inEvents);
                     for (Event event : inEvents) {
-                        Assert.assertEquals(
+                        AssertJUnit.assertEquals(
                                 Arrays.asList("item4", 13L, "item4", 2L, null, null, null, null),
                                 Arrays.asList(event.getData())
                         );
-                        Assert.assertFalse(event.isExpired());
+                        AssertJUnit.assertFalse(event.isExpired());
                     }
-                    Assert.assertNull(removeEvents);
-                } else if (count == 3) {
-                    Assert.assertNull(inEvents);
-                    Assert.assertNotNull(removeEvents);
+                    AssertJUnit.assertNull(removeEvents);
+                } else if (count.get() == 3) {
+                    AssertJUnit.assertNull(inEvents);
+                    AssertJUnit.assertNotNull(removeEvents);
                     for (Event event : removeEvents) {
-                        Assert.assertEquals(
+                        AssertJUnit.assertEquals(
                                 Arrays.asList("item4", 13L, "item4", 2L, null, null, null, null),
                                 Arrays.asList(event.getData())
                         );
                     }
                 }
-                count++;
+                count.incrementAndGet();
             }
         });
     }

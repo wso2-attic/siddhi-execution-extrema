@@ -56,6 +56,7 @@ public abstract class AbstractTopKBottomKFinder<T> {
      * Increases the frequency of the item by the specified amount
      *
      * @param item Item to increase the frequency of
+     * @param incrementCount Amount to be incremented
      */
     public void offer(T item, int incrementCount) {
         if (incrementCount == 0) {

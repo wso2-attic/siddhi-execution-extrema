@@ -21,8 +21,8 @@ package org.wso2.extension.siddhi.execution.extrema.util;
  * Constants for the extensions in the extrema namespace
  */
 public class Constants {
-    public static String TOP_K_BOTTOM_K_ELEMENT = "Element";
-    public static String TOP_K_BOTTOM_K_FREQUENCY = "Frequency";
-    public static String TOP_K_BOTTOM_K_TOP = "Top";
-    public static String TOP_K_BOTTOM_K_BOTTOM = "Bottom";
+    public static final String TOP_K_BOTTOM_K_ELEMENT = "Element";
+    public static final String TOP_K_BOTTOM_K_FREQUENCY = "Frequency";
+    public static final String TOP_K_BOTTOM_K_TOP = "Top";
+    public static final String TOP_K_BOTTOM_K_BOTTOM = "Bottom";
 }

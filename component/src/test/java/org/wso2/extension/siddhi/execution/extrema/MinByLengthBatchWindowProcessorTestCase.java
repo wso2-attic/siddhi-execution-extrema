@@ -20,9 +20,10 @@
 package org.wso2.extension.siddhi.execution.extrema;
 
 import org.apache.log4j.Logger;
-import org.junit.Before;
-import org.junit.Test;
-import org.wso2.siddhi.core.ExecutionPlanRuntime;
+import org.testng.AssertJUnit;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.stream.input.InputHandler;
@@ -32,45 +33,49 @@ import org.wso2.siddhi.core.util.EventPrinter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertArrayEquals;
-
+/**
+ * Test case for MinByLengthBatchWindowProcessor extension.
+ */
 public class MinByLengthBatchWindowProcessorTestCase {
 
     private static final Logger log = Logger.getLogger(MinByLengthBatchWindowProcessorTestCase.class);
     private int count;
 
-    @Before
+    @BeforeMethod
     public void init() {
         count = 0;
     }
 
     @Test
     public void testMinByWindowForLengthBatch1() throws InterruptedException {
-        log.info("Testing minByLengthBatchWindowProcessor with no of events greater than window size for float type parameter");
+        log.info("Testing minByLengthBatchWindowProcessor with no of events greater than window size " +
+                "for float type parameter");
 
         SiddhiManager siddhiManager = new SiddhiManager();
 
         //siddhiManager.setExtension("unique:minByLengthBatch", MinByLengthBatchWindowProcessor.class);
         String cseEventStream = "define stream cseEventStream (symbol string, price float, volume int);";
-        String query = "@info(name = 'query1') from cseEventStream#window.extrema:minByLengthBatch(price, 4) select symbol,price," +
+        String query = "@info(name = 'query1') " +
+                "from cseEventStream#window.extrema:minByLengthBatch(price, 4) select symbol,price," +
                 "volume insert into outputStream ;";
 
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(cseEventStream + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(cseEventStream + query);
 
         try {
-            executionPlanRuntime.addCallback("outputStream", new StreamCallback() {
+            siddhiAppRuntime.addCallback("outputStream", new StreamCallback() {
 
                 @Override
                 public void receive(Event[] events) {
                     log.info("output event: ");
                     EventPrinter.print(events);
                     Object[] results = new Object[]{"IBM", 50.5f, 2};
-                    assertArrayEquals(results, events[0].getData());
+                    AssertJUnit.assertArrayEquals(results, events[0].getData());
 
                 }
             });
-            InputHandler inputHandler = executionPlanRuntime.getInputHandler("cseEventStream");
-            executionPlanRuntime.start();
+            InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
+            siddhiAppRuntime.start();
             inputHandler.send(new Object[]{"IBM", 700f, 14});
             inputHandler.send(new Object[]{"IBM", 50.5f, 2});
             inputHandler.send(new Object[]{"et", 700f, 1});
@@ -80,25 +85,28 @@ public class MinByLengthBatchWindowProcessorTestCase {
 
 
         } finally {
-            executionPlanRuntime.shutdown();
+            siddhiAppRuntime.shutdown();
         }
     }
 
 
     @Test
     public void testMinByWindowForLengthBatch2() throws InterruptedException {
-        log.info("Testing minByLengthBatchWindowProcessor with no of events greater than window size for integer type parameter");
+        log.info("Testing minByLengthBatchWindowProcessor with no of events greater than window size " +
+                "for integer type parameter");
 
         SiddhiManager siddhiManager = new SiddhiManager();
         String cseEventStream = "define stream cseEventStream (symbol string, price float, volume int);";
-        String query = "@info(name = 'query1') from cseEventStream#window.extrema:minByLengthBatch(volume, 4) select symbol,price," +
+        String query = "@info(name = 'query1') " +
+                "from cseEventStream#window.extrema:minByLengthBatch(volume, 4) select symbol,price," +
                 "volume insert into outputStream ;";
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(cseEventStream + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(cseEventStream + query);
         try {
             final List<Object> results = new ArrayList<Object>();
             results.add(new Object[]{"IBM", 60.5f, 2});
             results.add(new Object[]{"et", 700f, 1});
-            executionPlanRuntime.addCallback("outputStream", new StreamCallback() {
+            siddhiAppRuntime.addCallback("outputStream", new StreamCallback() {
 
                 @Override
                 public void receive(Event[] events) {
@@ -106,14 +114,14 @@ public class MinByLengthBatchWindowProcessorTestCase {
                     EventPrinter.print(events);
                     Object[] results1 = new Object[]{"IBM", 60.5f, 2};
                     for (Event event : events) {
-                        assertArrayEquals((Object[]) results.get(count), event.getData());
+                        AssertJUnit.assertArrayEquals((Object[]) results.get(count), event.getData());
                         count++;
                     }
 
                 }
             });
-            InputHandler inputHandler = executionPlanRuntime.getInputHandler("cseEventStream");
-            executionPlanRuntime.start();
+            InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
+            siddhiAppRuntime.start();
             inputHandler.send(new Object[]{"IBM", 700f, 14});
             inputHandler.send(new Object[]{"IBM", 60.5f, 2});
             inputHandler.send(new Object[]{"IBM", 700f, 142});
@@ -126,24 +134,27 @@ public class MinByLengthBatchWindowProcessorTestCase {
             Thread.sleep(1000);
 
         } finally {
-            executionPlanRuntime.shutdown();
+            siddhiAppRuntime.shutdown();
         }
     }
 
     @Test
     public void testMinByWindowForLengthBatch3() throws InterruptedException {
-        log.info("Testing minByLengthBatchWindowProcessor with no of events greater than window size for integer type parameter");
+        log.info("Testing minByLengthBatchWindowProcessor with no of events greater than window size " +
+                "for integer type parameter");
 
         SiddhiManager siddhiManager = new SiddhiManager();
         String cseEventStream = "define stream cseEventStream (symbol string, price float, volume int);";
-        String query = "@info(name = 'query1') from cseEventStream#window.extrema:minByLengthBatch(symbol, 4) select symbol,price," +
+        String query = "@info(name = 'query1') " +
+                "from cseEventStream#window.extrema:minByLengthBatch(symbol, 4) select symbol,price," +
                 "volume insert into outputStream ;";
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(cseEventStream + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(cseEventStream + query);
         try {
             final List<Object> results = new ArrayList<Object>();
             results.add(new Object[]{"AAA", 700f, 142});
             results.add(new Object[]{"DGF", 60.5f, 21});
-            executionPlanRuntime.addCallback("outputStream", new StreamCallback() {
+            siddhiAppRuntime.addCallback("outputStream", new StreamCallback() {
 
                 @Override
                 public void receive(Event[] events) {
@@ -151,13 +162,13 @@ public class MinByLengthBatchWindowProcessorTestCase {
                     EventPrinter.print(events);
                     Object[] results1 = new Object[]{"IBM", 60.5f, 2};
                     for (Event event : events) {
-                        assertArrayEquals((Object[]) results.get(count), event.getData());
+                        AssertJUnit.assertArrayEquals((Object[]) results.get(count), event.getData());
                         count++;
                     }
                 }
             });
-            InputHandler inputHandler = executionPlanRuntime.getInputHandler("cseEventStream");
-            executionPlanRuntime.start();
+            InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
+            siddhiAppRuntime.start();
             inputHandler.send(new Object[]{"XXX", 700f, 14});
             inputHandler.send(new Object[]{"ABC", 60.5f, 2});
             inputHandler.send(new Object[]{"AAA", 700f, 142});
@@ -169,35 +180,38 @@ public class MinByLengthBatchWindowProcessorTestCase {
             inputHandler.send(new Object[]{"DXD", 60.5f, 24});
             Thread.sleep(1000);
         } finally {
-            executionPlanRuntime.shutdown();
+            siddhiAppRuntime.shutdown();
         }
     }
 
     @Test
     public void testMinByWindowForLengthBatch4() throws InterruptedException {
-        log.info("Testing minByLengthBatchWindowProcessor with no of events greater than window size for float type parameter");
+        log.info("Testing minByLengthBatchWindowProcessor with no of events greater than window size " +
+                "for float type parameter");
 
         SiddhiManager siddhiManager = new SiddhiManager();
         String cseEventStream = "define stream cseEventStream (symbol string, price float, volume int);";
-        String query = "@info(name = 'query1') from cseEventStream#window.extrema:minByLengthBatch(price, 4) select symbol,price," +
+        String query = "@info(name = 'query1') " +
+                "from cseEventStream#window.extrema:minByLengthBatch(price, 4) select symbol,price," +
                 "volume insert into outputStream ;";
 
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(cseEventStream + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(cseEventStream + query);
 
         try {
-            executionPlanRuntime.addCallback("outputStream", new StreamCallback() {
+            siddhiAppRuntime.addCallback("outputStream", new StreamCallback() {
 
                 @Override
                 public void receive(Event[] events) {
                     log.info("output event: ");
                     EventPrinter.print(events);
                     Object[] results = null;
-                    assertArrayEquals(results, events[0].getData());
+                    AssertJUnit.assertArrayEquals(results, events[0].getData());
 
                 }
             });
-            InputHandler inputHandler = executionPlanRuntime.getInputHandler("cseEventStream");
-            executionPlanRuntime.start();
+            InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
+            siddhiAppRuntime.start();
             inputHandler.send(new Object[]{"IBM", 700f, 14});
             inputHandler.send(new Object[]{"IBM", 50.5f, 2});
 
@@ -206,7 +220,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
 
 
         } finally {
-            executionPlanRuntime.shutdown();
+            siddhiAppRuntime.shutdown();
         }
     }
 

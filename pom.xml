@@ -16,21 +16,22 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.wso2</groupId>
         <artifactId>wso2</artifactId>
-        <version>1</version>
+        <version>5</version>
     </parent>
 
     <groupId>org.wso2.extension.siddhi.execution.extrema</groupId>
     <artifactId>siddhi-execution-extrema-parent</artifactId>
-    <version>3.1.3-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>WSO2 Siddhi Execution Extension - Extrema Aggregator Pom</name>
+    <name>Siddhi Execution Extrema Extension Parent</name>
     <url>http://wso2.org</url>
 
     <profiles>
@@ -41,21 +42,23 @@
             </activation>
             <modules>
                 <module>component</module>
-                <module>feature</module>
             </modules>
         </profile>
     </profiles>
 
     <properties>
-        <siddhi.version>3.1.2</siddhi.version>
+        <siddhi.version>4.0.0-M7</siddhi.version>
+        <siddhi.extension.kalman.filter.version>4.0.0</siddhi.extension.kalman.filter.version>
         <log4j.version>1.2.17.wso2v1</log4j.version>
-        <junit.version>4.10</junit.version>
         <commons-math3.version>3.2</commons-math3.version>
         <jama.version>1.0.3</jama.version>
+        <testng.version>6.8</testng.version>
+        <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
     </properties>
 
     <scm>
-        <connection>scm:git:https://github.com/wso2-extensions/siddhi-execution-extrema.git</connection>
+        <connection>scm:git:https://github.com/wso2-extensions/siddhi-execution-extrema.git
+        </connection>
         <url>https://github.com/wso2-extensions/siddhi-execution-extrema.git</url>
         <developerConnection>scm:git:https://github.com/wso2-extensions/siddhi-execution-extrema.git
         </developerConnection>
@@ -75,9 +78,10 @@
                 <version>${siddhi.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.siddhi</groupId>
-                <artifactId>siddhi-extension-kalman-filter</artifactId>
-                <version>${siddhi.version}</version>
+                <groupId>org.wso2.extension.siddhi.execution.kalmanfilter</groupId>
+                <artifactId>siddhi-execution-kalman-filter</artifactId>
+                <version>${siddhi.extension.kalman.filter.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.log4j.wso2</groupId>
@@ -113,9 +117,9 @@
                 <version>${jama.version}</version>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${testng.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -139,49 +143,10 @@
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.jvnet.maven.incrementalbuild</groupId>
-                <artifactId>incremental-build-plugin</artifactId>
-                <version>1.3</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>incremental-build</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.1</version>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
         </plugins>
 
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-scr-plugin</artifactId>
-                    <version>1.7.2</version>
-                    <executions>
-                        <execution>
-                            <id>generate-scr-scrdescriptor</id>
-                            <goals>
-                                <goal>scr</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
@@ -189,30 +154,42 @@
                     <extensions>true</extensions>
                     <configuration>
                         <obrRepository>NONE</obrRepository>
+                        <instructions>
+                            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                            <Bundle-Name>${project.artifactId}</Bundle-Name>
+                            <Export-Package>
+                                org.wso2.extension.siddhi.execution.extrema,
+                            </Export-Package>
+                            <Import-Package>
+                                *;resolution:=optional
+                            </Import-Package>
+                            <Include-Resource>
+                                META-INF=target/classes/META-INF
+                            </Include-Resource>
+                        </instructions>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>2.1.2</version>
+                <plugin><!-- Overridden from parent pom to exclude generated sources -->
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>findbugs-maven-plugin</artifactId>
+                    <version>${maven.findbugsplugin.version}</version>
+                    <configuration>
+                        <effort>Max</effort>
+                        <threshold>Medium</threshold>
+                        <xmlOutput>true</xmlOutput>
+                        <findbugsXmlOutputDirectory>${project.build.directory}/findbugs</findbugsXmlOutputDirectory>
+                        <!--Exclude sources-->
+                        <excludeFilterFile>${mavan.findbugsplugin.exclude.file}</excludeFilterFile>
+                    </configuration>
                     <executions>
                         <execution>
-                            <id>attach-sources</id>
-                            <phase>verify</phase>
+                            <id>analyze-compile</id>
+                            <phase>compile</phase>
                             <goals>
-                                <goal>jar-no-fork</goal>
+                                <goal>check</goal>
                             </goals>
                         </execution>
                     </executions>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.2-beta-2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>2.4</version>
                 </plugin>
             </plugins>
         </pluginManagement>

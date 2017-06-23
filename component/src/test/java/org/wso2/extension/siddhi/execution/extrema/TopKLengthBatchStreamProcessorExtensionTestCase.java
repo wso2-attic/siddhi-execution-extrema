@@ -18,25 +18,30 @@
  */
 package org.wso2.extension.siddhi.execution.extrema;
 
-import junit.framework.Assert;
 import org.apache.log4j.Logger;
-import org.junit.Before;
-import org.junit.Test;
-import org.wso2.siddhi.core.ExecutionPlanRuntime;
+import org.testng.AssertJUnit;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
+import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
 
 import java.util.Arrays;
 
+/**
+ * Test case for TopKLengthBatchStreamProcessorExtension extension.
+ */
 public class TopKLengthBatchStreamProcessorExtensionTestCase {
-    private static final Logger log = Logger.getLogger(TopKLengthBatchStreamProcessorExtensionTestCase.class);
+    private static final Logger log = Logger.getLogger(
+            TopKLengthBatchStreamProcessorExtensionTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
 
-    @Before
+    @BeforeMethod
     public void init() {
         count = 0;
         eventArrived = false;
@@ -50,50 +55,51 @@ public class TopKLengthBatchStreamProcessorExtensionTestCase {
         String inStreamDefinition = "define stream inputStream (item string, price long);";
         String query = ("@info(name = 'query1') from inputStream#extrema:topKLengthBatch(item, 6, 3)  " +
                 "insert all events into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
                 eventArrived = true;
                 if (count == 0) {
-                    Assert.assertNotNull(inEvents);
+                    AssertJUnit.assertNotNull(inEvents);
                     for (Event event : inEvents) {
-                        Assert.assertEquals(
+                        AssertJUnit.assertEquals(
                                 Arrays.asList("item3", 64L, "item1", 3L, "item2", 2L, "item3", 1L),
                                 Arrays.asList(event.getData())
                         );
-                        Assert.assertFalse(event.isExpired());
+                        AssertJUnit.assertFalse(event.isExpired());
                     }
-                    Assert.assertNull(removeEvents);
+                    AssertJUnit.assertNull(removeEvents);
                 } else if (count == 1) {
-                    Assert.assertNull(inEvents);
-                    Assert.assertNotNull(removeEvents);
+                    AssertJUnit.assertNull(inEvents);
+                    AssertJUnit.assertNotNull(removeEvents);
                     for (Event event : removeEvents) {
-                        Assert.assertEquals(
+                        AssertJUnit.assertEquals(
                                 Arrays.asList("item3", 64L, "item1", 3L, "item2", 2L, "item3", 1L),
                                 Arrays.asList(event.getData())
                         );
-                        Assert.assertTrue(event.isExpired());
+                        AssertJUnit.assertTrue(event.isExpired());
                     }
                 } else if (count == 2) {
-                    Assert.assertNotNull(inEvents);
+                    AssertJUnit.assertNotNull(inEvents);
                     for (Event event : inEvents) {
-                        Assert.assertEquals(
+                        AssertJUnit.assertEquals(
                                 Arrays.asList("item6", 17L, "item6", 2L, "item5", 2L, "item4", 2L),
                                 Arrays.asList(event.getData())
                         );
-                        Assert.assertFalse(event.isExpired());
+                        AssertJUnit.assertFalse(event.isExpired());
                     }
-                    Assert.assertNull(removeEvents);
+                    AssertJUnit.assertNull(removeEvents);
                 }
                 count++;
             }
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("inputStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("inputStream");
+        siddhiAppRuntime.start();
 
         inputHandler.send(new Object[]{"item1", 10L});
         inputHandler.send(new Object[]{"item1", 13L});
@@ -117,9 +123,9 @@ public class TopKLengthBatchStreamProcessorExtensionTestCase {
         inputHandler.send(new Object[]{"item6", 17L});
 
         Thread.sleep(1000);
-        Assert.assertEquals(3, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(3, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -135,39 +141,39 @@ public class TopKLengthBatchStreamProcessorExtensionTestCase {
                 "on stream1.Top1Element==stream2.item " +
                 "select stream2.item as item, stream2.type as type " +
                 "insert into outputStream;");
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(inStreamDefinition + query);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(inStreamDefinition + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("outputStream", new StreamCallback() {
             @Override
-            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
-                EventPrinter.print(timeStamp, inEvents, removeEvents);
+            public void receive(Event[] events) {
+                AssertJUnit.assertNotNull(events);
+                if (events.length < 1) {
+                    return;
+                }
                 eventArrived = true;
-                Assert.assertNotNull(inEvents);
-                for (Event event : inEvents) {
+                for (Event event : events) {
                     if (count == 0) {
-                        Assert.assertEquals(
+                        AssertJUnit.assertEquals(
                                 Arrays.asList("item1", "cash"),
                                 Arrays.asList(event.getData())
                         );
-                        Assert.assertFalse(event.isExpired());
                     } else if (count == 1) {
-                        Assert.assertEquals(
+                        AssertJUnit.assertEquals(
                                 Arrays.asList("item6", "cash"),
                                 Arrays.asList(event.getData())
                         );
-                        Assert.assertFalse(event.isExpired());
                     } else {
-                        Assert.fail();
+                        AssertJUnit.fail();
                     }
                 }
-                Assert.assertNull(removeEvents);
                 count++;
             }
         });
 
-        InputHandler inputHandler1 = executionPlanRuntime.getInputHandler("inputStream1");
-        InputHandler inputHandler2 = executionPlanRuntime.getInputHandler("inputStream2");
-        executionPlanRuntime.start();
+        InputHandler inputHandler1 = siddhiAppRuntime.getInputHandler("inputStream1");
+        InputHandler inputHandler2 = siddhiAppRuntime.getInputHandler("inputStream2");
+        siddhiAppRuntime.start();
 
         inputHandler1.send(new Object[]{"item1", 10L});
         inputHandler1.send(new Object[]{"item1", 13L});
@@ -191,8 +197,8 @@ public class TopKLengthBatchStreamProcessorExtensionTestCase {
         inputHandler2.send(new Object[]{"item6", "cash"});
 
         Thread.sleep(1100);
-        Assert.assertEquals(2, count);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(2, count);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 }

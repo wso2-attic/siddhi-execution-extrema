@@ -20,7 +20,26 @@ package org.wso2.extension.siddhi.execution.extrema;
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.BottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.Constants;
+import org.wso2.siddhi.annotation.Example;
+import org.wso2.siddhi.annotation.Extension;
 
+/**
+ * bottomKTimeBatch counts the frequency of different values of a specified attribute inside a
+ * time window, and emits the lowest (k) number of frequency values.
+ */
+@Extension(
+        name = "bottomKTimeBatch",
+        namespace = "extrema",
+        description = "bottomKTimeBatch counts the frequency of different values of a specified attribute" +
+                " inside a time window, and emits the lowest (k) number of frequency values.",
+        parameters = {},
+        examples = {
+                @Example(
+                        syntax = "TBD",
+                        description =  "TBD"
+                )
+        }
+)
 public class BottomKTimeBatchStreamProcessorExtension extends AbstractKTimeBatchStreamProcessorExtension {
     @Override
     protected AbstractTopKBottomKFinder<Object> createNewTopKBottomKFinder() {

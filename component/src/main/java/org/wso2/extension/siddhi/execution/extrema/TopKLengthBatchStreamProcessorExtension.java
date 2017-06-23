@@ -20,6 +20,26 @@ package org.wso2.extension.siddhi.execution.extrema;
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.extension.siddhi.execution.extrema.util.TopKFinder;
+import org.wso2.siddhi.annotation.Example;
+import org.wso2.siddhi.annotation.Extension;
+
+/**
+ * topKLengthBatch counts the frequency of different values of a specified attribute inside a
+ * batch window, and emits the highest (k) number of frequency values.
+ */
+@Extension(
+        name = "topKLengthBatch",
+        namespace = "extrema",
+        description = "topKLengthBatch counts the frequency of different values of a specified attribute" +
+                " inside a batch window, and emits the highest (k) number of frequency values.",
+        parameters = {},
+        examples = {
+                @Example(
+                        syntax = "TBD",
+                        description =  "TBD"
+                )
+        }
+)
 
 public class TopKLengthBatchStreamProcessorExtension extends AbstractKLengthBatchStreamProcessorExtension {
     @Override

@@ -18,23 +18,26 @@
 
 package org.wso2.extension.siddhi.execution.extrema;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.wso2.siddhi.core.ExecutionPlanRuntime;
+import org.testng.AssertJUnit;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
 
+/**
+ * Test case for MaxByTimeWindow extension.
+ */
 public class MaxByTimeWindowTestCase {
 
     private int inEventCount;
     private int removeEventCount;
     private boolean eventArrived;
 
-    @Before
+    @BeforeMethod
     public void init() {
         inEventCount = 0;
         removeEventCount = 0;
@@ -51,10 +54,11 @@ public class MaxByTimeWindowTestCase {
         SiddhiManager siddhiManager = new SiddhiManager();
 
         String cseEventStream = "define stream cseEventStream (symbol string, price float, volume int);";
-        String query = "@info(name = 'query1') from cseEventStream#window.extrema:maxbytime(price, 1 sec) select symbol,price," +
-                "volume insert into outputStream ;";
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(cseEventStream + query);
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        String query = "@info(name = 'query1') from cseEventStream#window.extrema:maxbytime(price, 1 sec) " +
+                "select symbol,price, volume insert into outputStream ;";
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(cseEventStream + query);
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -62,15 +66,15 @@ public class MaxByTimeWindowTestCase {
                     inEventCount = inEventCount + inEvents.length;
                 }
                 if (removeEvents != null) {
-                    Assert.assertTrue("InEvents arrived before RemoveEvents", inEventCount > removeEventCount);
+                    AssertJUnit.assertTrue("InEvents arrived before RemoveEvents", inEventCount > removeEventCount);
                     removeEventCount = removeEventCount + removeEvents.length;
                 }
                 eventArrived = true;
             }
 
         });
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("cseEventStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
+        siddhiAppRuntime.start();
         inputHandler.send(new Object[]{"IBM", 700f, 1});
         inputHandler.send(new Object[]{"ABC", 60.4f, 2});
         inputHandler.send(new Object[]{"IBM", 60.9f, 3});
@@ -81,10 +85,10 @@ public class MaxByTimeWindowTestCase {
         inputHandler.send(new Object[]{"IBM", 60.50f, 6});
         inputHandler.send(new Object[]{"AAA", 600.5f, 7});
         Thread.sleep(500);
-        Assert.assertEquals(4, inEventCount);
-        Assert.assertEquals(0,removeEventCount);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(4, inEventCount);
+        AssertJUnit.assertEquals(0, removeEventCount);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -92,10 +96,12 @@ public class MaxByTimeWindowTestCase {
 
         SiddhiManager siddhiManager = new SiddhiManager();
         String cseEventStream = "define stream cseEventStream (symbol string, price float, volume int);";
-        String query = "@info(name = 'query1') from cseEventStream#window.extrema:maxbytime(price, 1 sec) select symbol,price," +
-                "volume insert into outputStream ;";
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(cseEventStream + query);
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        String query = "@info(name = 'query1') from cseEventStream#window.extrema:maxbytime(price, 1 sec) " +
+                "select symbol,price, volume " +
+                "insert into outputStream ;";
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(cseEventStream + query);
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -103,23 +109,24 @@ public class MaxByTimeWindowTestCase {
                     inEventCount = inEventCount + inEvents.length;
                 }
                 if (removeEvents != null) {
-                    Assert.assertTrue("InEvents arrived before RemoveEvents", inEventCount > removeEventCount);
+                    AssertJUnit.assertTrue("InEvents arrived before RemoveEvents",
+                            inEventCount > removeEventCount);
                     removeEventCount = removeEventCount + removeEvents.length;
                 }
                 eventArrived = true;
             }
 
         });
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("cseEventStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
+        siddhiAppRuntime.start();
         inputHandler.send(new Object[]{"IBM", 700f, 1});
         inputHandler.send(new Object[]{"MIT", 700f, 2});
         inputHandler.send(new Object[]{"WSO2", 700f, 3});
         Thread.sleep(1100);
-        Assert.assertEquals(3, inEventCount);
-        Assert.assertEquals(0,removeEventCount);
-        Assert.assertTrue(eventArrived);
-        executionPlanRuntime.shutdown();
+        AssertJUnit.assertEquals(3, inEventCount);
+        AssertJUnit.assertEquals(0, removeEventCount);
+        AssertJUnit.assertTrue(eventArrived);
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -134,8 +141,9 @@ public class MaxByTimeWindowTestCase {
                 "from cseEventStream#window.extrema:maxbytime(symbol, 1 sec) " +
                 "select symbol, price " +
                 "insert into outputStream ;";
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(cseEventStream + query);
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(cseEventStream + query);
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -150,8 +158,8 @@ public class MaxByTimeWindowTestCase {
 
         });
 
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("cseEventStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
+        siddhiAppRuntime.start();
         inputHandler.send(new Object[]{"WSO2", 60.5f, 2});
         inputHandler.send(new Object[]{"MIT", 23.5f, 3});
         inputHandler.send(new Object[]{"GOOGLE", 545.5f, 4});
@@ -165,35 +173,39 @@ public class MaxByTimeWindowTestCase {
         inputHandler.send(new Object[]{"WSO2", 60.5f, 10});
         inputHandler.send(new Object[]{"MIT", 632.5f, 11});
         Thread.sleep(4000);
-        executionPlanRuntime.shutdown();
-        Assert.assertEquals(5,inEventCount);
-        Assert.assertEquals(0, removeEventCount);
+        siddhiAppRuntime.shutdown();
+        AssertJUnit.assertEquals(5, inEventCount);
+        AssertJUnit.assertEquals(0, removeEventCount);
 
     }
+
     @Test
     public void maxbyTimeWindowTest4() throws InterruptedException {
 
         SiddhiManager siddhiManager = new SiddhiManager();
         String cseEventStream = "define stream cseEventStream (symbol string, price float, volume int);";
-        String query = "@info(name = 'query1') from cseEventStream#window.extrema:maxbytime(price, 1 sec) select symbol,price," +
+        String query = "@info(name = 'query1') from cseEventStream#window.extrema:maxbytime(price, 1 sec) " +
+                "select symbol,price," +
                 "volume insert expired events into outputStream ;";
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(cseEventStream + query);
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
-            @Override
-            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
-                EventPrinter.print(timeStamp, inEvents, removeEvents);
-                if (inEvents != null) {
-                    inEventCount = inEventCount + inEvents.length;
-                }
-                if (removeEvents != null) {
-                    removeEventCount = removeEventCount + removeEvents.length;
-                }
-                eventArrived = true;
-            }
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(cseEventStream + query);
+        siddhiAppRuntime.addCallback("query1",
+                new QueryCallback() {
+                    @Override
+                    public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
+                        EventPrinter.print(timeStamp, inEvents, removeEvents);
+                        if (inEvents != null) {
+                            inEventCount = inEventCount + inEvents.length;
+                        }
+                        if (removeEvents != null) {
+                            removeEventCount = removeEventCount + removeEvents.length;
+                        }
+                        eventArrived = true;
+                    }
 
-        });
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("cseEventStream");
-        executionPlanRuntime.start();
+                });
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
+        siddhiAppRuntime.start();
         inputHandler.send(new Object[]{"IBM", 700f, 1});
         inputHandler.send(new Object[]{"WSO2", 798f, 2});
         inputHandler.send(new Object[]{"MIT", 432f, 3});
@@ -204,7 +216,7 @@ public class MaxByTimeWindowTestCase {
         inputHandler.send(new Object[]{"GOOGLE", 798f, 7});
         inputHandler.send(new Object[]{"YAHOO", 432f, 8});
         Thread.sleep(1100);
-        executionPlanRuntime.shutdown();
+        siddhiAppRuntime.shutdown();
     }
 
     @Test
@@ -212,11 +224,13 @@ public class MaxByTimeWindowTestCase {
 
         SiddhiManager siddhiManager = new SiddhiManager();
         String cseEventStream = "define stream cseEventStream (symbol string, price float, volume int);";
-        String query = "@info(name = 'query1') from cseEventStream#window.extrema:maxbytime(price, 1 sec) select symbol,price," +
-                "volume insert all events into outputStream ;";
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(cseEventStream + query);
+        String query = "@info(name = 'query1') from cseEventStream#window.extrema:maxbytime(price, 1 sec) " +
+                "select symbol,price, volume " +
+                "insert all events into outputStream ;";
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
+                createSiddhiAppRuntime(cseEventStream + query);
 
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
@@ -224,29 +238,30 @@ public class MaxByTimeWindowTestCase {
                     inEventCount = inEventCount + inEvents.length;
                 }
                 if (removeEvents != null) {
-                    Assert.assertTrue("InEvents arrived before RemoveEvents", inEventCount > removeEventCount);
+                    AssertJUnit.assertTrue("InEvents arrived before RemoveEvents",
+                            inEventCount > removeEventCount);
                     removeEventCount = removeEventCount + removeEvents.length;
                 }
                 eventArrived = true;
             }
 
         });
-        InputHandler inputHandler = executionPlanRuntime.getInputHandler("cseEventStream");
-        executionPlanRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
+        siddhiAppRuntime.start();
         inputHandler.send(new Object[]{"IBM", 700f, 1});
         inputHandler.send(new Object[]{"WSO2", 98f, 2});
         inputHandler.send(new Object[]{"MIT", 432f, 3});
         Thread.sleep(1100);
-        executionPlanRuntime.start();
+        siddhiAppRuntime.start();
         inputHandler.send(new Object[]{"IFS", 700f, 4});
         inputHandler.send(new Object[]{"GOOGLE", 798f, 5});
         inputHandler.send(new Object[]{"YAHOO", 432f, 6});
         inputHandler.send(new Object[]{"GOOGLE", 798f, 7});
         inputHandler.send(new Object[]{"YAHOO", 32f, 8});
         Thread.sleep(1100);
-        executionPlanRuntime.shutdown();
-        Assert.assertEquals(4, inEventCount);
-        Assert.assertEquals(4, removeEventCount);
+        siddhiAppRuntime.shutdown();
+        AssertJUnit.assertEquals(4, inEventCount);
+        AssertJUnit.assertEquals(4, removeEventCount);
     }
 
 

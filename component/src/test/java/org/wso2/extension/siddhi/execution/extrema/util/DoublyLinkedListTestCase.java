@@ -18,10 +18,10 @@
 
 package org.wso2.extension.siddhi.execution.extrema.util;
 
-import junit.framework.Assert;
 import org.apache.log4j.Logger;
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +35,7 @@ public class DoublyLinkedListTestCase {
     private List<String> expectedOutput;
     private List<ListNode<String>> nodes;
 
-    @Before
+    @BeforeMethod
     public void init() {
         nodes = new ArrayList<ListNode<String>>();
         doublyLinkedList = new DoublyLinkedList<String>();
@@ -57,11 +57,11 @@ public class DoublyLinkedListTestCase {
         expectedOutput.add("newNode");
         int i = 0;
         for (ListNode<String> item = doublyLinkedList.head(); item != null; item = item.getNextNode()) {
-            Assert.assertEquals(expectedOutput.get(i), item.getValue());
+            AssertJUnit.assertEquals(expectedOutput.get(i), item.getValue());
             i++;
         }
-        Assert.assertEquals(nodes.get(nodes.size() - 1), doublyLinkedList.tail());
-        Assert.assertEquals(5, doublyLinkedList.size());
+        AssertJUnit.assertEquals(nodes.get(nodes.size() - 1), doublyLinkedList.tail());
+        AssertJUnit.assertEquals(5, doublyLinkedList.size());
     }
 
     @Test
@@ -74,11 +74,11 @@ public class DoublyLinkedListTestCase {
         expectedOutput.add("newNode");
         int i = 0;
         for (ListNode<String> item = doublyLinkedList.head(); item != null; item = item.getNextNode()) {
-            Assert.assertEquals(expectedOutput.get(i), item.getValue());
+            AssertJUnit.assertEquals(expectedOutput.get(i), item.getValue());
             i++;
         }
-        Assert.assertEquals(nodes.get(nodes.size() - 1), doublyLinkedList.tail());
-        Assert.assertEquals(5, doublyLinkedList.size());
+        AssertJUnit.assertEquals(nodes.get(nodes.size() - 1), doublyLinkedList.tail());
+        AssertJUnit.assertEquals(5, doublyLinkedList.size());
     }
 
     @Test
@@ -89,11 +89,11 @@ public class DoublyLinkedListTestCase {
         expectedOutput.add(0, "newNode");
         int i = 0;
         for (ListNode<String> item = doublyLinkedList.head(); item != null; item = item.getNextNode()) {
-            Assert.assertEquals(expectedOutput.get(i), item.getValue());
+            AssertJUnit.assertEquals(expectedOutput.get(i), item.getValue());
             i++;
         }
-        Assert.assertEquals(nodes.get(0), doublyLinkedList.head());
-        Assert.assertEquals(5, doublyLinkedList.size());
+        AssertJUnit.assertEquals(nodes.get(0), doublyLinkedList.head());
+        AssertJUnit.assertEquals(5, doublyLinkedList.size());
     }
 
     @Test
@@ -106,11 +106,11 @@ public class DoublyLinkedListTestCase {
         expectedOutput.add(0, "newNode");
         int i = 0;
         for (ListNode<String> item = doublyLinkedList.head(); item != null; item = item.getNextNode()) {
-            Assert.assertEquals(expectedOutput.get(i), item.getValue());
+            AssertJUnit.assertEquals(expectedOutput.get(i), item.getValue());
             i++;
         }
-        Assert.assertEquals(nodes.get(0), doublyLinkedList.head());
-        Assert.assertEquals(5, doublyLinkedList.size());
+        AssertJUnit.assertEquals(nodes.get(0), doublyLinkedList.head());
+        AssertJUnit.assertEquals(5, doublyLinkedList.size());
     }
 
     @Test
@@ -118,9 +118,9 @@ public class DoublyLinkedListTestCase {
         log.info("DoublyLinkedList TestCase 5");
 
         ListNode<String> newNode = emptyDoublyLinkedList.addAfterLast("newNode");
-        Assert.assertEquals(newNode, emptyDoublyLinkedList.head());
-        Assert.assertEquals(newNode, emptyDoublyLinkedList.tail());
-        Assert.assertEquals(1, emptyDoublyLinkedList.size());
+        AssertJUnit.assertEquals(newNode, emptyDoublyLinkedList.head());
+        AssertJUnit.assertEquals(newNode, emptyDoublyLinkedList.tail());
+        AssertJUnit.assertEquals(1, emptyDoublyLinkedList.size());
     }
 
     @Test
@@ -129,9 +129,9 @@ public class DoublyLinkedListTestCase {
 
         ListNode<String> newNode = new ListNode<String>("newNode");
         emptyDoublyLinkedList.addAfterLast(newNode);
-        Assert.assertEquals(newNode, emptyDoublyLinkedList.head());
-        Assert.assertEquals(newNode, emptyDoublyLinkedList.tail());
-        Assert.assertEquals(1, emptyDoublyLinkedList.size());
+        AssertJUnit.assertEquals(newNode, emptyDoublyLinkedList.head());
+        AssertJUnit.assertEquals(newNode, emptyDoublyLinkedList.tail());
+        AssertJUnit.assertEquals(1, emptyDoublyLinkedList.size());
     }
 
     @Test
@@ -139,9 +139,9 @@ public class DoublyLinkedListTestCase {
         log.info("DoublyLinkedList TestCase 7");
 
         ListNode<String> newNode = emptyDoublyLinkedList.addBeforeFirst("newNode");
-        Assert.assertEquals(newNode, emptyDoublyLinkedList.head());
-        Assert.assertEquals(newNode, emptyDoublyLinkedList.tail());
-        Assert.assertEquals(1, emptyDoublyLinkedList.size());
+        AssertJUnit.assertEquals(newNode, emptyDoublyLinkedList.head());
+        AssertJUnit.assertEquals(newNode, emptyDoublyLinkedList.tail());
+        AssertJUnit.assertEquals(1, emptyDoublyLinkedList.size());
     }
 
     @Test
@@ -150,9 +150,9 @@ public class DoublyLinkedListTestCase {
 
         ListNode<String> newNode = new ListNode<String>("newNode");
         emptyDoublyLinkedList.addBeforeFirst(newNode);
-        Assert.assertEquals(newNode, emptyDoublyLinkedList.head());
-        Assert.assertEquals(newNode, emptyDoublyLinkedList.tail());
-        Assert.assertEquals(1, emptyDoublyLinkedList.size());
+        AssertJUnit.assertEquals(newNode, emptyDoublyLinkedList.head());
+        AssertJUnit.assertEquals(newNode, emptyDoublyLinkedList.tail());
+        AssertJUnit.assertEquals(1, emptyDoublyLinkedList.size());
     }
 
     @Test
@@ -163,10 +163,10 @@ public class DoublyLinkedListTestCase {
         expectedOutput.add(3, "newNode");
         int i = 0;
         for (ListNode<String> item = doublyLinkedList.head(); item != null; item = item.getNextNode()) {
-            Assert.assertEquals(expectedOutput.get(i), item.getValue());
+            AssertJUnit.assertEquals(expectedOutput.get(i), item.getValue());
             i++;
         }
-        Assert.assertEquals(5, doublyLinkedList.size());
+        AssertJUnit.assertEquals(5, doublyLinkedList.size());
     }
 
     @Test
@@ -177,10 +177,10 @@ public class DoublyLinkedListTestCase {
         expectedOutput.add(3, "newNode");
         int i = 0;
         for (ListNode<String> item = doublyLinkedList.head(); item != null; item = item.getNextNode()) {
-            Assert.assertEquals(expectedOutput.get(i), item.getValue());
+            AssertJUnit.assertEquals(expectedOutput.get(i), item.getValue());
             i++;
         }
-        Assert.assertEquals(5, doublyLinkedList.size());
+        AssertJUnit.assertEquals(5, doublyLinkedList.size());
     }
 
     @Test
@@ -191,36 +191,36 @@ public class DoublyLinkedListTestCase {
         expectedOutput.remove(2);
         int i = 0;
         for (ListNode<String> item = doublyLinkedList.head(); item != null; item = item.getNextNode()) {
-            Assert.assertEquals(expectedOutput.get(i), item.getValue());
+            AssertJUnit.assertEquals(expectedOutput.get(i), item.getValue());
             i++;
         }
-        Assert.assertEquals(3, doublyLinkedList.size());
+        AssertJUnit.assertEquals(3, doublyLinkedList.size());
     }
 
     @Test
     public void testDoublyLinkedListForFirstAndLast() {
         log.info("DoublyLinkedList TestCase 12");
 
-        Assert.assertEquals(expectedOutput.get(0), doublyLinkedList.first());
-        Assert.assertEquals(expectedOutput.get(expectedOutput.size() - 1), doublyLinkedList.last());
+        AssertJUnit.assertEquals(expectedOutput.get(0), doublyLinkedList.first());
+        AssertJUnit.assertEquals(expectedOutput.get(expectedOutput.size() - 1), doublyLinkedList.last());
     }
 
     @Test
     public void testDoublyLinkedListForHeadAndTail() {
         log.info("DoublyLinkedList TestCase 13");
 
-        Assert.assertEquals(nodes.get(0), doublyLinkedList.head());
-        Assert.assertEquals(nodes.get(nodes.size() - 1), doublyLinkedList.tail());
+        AssertJUnit.assertEquals(nodes.get(0), doublyLinkedList.head());
+        AssertJUnit.assertEquals(nodes.get(nodes.size() - 1), doublyLinkedList.tail());
     }
 
     @Test
     public void testDoublyLinkedListForIsEmpty() {
         log.info("DoublyLinkedList TestCase 14");
 
-        Assert.assertFalse(doublyLinkedList.isEmpty());
+        AssertJUnit.assertFalse(doublyLinkedList.isEmpty());
         for (int i = 0; i < nodes.size(); i++) {
             doublyLinkedList.remove(nodes.get(i));
         }
-        Assert.assertTrue(doublyLinkedList.isEmpty());
+        AssertJUnit.assertTrue(doublyLinkedList.isEmpty());
     }
 }
