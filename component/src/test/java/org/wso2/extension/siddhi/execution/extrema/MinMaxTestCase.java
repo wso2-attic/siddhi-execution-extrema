@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.wso2.extension.siddhi.execution.kalmanfilter.KalmanFilter;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
@@ -598,7 +597,6 @@ public class MinMaxTestCase {
     public void testMinMaxWithKalman() throws InterruptedException {
         log.info("MinMax on Kalman smoothened function TestCase");
         SiddhiManager siddhiManager = new SiddhiManager();
-        siddhiManager.setExtension("kf:kalmanFilter", KalmanFilter.class);
 
         String inStreamDefinition = "define stream inputStream (id int ,price double);";
         String query = ("@info(name = 'query1') " + "from inputStream "
