@@ -22,6 +22,12 @@
     
         
     <url>
+     <loc>/api/4.0.2-SNAPSHOT/</loc>
+     <lastmod>2017-07-12</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
+    <url>
      <loc>/api/4.0.1-SNAPSHOT/</loc>
      <lastmod>2017-07-12</lastmod>
      <changefreq>daily</changefreq>
