@@ -22,6 +22,8 @@ import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.extension.siddhi.execution.extrema.util.TopKFinder;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
+import org.wso2.siddhi.annotation.Parameter;
+import org.wso2.siddhi.annotation.util.DataType;
 
 /**
  * topKLengthBatch counts the frequency of different values of a specified attribute inside a
@@ -32,11 +34,27 @@ import org.wso2.siddhi.annotation.Extension;
         namespace = "extrema",
         description = "topKLengthBatch counts the frequency of different values of a specified attribute" +
                 " inside a batch window, and emits the highest (k) number of frequency values.",
-        parameters = {},
+        parameters = {
+                @Parameter(name = "attribute",
+                        description = "The attribute of which the frequency is counted.",
+                        type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
+                                DataType.STRING, DataType.BOOL, DataType.OBJECT}),
+                @Parameter(name = "window.length",
+                        description = "The length of the window.",
+                        type = {DataType.INT}),
+                @Parameter(name = "k.value",
+                        description = "The number of top frequencies required.",
+                        type = {DataType.INT})
+        },
         examples = {
                 @Example(
-                        syntax = "TBD",
-                        description =  "TBD"
+                        syntax = "define stream inputStream (item string, price long);\n" +
+                                "\n" +
+                                "from inputStream#extrema:topKLengthBatch(item, 6, 3)\n" +
+                                "insert all events into outputStream;)",
+                        description = "In the given example query, a batch of 6 events will be collected. " +
+                                "Once the window is full, the 3 items with the highest frequency will be " +
+                                "emitted out and the window will be reset."
                 )
         }
 )

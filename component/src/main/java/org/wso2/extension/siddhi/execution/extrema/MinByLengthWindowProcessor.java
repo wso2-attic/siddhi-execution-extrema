@@ -21,6 +21,8 @@ package org.wso2.extension.siddhi.execution.extrema;
 import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByConstants;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
+import org.wso2.siddhi.annotation.Parameter;
+import org.wso2.siddhi.annotation.util.DataType;
 
 /**
  * Sample Query:
@@ -37,12 +39,25 @@ import org.wso2.siddhi.annotation.Extension;
 @Extension(
         name = "minByLength",
         namespace = "extrema",
-        description = "TBD",
-        parameters = {},
+        description = "The event with the minimum value for the given attribute in the specified " +
+                "sliding window is emitted.",
+        parameters = {
+                @Parameter(name = "attribute",
+                        description = "The attribute of which the minimum value is required.",
+                        type = {DataType.INT, DataType.FLOAT, DataType.DOUBLE, DataType.LONG,
+                                DataType.STRING}),
+                @Parameter(name = "sliding.window.length",
+                        description = "The length of the sliding window observed.",
+                        type = {DataType.INT, DataType.LONG})
+        },
         examples = {
                 @Example(
-                        syntax = "TBD",
-                        description =  "TBD"
+                        syntax = "define stream cseEventStream (symbol string, price float, volume int);\n" +
+                                "from cseEventStream#window.extrema:minByLength(price, 4) " +
+                                "select symbol,price,volume\n" +
+                                "insert into outputStream ;",
+                        description =  "In the given example query, a sliding window of length 4 is considered. " +
+                                "The event with the minimum price will be emitted out."
                 )
         }
 )

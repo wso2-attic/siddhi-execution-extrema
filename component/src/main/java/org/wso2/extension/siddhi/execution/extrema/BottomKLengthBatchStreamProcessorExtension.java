@@ -22,6 +22,8 @@ import org.wso2.extension.siddhi.execution.extrema.util.BottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
+import org.wso2.siddhi.annotation.Parameter;
+import org.wso2.siddhi.annotation.util.DataType;
 
 /**
  * bottomKLengthBatch counts the frequency of different values of a specified attribute inside
@@ -31,12 +33,29 @@ import org.wso2.siddhi.annotation.Extension;
         name = "bottomKLengthBatch",
         namespace = "extrema",
         description = "bottomKLengthBatch counts the frequency of different values of a specified " +
-                "attribute inside a batch window, and emits the lowest (k) number of frequency values.",
-        parameters = {},
+                "attribute inside a batch window, and emits the lowest (k) number of frequency values." +
+                " The bottom K frequency values are emitted per batch.",
+        parameters = {
+                @Parameter(name = "attribute",
+                        description = "The attribute of which the frequency is counted.",
+                        type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
+                                DataType.STRING, DataType.BOOL, DataType.OBJECT}),
+                @Parameter(name = "window.length",
+                        description = "The length of the window.",
+                        type = {DataType.INT}),
+                @Parameter(name = "k.value",
+                        description = "The number of bottom frequencies required.",
+                        type = {DataType.INT})
+        },
         examples = {
                 @Example(
-                        syntax = "TBD",
-                        description =  "TBD"
+                        syntax = "define stream inputStream (item string, price long);\n" +
+                                "\n" +
+                                "from inputStream#extrema:bottomKLengthBatch(item, 6, 3)\n" +
+                                "insert all events into outputStream;)",
+                        description = "In the given example query, a batch of 6 events will be collected. " +
+                                "Once the window is full, the 3 items with the lowest frequency will be " +
+                                "emitted out and the window will be reset."
                 )
         }
 )

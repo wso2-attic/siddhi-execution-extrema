@@ -21,6 +21,8 @@ package org.wso2.extension.siddhi.execution.extrema;
 import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByConstants;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
+import org.wso2.siddhi.annotation.Parameter;
+import org.wso2.siddhi.annotation.util.DataType;
 
 /**
  * Sample Query:
@@ -35,12 +37,26 @@ import org.wso2.siddhi.annotation.Extension;
 @Extension(
         name = "minbytimebatch",
         namespace = "extrema",
-        description = "TBD",
-        parameters = {},
+        description = "Calculates the minimum value of a specified attribute within a time window, and emits it.",
+        parameters = {
+                @Parameter(name = "attribute",
+                        description = "The attribute of which the minimum value is required.",
+                        type = {DataType.INT, DataType.FLOAT, DataType.DOUBLE, DataType.LONG,
+                                DataType.STRING}),
+                @Parameter(name = "time.batch.length",
+                        description = "The length of the time window observed.",
+                        type = {DataType.INT, DataType.LONG})
+        },
         examples = {
                 @Example(
-                        syntax = "TBD",
-                        description =  "TBD"
+                        syntax = "define stream cseEventStream (symbol string, price float, volume int);\n" +
+                                "\n" +
+                                "from cseEventStream#window.extrema:minByTimeBatch(price, 1 sec) " +
+                                "select symbol,price,volume\n" +
+                                "insert into outputStream ;",
+                        description =  "In the given example query, a time-batch window of 1 second " +
+                                "is considered. After every second, the window will be reset, emitting" +
+                                " the event with the minimum price."
                 )
         }
 )
