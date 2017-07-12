@@ -21,6 +21,8 @@ package org.wso2.extension.siddhi.execution.extrema;
 import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByConstants;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
+import org.wso2.siddhi.annotation.Parameter;
+import org.wso2.siddhi.annotation.util.DataType;
 
 /**
  * Sample Query:
@@ -37,12 +39,27 @@ import org.wso2.siddhi.annotation.Extension;
 @Extension(
         name = "minByLengthBatch",
         namespace = "extrema",
-        description = "TBD",
-        parameters = {},
+        description = "Calculates the minimum value of a specified attribute inside a batch window " +
+                "and emits it.",
+        parameters = {
+                @Parameter(name = "attribute",
+                        description = "The attribute of which the minimum value is required.",
+                        type = {DataType.INT, DataType.FLOAT, DataType.DOUBLE, DataType.LONG,
+                                DataType.STRING}),
+                @Parameter(name = "batch.length",
+                        description = "The length of the batch involved.",
+                        type = {DataType.INT})
+        },
         examples = {
                 @Example(
-                        syntax = "TBD",
-                        description =  "TBD"
+                        syntax = "define stream cseEventStream (symbol string, price float, volume int);\n" +
+                                "\n" +
+                                "from cseEventStream#window.extrema:minByLengthBatch(price, 4) " +
+                                "select symbol,price,volume\n" +
+                                "insert into outputStream ;",
+                        description =  "In the given example query, a batch of 4 events will be collected. " +
+                                "Once the window is full, the item with the minimum price in the batch will be " +
+                                "emitted out and the window will be reset."
                 )
         }
 )

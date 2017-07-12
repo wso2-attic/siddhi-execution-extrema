@@ -22,6 +22,8 @@ import org.wso2.extension.siddhi.execution.extrema.util.BottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
+import org.wso2.siddhi.annotation.Parameter;
+import org.wso2.siddhi.annotation.util.DataType;
 
 /**
  * bottomK counts the frequency of different values of a specified attribute,
@@ -31,12 +33,25 @@ import org.wso2.siddhi.annotation.Extension;
         name = "bottomK",
         namespace = "extrema",
         description = "bottomK counts the frequency of different values of a specified attribute, " +
-                "and emits the lowest (k) number of frequency values.",
-        parameters = {},
+                "and emits the lowest (k) number of frequency values. Events are emitted only if " +
+                "there is a change in the bottomK results for each received chunk of events.",
+        parameters = {
+                @Parameter(name = "attribute",
+                        description = "The attribute of which the frequency is counted.",
+                        type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
+                                DataType.STRING, DataType.BOOL, DataType.OBJECT}),
+                @Parameter(name = "k.value",
+                        description = "The number of bottom frequencies required.",
+                        type = {DataType.INT})
+        },
         examples = {
                 @Example(
-                        syntax = "TBD",
-                        description =  "TBD"
+                        syntax = "define stream inputStream (item string, price long);\n" +
+                                "\n" +
+                                "from inputStream#extrema:bottomK(item, 3)\n" +
+                                "insert all events into outputStream;)",
+                        description =  "In the given example query, the three items with the lowest " +
+                                "frequency counts will be emitted"
                 )
         }
 )
