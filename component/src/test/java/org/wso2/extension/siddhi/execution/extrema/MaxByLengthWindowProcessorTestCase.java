@@ -30,9 +30,11 @@ import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for MaxByLengthWindowProcessor extension.
@@ -40,11 +42,15 @@ import java.util.List;
 public class MaxByLengthWindowProcessorTestCase {
     private static final Logger log = Logger.getLogger(MaxByLengthWindowProcessorTestCase.class);
     int count;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
     List<Object> results = new ArrayList<Object>();
 
     @BeforeMethod
     public void init() {
         count = 0;
+        eventCount = new AtomicInteger(0);
     }
 
 
@@ -76,6 +82,7 @@ public class MaxByLengthWindowProcessorTestCase {
                         AssertJUnit.assertArrayEquals((Object[]) results.get(count), event.getData());
                         count++;
                     }
+                    eventCount.incrementAndGet();
                 }
             });
             InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
@@ -83,7 +90,7 @@ public class MaxByLengthWindowProcessorTestCase {
             inputHandler.send(new Object[]{"IBM", 700f, 14});
             inputHandler.send(new Object[]{"IBM", 20.5f, 2});
             inputHandler.send(new Object[]{"WSO2", 790f, 1});
-            Thread.sleep(1000);
+            SiddhiTestHelper.waitForEvents(waitTime, 3, eventCount, timeout);
         } finally {
             siddhiAppRuntime.shutdown();
         }
@@ -114,6 +121,7 @@ public class MaxByLengthWindowProcessorTestCase {
                     for (Event event : events) {
                         count++;
                     }
+                    eventCount.incrementAndGet();
                 }
             });
             InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
@@ -123,7 +131,7 @@ public class MaxByLengthWindowProcessorTestCase {
             inputHandler.send(new Object[]{"WSO2", 20.5f, 1});
             inputHandler.send(new Object[]{"WSO2", 23f, 1});
 
-            Thread.sleep(1000);
+            SiddhiTestHelper.waitForEvents(waitTime, 4, eventCount, timeout);
         } finally {
             siddhiAppRuntime.shutdown();
         }
@@ -156,6 +164,7 @@ public class MaxByLengthWindowProcessorTestCase {
                         AssertJUnit.assertArrayEquals((Object[]) results.get(count), event.getData());
                         count++;
                     }
+                    eventCount.incrementAndGet();
                 }
             });
             InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
@@ -164,7 +173,7 @@ public class MaxByLengthWindowProcessorTestCase {
             inputHandler.send(new Object[]{"IBM", 60.5f, 12});
             inputHandler.send(new Object[]{"IBM", 700f, 20});
             inputHandler.send(new Object[]{"ZZZ", 60.5f, 82});
-            Thread.sleep(1000);
+            SiddhiTestHelper.waitForEvents(waitTime, 4, eventCount, timeout);
         } finally {
             siddhiAppRuntime.shutdown();
         }

@@ -29,9 +29,11 @@ import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for MinByLengthBatchWindowProcessor extension.
@@ -40,10 +42,14 @@ public class MinByLengthBatchWindowProcessorTestCase {
 
     private static final Logger log = Logger.getLogger(MinByLengthBatchWindowProcessorTestCase.class);
     private int count;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         count = 0;
+        eventCount = new AtomicInteger(0);
     }
 
     @Test
@@ -71,6 +77,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
                     EventPrinter.print(events);
                     Object[] results = new Object[]{"IBM", 50.5f, 2};
                     AssertJUnit.assertArrayEquals(results, events[0].getData());
+                    eventCount.incrementAndGet();
 
                 }
             });
@@ -80,10 +87,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
             inputHandler.send(new Object[]{"IBM", 50.5f, 2});
             inputHandler.send(new Object[]{"et", 700f, 1});
             inputHandler.send(new Object[]{"dg", 60.5f, 24});
-
-            Thread.sleep(1000);
-
-
+            SiddhiTestHelper.waitForEvents(waitTime, 1, eventCount, timeout);
         } finally {
             siddhiAppRuntime.shutdown();
         }
@@ -116,6 +120,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
                     for (Event event : events) {
                         AssertJUnit.assertArrayEquals((Object[]) results.get(count), event.getData());
                         count++;
+                        eventCount.incrementAndGet();
                     }
 
                 }
@@ -131,7 +136,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
             inputHandler.send(new Object[]{"IBM", 60.5f, 21});
             inputHandler.send(new Object[]{"et", 700f, 1});
             inputHandler.send(new Object[]{"dg", 60.5f, 24});
-            Thread.sleep(1000);
+            SiddhiTestHelper.waitForEvents(waitTime, 2, eventCount, timeout);
 
         } finally {
             siddhiAppRuntime.shutdown();
@@ -165,6 +170,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
                         AssertJUnit.assertArrayEquals((Object[]) results.get(count), event.getData());
                         count++;
                     }
+                    eventCount.incrementAndGet();
                 }
             });
             InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
@@ -178,7 +184,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
             inputHandler.send(new Object[]{"DGF", 60.5f, 21});
             inputHandler.send(new Object[]{"ETR", 700f, 1});
             inputHandler.send(new Object[]{"DXD", 60.5f, 24});
-            Thread.sleep(1000);
+            SiddhiTestHelper.waitForEvents(waitTime, 2, eventCount, timeout);
         } finally {
             siddhiAppRuntime.shutdown();
         }
@@ -214,11 +220,7 @@ public class MinByLengthBatchWindowProcessorTestCase {
             siddhiAppRuntime.start();
             inputHandler.send(new Object[]{"IBM", 700f, 14});
             inputHandler.send(new Object[]{"IBM", 50.5f, 2});
-
-
             Thread.sleep(1000);
-
-
         } finally {
             siddhiAppRuntime.shutdown();
         }

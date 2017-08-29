@@ -29,8 +29,10 @@ import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for bottomKLengthBatch extension.
@@ -40,11 +42,15 @@ public class BottomKLengthBatchStreamProcessorExtensionTestCase {
             BottomKLengthBatchStreamProcessorExtensionTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         count = 0;
         eventArrived = false;
+        eventCount = new AtomicInteger(0);
     }
 
     @Test
@@ -64,6 +70,7 @@ public class BottomKLengthBatchStreamProcessorExtensionTestCase {
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
                 eventArrived = true;
+                eventCount.incrementAndGet();
                 if (count == 0) {
                     AssertJUnit.assertNotNull(inEvents);
                     for (Event event : inEvents) {
@@ -123,7 +130,7 @@ public class BottomKLengthBatchStreamProcessorExtensionTestCase {
         inputHandler.send(new Object[]{"item5", 84L});
         inputHandler.send(new Object[]{"item6", 34L});
 
-        Thread.sleep(1100);
+        SiddhiTestHelper.waitForEvents(waitTime, 3, eventCount, timeout);
         AssertJUnit.assertEquals(3, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -155,6 +162,7 @@ public class BottomKLengthBatchStreamProcessorExtensionTestCase {
                 eventArrived = true;
                 AssertJUnit.assertNotNull(events);
                 for (Event event : events) {
+                    eventCount.incrementAndGet();
                     if (count == 0) {
                         AssertJUnit.assertEquals(
                                 Arrays.asList("item3", "voucher"),
@@ -195,7 +203,7 @@ public class BottomKLengthBatchStreamProcessorExtensionTestCase {
         inputHandler2.send(new Object[]{"item4", "credit card"});
         inputHandler2.send(new Object[]{"item6", "cash"});
 
-        Thread.sleep(1100);
+        SiddhiTestHelper.waitForEvents(waitTime, 2, eventCount, timeout);
         AssertJUnit.assertEquals(2, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();

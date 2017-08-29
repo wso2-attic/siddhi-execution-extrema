@@ -28,9 +28,11 @@ import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for MinByLengthWindowProcessor extension.
@@ -40,10 +42,14 @@ public class MinByLengthWindowProcessorTestCase {
     private static final Logger log = Logger.getLogger(MinByLengthWindowProcessorTestCase.class);
     int count;
     List<Object> results = new ArrayList<Object>();
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         count = 0;
+        eventCount = new AtomicInteger(0);
     }
 
 
@@ -75,6 +81,7 @@ public class MinByLengthWindowProcessorTestCase {
                         AssertJUnit.assertArrayEquals((Object[]) results.get(count), event.getData());
                         count++;
                     }
+                    eventCount.incrementAndGet();
                 }
             });
             InputHandler inputHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
@@ -82,7 +89,7 @@ public class MinByLengthWindowProcessorTestCase {
             inputHandler.send(new Object[]{"IBM", 700f, 14});
             inputHandler.send(new Object[]{"IBM", 20.5f, 2});
             inputHandler.send(new Object[]{"WSO2", 700f, 1});
-            Thread.sleep(1000);
+            SiddhiTestHelper.waitForEvents(waitTime, 3, eventCount, timeout);
         } finally {
             siddhiAppRuntime.shutdown();
         }
@@ -110,6 +117,7 @@ public class MinByLengthWindowProcessorTestCase {
                 @Override
                 public void receive(Event[] events) {
                     log.info("output event: ");
+                    eventCount.incrementAndGet();
                     EventPrinter.print(events);
                     for (Event event : events) {
                         count++;
@@ -122,10 +130,8 @@ public class MinByLengthWindowProcessorTestCase {
             inputHandler.send(new Object[]{"IBM", 60.5f, 12});
             inputHandler.send(new Object[]{"IBM", 700f, 2});
             inputHandler.send(new Object[]{"xoo", 60.5f, 82});
-
-
-            Thread.sleep(1000);
-        } finally {
+            SiddhiTestHelper.waitForEvents(waitTime, 4, eventCount, timeout);
+            } finally {
             siddhiAppRuntime.shutdown();
         }
     }
@@ -161,7 +167,7 @@ public class MinByLengthWindowProcessorTestCase {
                 public void receive(Event[] events) {
                     log.info("output event: ");
                     EventPrinter.print(events);
-
+                    eventCount.incrementAndGet();
                     for (Event event : events) {
                         AssertJUnit.assertArrayEquals((Object[]) results.get(count), event.getData());
                         count++;
@@ -180,7 +186,7 @@ public class MinByLengthWindowProcessorTestCase {
             inputHandler.send(new Object[]{"dhh", 60.5f, 82});
             inputHandler.send(new Object[]{"drg", 700f, 2});
             inputHandler.send(new Object[]{"aaa", 60.5f, 82});
-            Thread.sleep(1000);
+            SiddhiTestHelper.waitForEvents(waitTime, 10, eventCount, timeout);
         } finally {
             siddhiAppRuntime.shutdown();
         }

@@ -27,6 +27,9 @@ import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for MaxByTimeWindow extension.
@@ -36,12 +39,16 @@ public class MaxByTimeWindowTestCase {
     private int inEventCount;
     private int removeEventCount;
     private boolean eventArrived;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         inEventCount = 0;
         removeEventCount = 0;
         eventArrived = false;
+        eventCount = new AtomicInteger(0);
     }
 
     /**
@@ -70,6 +77,7 @@ public class MaxByTimeWindowTestCase {
                     removeEventCount = removeEventCount + removeEvents.length;
                 }
                 eventArrived = true;
+                eventCount.incrementAndGet();
             }
 
         });
@@ -84,7 +92,8 @@ public class MaxByTimeWindowTestCase {
         Thread.sleep(1100);
         inputHandler.send(new Object[]{"IBM", 60.50f, 6});
         inputHandler.send(new Object[]{"AAA", 600.5f, 7});
-        Thread.sleep(500);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 4, eventCount, timeout);
         AssertJUnit.assertEquals(4, inEventCount);
         AssertJUnit.assertEquals(0, removeEventCount);
         AssertJUnit.assertTrue(eventArrived);
@@ -114,6 +123,7 @@ public class MaxByTimeWindowTestCase {
                     removeEventCount = removeEventCount + removeEvents.length;
                 }
                 eventArrived = true;
+                eventCount.incrementAndGet();
             }
 
         });
@@ -122,7 +132,8 @@ public class MaxByTimeWindowTestCase {
         inputHandler.send(new Object[]{"IBM", 700f, 1});
         inputHandler.send(new Object[]{"MIT", 700f, 2});
         inputHandler.send(new Object[]{"WSO2", 700f, 3});
-        Thread.sleep(1100);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 3, eventCount, timeout);
         AssertJUnit.assertEquals(3, inEventCount);
         AssertJUnit.assertEquals(0, removeEventCount);
         AssertJUnit.assertTrue(eventArrived);
@@ -154,6 +165,7 @@ public class MaxByTimeWindowTestCase {
                     removeEventCount = removeEventCount + removeEvents.length;
                 }
                 eventArrived = true;
+                eventCount.incrementAndGet();
             }
 
         });
@@ -172,7 +184,8 @@ public class MaxByTimeWindowTestCase {
         inputHandler.send(new Object[]{"GOOGLE", 7f, 9});
         inputHandler.send(new Object[]{"WSO2", 60.5f, 10});
         inputHandler.send(new Object[]{"MIT", 632.5f, 11});
-        Thread.sleep(4000);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 5, eventCount, timeout);
         siddhiAppRuntime.shutdown();
         AssertJUnit.assertEquals(5, inEventCount);
         AssertJUnit.assertEquals(0, removeEventCount);
@@ -201,6 +214,7 @@ public class MaxByTimeWindowTestCase {
                             removeEventCount = removeEventCount + removeEvents.length;
                         }
                         eventArrived = true;
+                        eventCount.incrementAndGet();
                     }
 
                 });
@@ -215,7 +229,8 @@ public class MaxByTimeWindowTestCase {
         inputHandler.send(new Object[]{"YAHOO", 432f, 6});
         inputHandler.send(new Object[]{"GOOGLE", 798f, 7});
         inputHandler.send(new Object[]{"YAHOO", 432f, 8});
-        Thread.sleep(1100);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 3, eventCount, timeout);
         siddhiAppRuntime.shutdown();
     }
 
@@ -243,6 +258,7 @@ public class MaxByTimeWindowTestCase {
                     removeEventCount = removeEventCount + removeEvents.length;
                 }
                 eventArrived = true;
+                eventCount.incrementAndGet();
             }
 
         });
@@ -258,7 +274,8 @@ public class MaxByTimeWindowTestCase {
         inputHandler.send(new Object[]{"YAHOO", 432f, 6});
         inputHandler.send(new Object[]{"GOOGLE", 798f, 7});
         inputHandler.send(new Object[]{"YAHOO", 32f, 8});
-        Thread.sleep(1100);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 6, eventCount, timeout);
         siddhiAppRuntime.shutdown();
         AssertJUnit.assertEquals(4, inEventCount);
         AssertJUnit.assertEquals(4, removeEventCount);
