@@ -27,6 +27,9 @@ import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for MaxByTimeBatchWindow extension.
@@ -35,12 +38,16 @@ public class MaxByTimeBatchWindowTestCase {
     private int inEventCount;
     private int removeEventCount;
     private boolean eventArrived;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         inEventCount = 0;
         removeEventCount = 0;
         eventArrived = false;
+        eventCount = new AtomicInteger(0);
     }
     /**
      * Commenting out intermittent failing test case until fix this properly.
@@ -72,6 +79,7 @@ public class MaxByTimeBatchWindowTestCase {
                     removeEventCount = removeEventCount + removeEvents.length;
                 }
                 eventArrived = true;
+                eventCount.incrementAndGet();
             }
 
         });
@@ -88,7 +96,8 @@ public class MaxByTimeBatchWindowTestCase {
         Thread.sleep(1100);
         inputHandler.send(new Object[]{"IBM", 90f, 5});
         inputHandler.send(new Object[]{"WSO2", 765f, 6});
-        Thread.sleep(2000);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 4, eventCount, timeout);
         siddhiAppRuntime.shutdown();;
         AssertJUnit.assertEquals(3, inEventCount);
         AssertJUnit.assertTrue(eventArrived);
@@ -114,6 +123,7 @@ public class MaxByTimeBatchWindowTestCase {
                     @Override
                     public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                         EventPrinter.print(timeStamp , inEvents , removeEvents);
+                        eventCount.incrementAndGet();
                     }
                 });
 
@@ -129,7 +139,8 @@ public class MaxByTimeBatchWindowTestCase {
         Thread.sleep(1100);
         inputHandler.send(new Object[]{"IBM", 90f, 5});
         inputHandler.send(new Object[]{"WSO2", 765f, 6});
-        Thread.sleep(2000);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 5, eventCount, timeout);
         siddhiAppRuntime.shutdown();
     }
 
@@ -153,6 +164,7 @@ public class MaxByTimeBatchWindowTestCase {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp , inEvents , removeEvents);
+                eventCount.incrementAndGet();
             }
         });
 
@@ -168,7 +180,8 @@ public class MaxByTimeBatchWindowTestCase {
         Thread.sleep(1100);
         inputHandler.send(new Object[]{"IBM", 90f, 5});
         inputHandler.send(new Object[]{"WSO2", 765f, 6});
-        Thread.sleep(2000);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 4, eventCount, timeout);
         siddhiAppRuntime.shutdown();
     }
 }

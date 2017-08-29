@@ -28,6 +28,9 @@ import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for KalmanExtension extension.
@@ -36,11 +39,15 @@ public class KalmanExtensionTestCase {
     private static final Logger log = Logger.getLogger(KalmanExtensionTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         count = 0;
         eventArrived = false;
+        eventCount = new AtomicInteger(0);
     }
 
     @Test
@@ -63,6 +70,7 @@ public class KalmanExtensionTestCase {
                 eventArrived = true;
                 for (Event event : inEvents) {
                     count++;
+                    eventCount.incrementAndGet();
                     switch (count) {
                         case 1:
                             AssertJUnit.assertEquals(50.35, event.getData(0));
@@ -180,7 +188,7 @@ public class KalmanExtensionTestCase {
         inputHandler.send(new Object[]{98, 49d});
         inputHandler.send(new Object[]{99, 48.35d});
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 2, eventCount, timeout);
         AssertJUnit.assertEquals(2, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -207,6 +215,7 @@ public class KalmanExtensionTestCase {
                 eventArrived = true;
                 for (Event event : inEvents) {
                     count++;
+                    eventCount.incrementAndGet();
                     switch (count) {
                         case 1:
                             AssertJUnit.assertEquals(54.0, event.getData(0));
@@ -328,7 +337,7 @@ public class KalmanExtensionTestCase {
         inputHandler.send(new Object[]{99, 48.35d});
 
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 3, eventCount, timeout);
         AssertJUnit.assertEquals(3, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -355,6 +364,7 @@ public class KalmanExtensionTestCase {
                 eventArrived = true;
                 for (Event event : inEvents) {
                     count++;
+                    eventCount.incrementAndGet();
                     switch (count) {
                         case 1:
                             AssertJUnit.assertEquals(54.0, event.getData(0));
@@ -486,7 +496,7 @@ public class KalmanExtensionTestCase {
         inputHandler.send(new Object[]{98, 49d});
         inputHandler.send(new Object[]{99, 48.35d});
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 5, eventCount, timeout);
         AssertJUnit.assertEquals(5, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();

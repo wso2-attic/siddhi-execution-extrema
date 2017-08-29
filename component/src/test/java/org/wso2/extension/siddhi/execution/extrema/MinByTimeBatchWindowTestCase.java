@@ -27,6 +27,9 @@ import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for MinByLengthWindowProcessor extension.
@@ -35,12 +38,16 @@ public class MinByTimeBatchWindowTestCase {
     private int inEventCount;
     private int removeEventCount;
     private boolean eventArrived;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         inEventCount = 0;
         removeEventCount = 0;
         eventArrived = false;
+        eventCount = new AtomicInteger(0);
     }
     /**
      * Commenting out intermittent failing test case until fix this properly.
@@ -67,6 +74,7 @@ public class MinByTimeBatchWindowTestCase {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
                 if (inEvents != null) {
                     inEventCount = inEventCount + inEvents.length;
+                    eventCount.addAndGet(inEvents.length);
                 }
                 if (removeEvents != null) {
                     AssertJUnit.assertTrue("InEvents arrived before RemoveEvents",
@@ -89,7 +97,8 @@ public class MinByTimeBatchWindowTestCase {
         Thread.sleep(1100);
         inputHandler.send(new Object[]{"IBM", 90f, 5});
         inputHandler.send(new Object[]{"WSO2", 765f, 6});
-        Thread.sleep(2200);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 3, eventCount, timeout);
         AssertJUnit.assertEquals(3, inEventCount);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -200,6 +209,7 @@ public class MinByTimeBatchWindowTestCase {
                 @Override
                 public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                     EventPrinter.print(timeStamp, inEvents, removeEvents);
+                    eventCount.incrementAndGet();
                     if (inEvents != null) {
                         inEventCount += (inEvents.length);
                     }
@@ -217,9 +227,10 @@ public class MinByTimeBatchWindowTestCase {
             cseEventStreamHandler.send(new Object[]{"WSO2", 55.6f, 100});
             twitterStreamHandler.send(new Object[]{"User1", "Hello World", "WSO2"});
             cseEventStreamHandler.send(new Object[]{"IBM", 75.6f, 100});
-            Thread.sleep(1500);
+//            Thread.sleep(1500);
 //            cseEventStreamHandler.send(new Object[]{"WSO2", 57.6f, 100});
-            Thread.sleep(1000);
+
+            SiddhiTestHelper.waitForEvents(waitTime, 2, eventCount, timeout);
             //AssertJUnit.assertTrue("In Events can be 1 or 2 ", inEventCount == 1 || inEventCount == 2);
             AssertJUnit.assertEquals(0, removeEventCount);
 //            AssertJUnit.assertTrue(eventArrived);

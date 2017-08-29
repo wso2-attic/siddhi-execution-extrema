@@ -28,6 +28,9 @@ import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for MinMax extension.
@@ -36,11 +39,15 @@ public class MinMaxTestCase {
     private static final Logger log = Logger.getLogger(MinMaxTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         count = 0;
         eventArrived = false;
+        eventCount = new AtomicInteger(0);
     }
 
     @Test
@@ -61,6 +68,7 @@ public class MinMaxTestCase {
                 eventArrived = true;
                 for (Event event : inEvents) {
                     count++;
+                    eventCount.incrementAndGet();
                     switch (count) {
                     case 1:
                         AssertJUnit.assertEquals(98, event.getData(1));
@@ -116,7 +124,7 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 26, 98 });
         inputHandler.send(new Object[] { 27, 105 });
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 4, eventCount, timeout);
         AssertJUnit.assertEquals(4, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -140,6 +148,7 @@ public class MinMaxTestCase {
                 eventArrived = true;
                 for (Event event : inEvents) {
                     count++;
+                    eventCount.incrementAndGet();
                     switch (count) {
                     case 1:
                         AssertJUnit.assertEquals(103, event.getData(1));
@@ -191,7 +200,7 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 26, 98 });
         inputHandler.send(new Object[] { 27, 105 });
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 3, eventCount, timeout);
         AssertJUnit.assertEquals(3, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -216,6 +225,7 @@ public class MinMaxTestCase {
                 eventArrived = true;
                 for (Event event : inEvents) {
                     count++;
+                    eventCount.incrementAndGet();
                     switch (count) {
                     case 1:
                         AssertJUnit.assertEquals(98, event.getData(1));
@@ -259,7 +269,7 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 26, 98 });
         inputHandler.send(new Object[] { 27, 105 });
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 1, eventCount, timeout);
         AssertJUnit.assertEquals(1, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -285,6 +295,7 @@ public class MinMaxTestCase {
                 eventArrived = true;
                 for (Event event : inEvents) {
                     count++;
+                    eventCount.incrementAndGet();
                     switch (count) {
                     case 1:
                         AssertJUnit.assertEquals(98.5, event.getData(1));
@@ -332,7 +343,7 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 26, 98 });
         inputHandler.send(new Object[] { 27, 105 });
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 2, eventCount, timeout);
         AssertJUnit.assertEquals(2, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -358,6 +369,7 @@ public class MinMaxTestCase {
                 eventArrived = true;
                 for (Event event : inEvents) {
                     count++;
+                    eventCount.incrementAndGet();
                     switch (count) {
                         case 1:
                             AssertJUnit.assertEquals(103, event.getData(1));
@@ -413,7 +425,7 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 26, 98 });
         inputHandler.send(new Object[] { 27, 105 });
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 4, eventCount, timeout);
         AssertJUnit.assertEquals(4, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -439,6 +451,7 @@ public class MinMaxTestCase {
                 eventArrived = true;
                 for (Event event : inEvents) {
                     count++;
+                    eventCount.incrementAndGet();
                     switch (count) {
                         case 1:
                             AssertJUnit.assertEquals(98, event.getData(1));
@@ -498,7 +511,7 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 26, 98 });
         inputHandler.send(new Object[] { 27, 105 });
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 5, eventCount, timeout);
         AssertJUnit.assertEquals(5, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -524,6 +537,7 @@ public class MinMaxTestCase {
                 eventArrived = true;
                 for (Event event : inEvents) {
                     count++;
+                    eventCount.incrementAndGet();
                     switch (count) {
                         case 1:
                             AssertJUnit.assertEquals(101, event.getData(1));
@@ -587,7 +601,7 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 26, 98 });
         inputHandler.send(new Object[] { 27, 105 });
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 6, eventCount, timeout);
         AssertJUnit.assertEquals(6, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -624,6 +638,7 @@ public class MinMaxTestCase {
                 eventArrived = true;
                 for (Event event : inEvents) {
                     count++;
+                    eventCount.incrementAndGet();
                     switch (count) {
                     case 1:
                         AssertJUnit.assertEquals(99.16666727781494, event.getData(1));
@@ -679,7 +694,7 @@ public class MinMaxTestCase {
         inputHandler.send(new Object[] { 26, 98.0 });
         inputHandler.send(new Object[] { 27, 105.0 });
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 4, eventCount, timeout);
         AssertJUnit.assertEquals(4, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();

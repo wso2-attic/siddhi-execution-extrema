@@ -41,10 +41,12 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
     private static final Logger log = Logger.getLogger(BottomKTimeBatchStreamProcessorExtensionTestCase.class);
     private AtomicInteger count;
     private volatile boolean eventArrived;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
-        count = new AtomicInteger(0);;
+        count = new AtomicInteger(0);
         eventArrived = false;
     }
 
@@ -84,10 +86,8 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
         Thread.sleep(1100);
         inputHandler.send(new Object[]{"item4", 75L});
         inputHandler.send(new Object[]{"item4", 13L});
-        // To get all the expired events
-        Thread.sleep(1100);
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 4, count, timeout);
         AssertJUnit.assertEquals(4, count.get());
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -136,7 +136,7 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
         // To get all the expired events
         Thread.sleep(1100);
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 4, count, timeout);
         AssertJUnit.assertEquals(4, count.get());
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -208,7 +208,7 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
         inputHandler2.send(new Object[]{"item6", "credit card"});
         inputHandler2.send(new Object[]{"item4", "cash"});
 
-        SiddhiTestHelper.waitForEvents(2000, 2, count, 10000);
+        SiddhiTestHelper.waitForEvents(waitTime, 2, count, timeout);
         AssertJUnit.assertEquals(2, count.get());
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();

@@ -29,8 +29,10 @@ import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for TopKTimeBatchStreamProcessorExtension extension.
@@ -40,10 +42,14 @@ public class TopKTimeBatchStreamProcessorExtensionTestCase {
             TopKTimeBatchStreamProcessorExtensionTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         count = 0;
+        eventCount = new AtomicInteger(0);
         eventArrived = false;
     }
 
@@ -82,10 +88,8 @@ public class TopKTimeBatchStreamProcessorExtensionTestCase {
         Thread.sleep(1100);
         inputHandler.send(new Object[]{"item4", 75L});
         inputHandler.send(new Object[]{"item4", 34L});
-        // To get all the expired events
-        Thread.sleep(1100);
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 4, eventCount, timeout);
         AssertJUnit.assertEquals(4, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -130,10 +134,8 @@ public class TopKTimeBatchStreamProcessorExtensionTestCase {
         Thread.sleep(1100);
         inputHandler.send(new Object[]{"item4", 75L});
         inputHandler.send(new Object[]{"item4", 34L});
-        // To get all the expired events
-        Thread.sleep(1100);
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 4, eventCount, timeout);
         AssertJUnit.assertEquals(4, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -176,6 +178,7 @@ public class TopKTimeBatchStreamProcessorExtensionTestCase {
                         );
                     }
                 }
+                eventCount.incrementAndGet();
                 count++;
             }
         });
@@ -205,7 +208,7 @@ public class TopKTimeBatchStreamProcessorExtensionTestCase {
         inputHandler2.send(new Object[]{"item4", "credit card"});
         inputHandler2.send(new Object[]{"item6", "cash"});
 
-        Thread.sleep(1100);
+        SiddhiTestHelper.waitForEvents(waitTime, 2, eventCount, timeout);
         AssertJUnit.assertEquals(2, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -259,6 +262,7 @@ public class TopKTimeBatchStreamProcessorExtensionTestCase {
                     }
                 }
                 count++;
+                eventCount.incrementAndGet();
             }
         });
     }

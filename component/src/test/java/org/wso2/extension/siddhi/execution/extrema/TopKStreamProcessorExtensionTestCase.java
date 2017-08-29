@@ -28,8 +28,10 @@ import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for TopKStreamProcessorExtension extension.
@@ -38,11 +40,15 @@ public class TopKStreamProcessorExtensionTestCase {
     private static final Logger log = Logger.getLogger(TopKStreamProcessorExtensionTestCase.class);
     private volatile int count;
     private volatile boolean eventArrived;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         count = 0;
         eventArrived = false;
+        eventCount  = new AtomicInteger(0);
     }
 
     @Test
@@ -62,6 +68,7 @@ public class TopKStreamProcessorExtensionTestCase {
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
                 eventArrived = true;
+                eventCount.incrementAndGet();
                 if (count == 0) {
                     AssertJUnit.assertNotNull(inEvents);
                     for (Event event : inEvents) {
@@ -114,7 +121,7 @@ public class TopKStreamProcessorExtensionTestCase {
         inputHandler.send(new Object[]{"item5", 93L});
         inputHandler.send(new Object[]{"item6", 87L});
 
-        Thread.sleep(1000);
+        SiddhiTestHelper.waitForEvents(waitTime, 2, eventCount, timeout);
         AssertJUnit.assertEquals(3, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();
@@ -136,6 +143,7 @@ public class TopKStreamProcessorExtensionTestCase {
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
                 eventArrived = true;
+                eventCount.incrementAndGet();
                 if (count == 2) {
                     AssertJUnit.assertNotNull(inEvents);
                     for (Event event : inEvents) {
@@ -191,7 +199,7 @@ public class TopKStreamProcessorExtensionTestCase {
         Thread.sleep(100);
         inputHandler.send(new Object[]{"item6", 58L});
 
-        Thread.sleep(1100);
+        SiddhiTestHelper.waitForEvents(waitTime, 12, eventCount, timeout);
         AssertJUnit.assertEquals(12, count);
         AssertJUnit.assertTrue(eventArrived);
         siddhiAppRuntime.shutdown();

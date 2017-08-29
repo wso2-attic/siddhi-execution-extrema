@@ -1,0 +1,26 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="UniqueWindowProcessorTestSuit" verbose="1">
+    <test name="UniqueWindowProcessorTest">
+        <classes>
+            <class name="org.wso2.extension.siddhi.execution.extrema.BottomKLengthBatchStreamProcessorExtensionTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.BottomKStreamProcessorExtensionTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.BottomKTimeBatchStreamProcessorExtensionTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.KalmanExtensionTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.KernelExtensionTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.MaxByLengthBatchWindowProcessorTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.MaxByLengthWindowProcessorTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.MaxByTimeWindowTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.MinByLengthBatchWindowProcessorTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.MinByLengthWindowProcessorTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.MinByTimeWindowTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.MinByTimeBatchWindowTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.MinMaxTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.TopKStreamProcessorExtensionTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.TopKLengthBatchStreamProcessorExtensionTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.TopKTimeBatchStreamProcessorExtensionTestCase" />
+            <class name="org.wso2.extension.siddhi.execution.extrema.MaxByTimeBatchWindowTestCase" />
+        </classes>
+    </test>
+</suite>
+

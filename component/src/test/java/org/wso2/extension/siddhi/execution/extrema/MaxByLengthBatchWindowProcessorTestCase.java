@@ -32,6 +32,7 @@ import org.wso2.siddhi.core.util.EventPrinter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for MaxByLengthBatchWindowProcessor extension.
@@ -39,10 +40,14 @@ import java.util.List;
 public class MaxByLengthBatchWindowProcessorTestCase {
     private static final Logger log = Logger.getLogger(MaxByLengthBatchWindowProcessorTestCase.class);
     private int count;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         count = 0;
+        eventCount = new AtomicInteger(0);
     }
 
 

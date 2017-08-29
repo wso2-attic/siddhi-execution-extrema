@@ -45,13 +45,13 @@
     </profiles>
 
     <properties>
-        <siddhi.version>4.0.0-M16</siddhi.version>
+        <siddhi.version>4.0.0-M52</siddhi.version>
         <siddhi.extension.kalman.filter.version>4.0.0</siddhi.extension.kalman.filter.version>
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <commons-math3.version>3.2</commons-math3.version>
         <jama.version>1.0.3</jama.version>
         <testng.version>6.8</testng.version>
-        <jacoco.version>0.7.9</jacoco.version>
+        <jacoco.maven.version>0.7.8</jacoco.maven.version>
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
     </properties>
 
@@ -121,12 +121,7 @@
                 <version>${testng.version}</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.jacoco</groupId>
-                <artifactId>org.jacoco.agent</artifactId>
-                <classifier>runtime</classifier>
-                <version>${jacoco.version}</version>
-            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -164,6 +159,20 @@
 
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.19.1</version>
+                    <configuration>
+                        <includes>
+                            <include>**/*TestCase.java</include>
+                        </includes>
+                        <reportFormat>brief</reportFormat>
+                        <useFile>false</useFile>
+                        <forkMode>once</forkMode>
+                        <argLine>${surefireArgLine} -ea -Xmx512m</argLine>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
@@ -205,6 +214,34 @@
                             <goals>
                                 <goal>check</goal>
                             </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.maven.version}</version>
+                    <executions>
+                        <execution>
+                            <id>jacoco-initialize</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                            <configuration>
+                                <destFile>${basedir}/target/coverage-reports/jacoco.exec</destFile>
+                                <propertyName>surefireArgLine</propertyName>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>jacoco-site</id>
+                            <phase>post-integration-test</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                            <configuration>
+                                <dataFile>${basedir}/target/coverage-reports/jacoco.exec</dataFile>
+                                <outputDirectory>${basedir}/target/coverage-reports/</outputDirectory>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>

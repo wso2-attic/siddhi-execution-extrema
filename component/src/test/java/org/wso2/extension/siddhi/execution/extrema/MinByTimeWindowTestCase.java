@@ -28,6 +28,9 @@ import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test case for MinByTimeWindow extension.
@@ -37,12 +40,16 @@ public class MinByTimeWindowTestCase {
     private int inEventCount;
     private int removeEventCount;
     private boolean eventArrived;
+    private AtomicInteger eventCount;
+    private int waitTime = 50;
+    private int timeout = 30000;
 
     @BeforeMethod
     public void init() {
         inEventCount = 0;
         removeEventCount = 0;
         eventArrived = false;
+        eventCount = new AtomicInteger(0);
     }
 
     /**
@@ -66,6 +73,7 @@ public class MinByTimeWindowTestCase {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
                 if (inEvents != null) {
                     inEventCount = inEventCount + inEvents.length;
+                    eventCount.addAndGet(inEvents.length);
                 }
                 if (removeEvents != null) {
                     removeEventCount = removeEventCount + removeEvents.length;
@@ -85,7 +93,8 @@ public class MinByTimeWindowTestCase {
         Thread.sleep(1100);
         inputHandler.send(new Object[]{"IBM", 60.50f, 6});
         inputHandler.send(new Object[]{"AAA", 600.5f, 7});
-        Thread.sleep(500);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 5, eventCount, timeout);
         AssertJUnit.assertEquals(5, inEventCount);
         AssertJUnit.assertEquals(0, removeEventCount);
         AssertJUnit.assertTrue(eventArrived);
@@ -108,6 +117,7 @@ public class MinByTimeWindowTestCase {
                 EventPrinter.print(timeStamp, inEvents, removeEvents);
                 if (inEvents != null) {
                     inEventCount = inEventCount + inEvents.length;
+                    eventCount.addAndGet(inEvents.length);
                 }
                 if (removeEvents != null) {
                     removeEventCount = removeEventCount + removeEvents.length;
@@ -121,7 +131,8 @@ public class MinByTimeWindowTestCase {
         inputHandler.send(new Object[]{"IBM", 700f, 1});
         inputHandler.send(new Object[]{"IBM", 798f, 1});
         inputHandler.send(new Object[]{"IBM", 432f, 1});
-        Thread.sleep(1100);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 2, eventCount, timeout);
         AssertJUnit.assertEquals(2, inEventCount);
         AssertJUnit.assertEquals(0, removeEventCount);
         AssertJUnit.assertTrue(eventArrived);
@@ -151,6 +162,7 @@ public class MinByTimeWindowTestCase {
                 }
                 if (removeEvents != null) {
                     removeEventCount = removeEventCount + removeEvents.length;
+                    eventCount.addAndGet(removeEvents.length);
                 }
                 eventArrived = true;
             }
@@ -176,7 +188,8 @@ public class MinByTimeWindowTestCase {
         inputHandler.send(new Object[]{"GOOGLE", 7f, 9});
         inputHandler.send(new Object[]{"WSO2", 60.5f, 10});
         inputHandler.send(new Object[]{"MIT", 632.5f, 11});
-        Thread.sleep(4000);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 7, eventCount, timeout);
         siddhiAppRuntime.shutdown();
         AssertJUnit.assertEquals(0, inEventCount);
         AssertJUnit.assertEquals(7, removeEventCount);
@@ -202,6 +215,7 @@ public class MinByTimeWindowTestCase {
                 }
                 if (removeEvents != null) {
                     removeEventCount = removeEventCount + removeEvents.length;
+                    eventCount.addAndGet(removeEvents.length);
                 }
                 eventArrived = true;
             }
@@ -218,7 +232,8 @@ public class MinByTimeWindowTestCase {
         inputHandler.send(new Object[]{"YAHOO", 432f, 6});
         inputHandler.send(new Object[]{"GOOGLE", 798f, 7});
         inputHandler.send(new Object[]{"YAHOO", 432f, 8});
-        Thread.sleep(1100);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 5, eventCount, timeout);
         siddhiAppRuntime.shutdown();
         AssertJUnit.assertEquals(0, inEventCount);
         AssertJUnit.assertEquals(5, removeEventCount);
@@ -244,6 +259,7 @@ public class MinByTimeWindowTestCase {
                 }
                 if (removeEvents != null) {
                     removeEventCount = removeEventCount + removeEvents.length;
+                    eventCount.addAndGet(removeEvents.length);
                 }
                 eventArrived = true;
             }
@@ -261,7 +277,8 @@ public class MinByTimeWindowTestCase {
         inputHandler.send(new Object[]{"YAHOO", 432f, 6});
         inputHandler.send(new Object[]{"GOOGLE", 798f, 7});
         inputHandler.send(new Object[]{"YAHOO", 32f, 8});
-        Thread.sleep(1100);
+
+        SiddhiTestHelper.waitForEvents(waitTime, 5, eventCount, timeout);
         siddhiAppRuntime.shutdown();
         AssertJUnit.assertEquals(5, inEventCount);
         AssertJUnit.assertEquals(5, removeEventCount);
@@ -288,6 +305,7 @@ public class MinByTimeWindowTestCase {
             siddhiAppRuntime.addCallback("outputStream", new StreamCallback() {
                 @Override
                 public void receive(Event[] events) {
+                    eventCount.incrementAndGet();
                     EventPrinter.print(events);
                 }
             });
@@ -300,11 +318,12 @@ public class MinByTimeWindowTestCase {
             twitterStreamHandler.send(new Object[]{"User2", "Hi", "IBM"});
             twitterStreamHandler.send(new Object[]{"User1", "Hello World", "WSO2"});
 
-            Thread.sleep(1500);
+
 //            twitterStreamHandler.send(new Object[]{"User1", "Hello World", "WSO2"});
 //            cseEventStreamHandler.send(new Object[]{"WSO2", 57.6f, 100});
 //            Thread.sleep(1000);
             //AssertJUnit.assertTrue("In Events can be 1 or 2 ", inEventCount == 1 || inEventCount == 2);
+            SiddhiTestHelper.waitForEvents(waitTime, 1, eventCount, timeout);
             AssertJUnit.assertEquals(0, removeEventCount);
 //            AssertJUnit.assertTrue(eventArrived);
         } finally {
@@ -334,6 +353,7 @@ public class MinByTimeWindowTestCase {
                 @Override
                 public void receive(Event[] events) {
                     EventPrinter.print(events);
+                    eventCount.incrementAndGet();
                 }
             });
             InputHandler cseEventStreamHandler = siddhiAppRuntime.getInputHandler("cseEventStream");
@@ -346,7 +366,8 @@ public class MinByTimeWindowTestCase {
             Thread.sleep(1500);
             twitterStreamHandler.send(new Object[]{"User1", "Hello World", "WSO2"});
             cseEventStreamHandler.send(new Object[]{"WSO2", 57.6f, 100});
-            Thread.sleep(1000);
+
+            SiddhiTestHelper.waitForEvents(waitTime, 2, eventCount, timeout);
             //AssertJUnit.assertTrue("In Events can be 1 or 2 ", inEventCount == 1 || inEventCount == 2);
             AssertJUnit.assertEquals(0, removeEventCount);
 //            AssertJUnit.assertTrue(eventArrived);
