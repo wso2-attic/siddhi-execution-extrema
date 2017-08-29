@@ -2,7 +2,7 @@ siddhi-execution-extrema
 ======================================
 
 The **siddhi-execution-extrema extension** is an extension to <a target="_blank" href="https://wso2.github.io/siddhi">Siddhi</a> that processes event streams based on different arithmetic properties.
-Different types of processors are available extract the extrema from the event streams based on the specified attribute in the stream.
+Different types of processors are available to extract the extremas from the event streams according to the specified attribute in the stream.
 
 Find some useful links below:
 
