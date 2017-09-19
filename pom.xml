@@ -27,7 +27,7 @@
 
     <groupId>org.wso2.extension.siddhi.execution.extrema</groupId>
     <artifactId>siddhi-execution-extrema-parent</artifactId>
-    <version>4.0.2-SNAPSHOT</version>
+    <version>4.0.2</version>
     <packaging>pom</packaging>
     <name>Siddhi Execution Extrema Extension Parent</name>
     <url>http://wso2.org</url>
@@ -61,7 +61,7 @@
         <url>https://github.com/wso2-extensions/siddhi-execution-extrema.git</url>
         <developerConnection>scm:git:https://github.com/wso2-extensions/siddhi-execution-extrema.git
         </developerConnection>
-        <tag>HEAD</tag>
+        <tag>v4.0.2</tag>
     </scm>
 
     <dependencyManagement>
