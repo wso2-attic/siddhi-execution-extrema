@@ -39,15 +39,15 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "maxByLengthBatch",
         namespace = "extrema",
-        description = "Calculates the maximum value of a specified attribute inside a batch window " +
-                "and emits it.",
+        description = "`maxByLengthBatch` calculates and returns the maximum value of a specified attribute inside a " +
+                "batch window.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the maximum value is required.",
                         type = {DataType.INT, DataType.FLOAT, DataType.DOUBLE, DataType.LONG,
                                 DataType.STRING}),
                 @Parameter(name = "batch.length",
-                        description = "The length of the batch involved.",
+                        description = "The length of the batch observed.",
                         type = {DataType.INT})
         },
         examples = {
@@ -57,9 +57,9 @@ import org.wso2.siddhi.annotation.util.DataType;
                                 "from cseEventStream#window.extrema:maxByLengthBatch(price, 4) \n" +
                                 "select symbol,price,volume\n" +
                                 "insert into outputStream ;",
-                        description =  "In the given example query, a batch of 4 events will be collected. " +
-                                "Once the window is full, the item with the maximum price in the batch will be " +
-                                "emitted out and the window will be reset."
+                        description =  "This query collects a batch of 4 events. Once the window is full, the item " +
+                                "with the maximum price in the batch is returned as the output, and the window is " +
+                                "reset."
                 )
         }
 )

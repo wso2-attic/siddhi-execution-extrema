@@ -32,15 +32,17 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "topK",
         namespace = "extrema",
-        description = "topK counts the frequency of different values of a specified attribute, " +
-                "and emits the highest (k) number of frequency values.",
+        description = "`topK` counts the frequency of different values of a specified attribute, " +
+                "and emits the (k) number of values with the highest frequency.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the frequency is counted.",
                         type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
                                 DataType.STRING, DataType.BOOL, DataType.OBJECT}),
                 @Parameter(name = "k.value",
-                        description = "The number of top frequencies required.",
+                        description = "The number of frequent values that should be emitted as the output (e.g., if" +
+                                "2 is specified, this extension returns the two attribute values (for the specified" +
+                                "attribute) that have the highest frequency.",
                         type = {DataType.INT})
         },
         examples = {
@@ -49,8 +51,7 @@ import org.wso2.siddhi.annotation.util.DataType;
                                 "\n" +
                                 "from inputStream#extrema:topK(item, 3)\n" +
                                 "insert all events into outputStream;)",
-                        description = "In the given example query, the three items with the highest " +
-                                "frequency counts will be emitted"
+                        description = "This query emits the three items with the highest frequency counts."
                 )
         }
 )

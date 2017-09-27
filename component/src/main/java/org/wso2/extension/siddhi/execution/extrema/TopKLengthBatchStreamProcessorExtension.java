@@ -32,8 +32,9 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "topKLengthBatch",
         namespace = "extrema",
-        description = "topKLengthBatch counts the frequency of different values of a specified attribute" +
-                " inside a batch window, and emits the highest (k) number of frequency values.",
+        description = "`topKLengthBatch` counts the frequency of different values of a specified attribute, " +
+                "within a batch window of a specified length, and emits the (k) number of values with the highest" +
+                " frequency.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the frequency is counted.",
@@ -43,7 +44,9 @@ import org.wso2.siddhi.annotation.util.DataType;
                         description = "The length of the window.",
                         type = {DataType.INT}),
                 @Parameter(name = "k.value",
-                        description = "The number of top frequencies required.",
+                        description = "The number of frequent values that should be emitted as the output (e.g., if" +
+                                "2 is specified, this extension returns the two attribute values (for the specified" +
+                                "attribute) that have the highest frequency.",
                         type = {DataType.INT})
         },
         examples = {
@@ -52,9 +55,8 @@ import org.wso2.siddhi.annotation.util.DataType;
                                 "\n" +
                                 "from inputStream#extrema:topKLengthBatch(item, 6, 3)\n" +
                                 "insert all events into outputStream;)",
-                        description = "In the given example query, a batch of 6 events will be collected. " +
-                                "Once the window is full, the 3 items with the highest frequency will be " +
-                                "emitted out and the window will be reset."
+                        description = "This query collects a batch of six events. Once the window is full, the three" +
+                                " items with the highest frequency are emitted and the window is reset."
                 )
         }
 )

@@ -32,9 +32,9 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "bottomK",
         namespace = "extrema",
-        description = "bottomK counts the frequency of different values of a specified attribute, " +
-                "and emits the lowest (k) number of frequency values. Events are emitted only if " +
-                "there is a change in the bottomK results for each received chunk of events.",
+        description = "`bottomK` counts the frequency of different values for a specified attribute, " +
+                "and outputs the specified number of least frequently occuring values. Events are output only if " +
+                "there is a change in the bottomK results for each chunk of received events.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the frequency is counted.",
@@ -50,8 +50,7 @@ import org.wso2.siddhi.annotation.util.DataType;
                                 "\n" +
                                 "from inputStream#extrema:bottomK(item, 3)\n" +
                                 "insert all events into outputStream;)",
-                        description =  "In the given example query, the three items with the lowest " +
-                                "frequency counts will be emitted"
+                        description =  "This query outputs the three items with the lowest frequency counts."
                 )
         }
 )

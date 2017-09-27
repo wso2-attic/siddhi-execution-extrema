@@ -39,8 +39,8 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "minByLength",
         namespace = "extrema",
-        description = "The event with the minimum value for the given attribute in the specified " +
-                "sliding window is emitted.",
+        description = "`minByLength` derives the minimum value for the given attribute in the specified sliding" +
+                " window.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the minimum value is required.",
@@ -56,8 +56,8 @@ import org.wso2.siddhi.annotation.util.DataType;
                                 "from cseEventStream#window.extrema:minByLength(price, 4) " +
                                 "select symbol,price,volume\n" +
                                 "insert into outputStream ;",
-                        description =  "In the given example query, a sliding window of length 4 is considered. " +
-                                "The event with the minimum price will be emitted out."
+                        description =  "This query outputs the minimum price for a sliding length window of four " +
+                                "events."
                 )
         }
 )
