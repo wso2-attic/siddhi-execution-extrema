@@ -53,7 +53,7 @@ import java.util.Queue;
 @Extension(
         name = "kernelMinMax",
         namespace = "extrema",
-        description = "This extension uses Gaussian Kernel to smooth the time series values in the given" +
+        description = "`kernelMinMax` uses Gaussian Kernel to smooth the time series values in the given" +
                 " window size, and then determines the maxima and minima of that set of values. " +
                 "It returns the events with the minimum and/or maximum for the specified attribute " +
                 "within the given window length, with the extrema type as `min` or `max` as relevant.",

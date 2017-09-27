@@ -32,7 +32,7 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "bottomK",
         namespace = "extrema",
-        description = "This extension counts the frequency of different values for a specified attribute, " +
+        description = "`bottomK` counts the frequency of different values for a specified attribute, " +
                 "and outputs the specified number of least frequently occuring values. Events are output only if " +
                 "there is a change in the bottomK results for each chunk of received events.",
         parameters = {

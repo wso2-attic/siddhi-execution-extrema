@@ -39,8 +39,8 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "minByLengthBatch",
         namespace = "extrema",
-        description = "This extension calculates the minimum value of a specified attribute inside a batch window " +
-                "and emits it.",
+        description = "`minByLengthBatch` calculates the minimum value of a specified attribute inside a batch " +
+                "window and emits it.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the minimum value is required.",

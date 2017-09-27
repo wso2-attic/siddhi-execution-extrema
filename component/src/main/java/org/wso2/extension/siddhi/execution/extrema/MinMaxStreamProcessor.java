@@ -69,7 +69,7 @@ import java.util.Map;
 @Extension(
         name = "minMax",
         namespace = "extrema",
-        description = "The `minMa`x extension finds the minimum and/or the maximum value within a given length window" +
+        description = "`minMax` finds the minimum and/or the maximum value within a given length window" +
                 " (maxPreBound+maxPostBound), where following conditions are met. \n" +
                 "\n" +
                 "For minimum: \n" +

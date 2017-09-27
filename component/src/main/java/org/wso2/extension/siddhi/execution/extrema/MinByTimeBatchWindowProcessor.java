@@ -37,7 +37,7 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "minbytimebatch",
         namespace = "extrema",
-        description = "This extension calculates the minimum value of a specified attribute within a time window, " +
+        description = "`minbytimebatch` calculates the minimum value of a specified attribute within a time window, " +
                 "and emits it.",
         parameters = {
                 @Parameter(name = "attribute",

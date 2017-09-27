@@ -32,9 +32,9 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "bottomKTimeBatch",
         namespace = "extrema",
-        description = "This extension counts the frequency of different values for a specified attribute inside a " +
-                "time window, and outputs a specified number of least frequently occuring values. Events are output " +
-                "only if there is a change in the `bottomK` results for each chunk of received events.",
+        description = "`bottomKTimeBatch` counts the frequency of different values for a specified attribute " +
+                "inside a time window, and outputs a specified number of least frequently occuring values. Events " +
+                "are output only if there is a change in the `bottomK` results for each chunk of received events.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the frequency is counted.",

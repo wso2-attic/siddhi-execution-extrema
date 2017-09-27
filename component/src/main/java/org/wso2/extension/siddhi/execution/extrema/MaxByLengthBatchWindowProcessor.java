@@ -39,7 +39,7 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "maxByLengthBatch",
         namespace = "extrema",
-        description = "This extension calculates and returns the maximum value of a specified attribute inside a " +
+        description = "`maxByLengthBatch` calculates and returns the maximum value of a specified attribute inside a " +
                 "batch window.",
         parameters = {
                 @Parameter(name = "attribute",

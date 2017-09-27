@@ -39,7 +39,7 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "minByLength",
         namespace = "extrema",
-        description = "This extension derives the minimum value for the given attribute in the specified sliding" +
+        description = "`minByLength` derives the minimum value for the given attribute in the specified sliding" +
                 " window.",
         parameters = {
                 @Parameter(name = "attribute",

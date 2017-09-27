@@ -32,7 +32,7 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "bottomKLengthBatch",
         namespace = "extrema",
-        description = "This extension counts the frequency of different values of a specified " +
+        description = "`bottomKLengthBatc` counts the frequency of different values of a specified " +
                 "attribute inside a batch window, and returns the specified number of least frequently occuring " +
                 "values. The bottom K frequency values are returned per batch.",
         parameters = {

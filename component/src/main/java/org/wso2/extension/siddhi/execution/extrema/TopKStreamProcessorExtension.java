@@ -32,7 +32,7 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "topK",
         namespace = "extrema",
-        description = "The `topK` extension counts the frequency of different values of a specified attribute, " +
+        description = "`topK` counts the frequency of different values of a specified attribute, " +
                 "and emits the (k) number of values with the highest frequency.",
         parameters = {
                 @Parameter(name = "attribute",

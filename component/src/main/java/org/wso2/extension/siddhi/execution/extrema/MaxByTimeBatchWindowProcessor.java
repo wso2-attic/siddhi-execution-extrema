@@ -37,7 +37,7 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "maxbytimebatch",
         namespace = "extrema",
-        description = "This extension calculates the maximum value of a specified attribute within a time window, " +
+        description = "`maxbytimebatch` calculates the maximum value of a specified attribute within a time window, " +
                 "and emits it.",
         parameters = {
                 @Parameter(name = "attribute",

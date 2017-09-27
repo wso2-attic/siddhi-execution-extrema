@@ -32,7 +32,7 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "topKLengthBatch",
         namespace = "extrema",
-        description = "The `topKLengthBatch` counts the frequency of different values of a specified attribute, " +
+        description = "`topKLengthBatch` counts the frequency of different values of a specified attribute, " +
                 "within a batch window of a specified length, and emits the (k) number of values with the highest" +
                 " frequency.",
         parameters = {

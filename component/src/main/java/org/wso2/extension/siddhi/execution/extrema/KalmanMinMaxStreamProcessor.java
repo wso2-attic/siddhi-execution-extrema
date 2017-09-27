@@ -52,7 +52,7 @@ import java.util.Queue;
 @Extension(
         name = "kalmanMinMax",
         namespace = "extrema",
-        description = "This function uses the Kalman filter to smooth the time series values in the given window " +
+        description = "`kalmanMinMax` uses the Kalman filter to smooth the time series values in the given window " +
                 "size, and then determine the maxima and minima of that set of values. Returns the events with the " +
                 "minimum and/or maximum for the specified attribute within the given window length, with the extrema" +
                 " type as `min` or `max` as relevant.",

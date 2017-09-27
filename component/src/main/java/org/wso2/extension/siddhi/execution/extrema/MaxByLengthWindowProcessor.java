@@ -40,8 +40,8 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "maxByLength",
         namespace = "extrema",
-        description = "This returns the event with the maximum value for the given attribute in the specified " +
-                "sliding window.",
+        description = "`maxByLength` returns the event with the maximum value for the given attribute in the " +
+                "specified sliding window.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the maximum value is required.",

@@ -38,7 +38,7 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "minbytime",
         namespace = "extrema",
-        description = "This extension calculates the minimum value of a specified attribute within a sliding time " +
+        description = "`minbytime` calculates the minimum value of a specified attribute within a sliding time " +
                 "window and emits it. The output is updated for every event arrival and expiry during " +
                 "the `time.window.length` specified.",
         parameters = {
