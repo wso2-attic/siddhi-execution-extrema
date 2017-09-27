@@ -69,35 +69,35 @@ import java.util.Map;
 @Extension(
         name = "minMax",
         namespace = "extrema",
-        description = "minMax finds the minimum and/or the maximum value within a given length window" +
+        description = "The `minMa`x extension finds the minimum and/or the maximum value within a given length window" +
                 " (maxPreBound+maxPostBound), where following conditions are met. \n" +
                 "\n" +
                 "For minimum: \n" +
                 "An event where the value for the specified attribute is greater by the percentage " +
-                "specified as the preBoundChange should have arrived prior to the event with the minimum" +
-                " value, within the maxPreBound length window.\n" +
+                "specified as the `preBoundChange` must have arrived within the `maxPreBound` length window before" +
+                " the event with the minimum value.\n" +
                 "An event where the value for the specified attribute is greater by the percentage " +
-                "specified as the postBoundChange should have arrived after the event with the minimum " +
-                "value, within the maxPostBound length window.\n" +
+                "specified as the `postBoundChange` must have arrived within the `maxPostBound` length window after" +
+                " the event with the minimum value.\n" +
                 "\n" +
                 "For maximum: \n" +
                 "An event where the value for the specified attribute is less by the percentage specified" +
-                " as the preBoundChange should have arrived prior to the event with the maximum value, " +
-                "within the maxPreBound length window.\n" +
+                " as the `preBoundChange` must have arrived within the `maxPreBound` length window before the event" +
+                " with the maximum value.\n" +
                 "An event where the value for the specified attribute is less by the percentage specified" +
-                " as the postBoundChange should have arrived after the event with the maximum value, " +
-                "within the maxPostBound length window.\n" +
+                " as the `postBoundChange` must have arrived within the `maxPreBound` length window after the event" +
+                " with the maximum value.\n" +
                 "\n" +
-                "Returns the events with the minimum and/or maximum for the specified attribute within" +
+                "The extension returns the events with the minimum and/or maximum for the specified attribute within" +
                 " the given window length, with the extrema type as min or max as relevant. " +
                 "These events are returned with the following additional parameters.\n" +
-                "preBound: The actual distance between the minimum/maximum value and the threshold value." +
-                " This value should be within the MaxPreBound window.\n" +
+                "`preBound`: The actual distance between the minimum/maximum value and the threshold value." +
+                " This value must be within the `MaxPreBound` window.\n" +
                 "postBound: The actual distance between the minimum/maximum value and the threshold value. " +
-                "This value should be within the MaxPostBound window.",
+                "This value must be within the `MaxPostBound` window.",
         parameters = {
                 @Parameter(name = "attribute",
-                        description = "The attribute of which the minimum and/or maximum value is required.",
+                        description = "The attribute of which the minimum and/or the maximum value is required.",
                         type = {DataType.INT, DataType.FLOAT, DataType.DOUBLE, DataType.LONG}),
                 @Parameter(name = "max.pre.bound",
                         description = "The maximum pre window length to be considered (before the min/max event).",
@@ -106,20 +106,24 @@ import java.util.Map;
                         description = "The maximum post window length to be considered (after the min/max event).",
                         type = {DataType.INT}),
                 @Parameter(name = "pre.bound.change",
-                        description = "The threshold, pre-bound change percentage.",
+                        description = "The threshold value for  the percentage difference between the value that " +
+                                "occurred in the `maxPreBound` length window before the maximum value, and the " +
+                                "maximum value.",
                         type = {DataType.DOUBLE}),
                 @Parameter(name = "post.bound.change",
-                        description = "The threshold, post-bound change percentage.",
+                        description = "The threshold value for  the percentage difference between the value that " +
+                                "occurred in the `maxPreBound` length window after the maximum value, and the " +
+                                "maximum value.",
                         type = {DataType.DOUBLE}),
                 @Parameter(name = "extrema.type",
                         description = "This can be min, max or minmax.\n" +
-                                "min: If this is specified, minimum values are identified within the " +
-                                "given window length, and they are returned with min as their extrema type.\n" +
-                                "max: If this is specified, maximum values are identified within the " +
-                                "given window length, and they are returned with max as their extrema type.\n" +
-                                "minmax: If this is specified, both minimum and maximum values are " +
+                                "`min`: If this is specified, minimum values are identified within the " +
+                                "given window length, and they are returned with `min` as their extrema type.\n" +
+                                "`max`: If this is specified, maximum values are identified within the " +
+                                "given window length, and they are returned with `max` as their extrema type.\n" +
+                                "`minmax`: If this is specified, both minimum and maximum values are " +
                                 "identified within the given window length and returned. The extrema " +
-                                "type is specified as min for the minimum events, and as max for the " +
+                                "type is specified as `min` for the minimum events, and as `max` for the " +
                                 "maximum events.",
                         type = {DataType.STRING})
         },
@@ -128,19 +132,19 @@ import java.util.Map;
                         syntax = "from inputStream#extrema:minMax(price, 4, 4, 1, 2, 'max')\n" +
                                 "select *\n" +
                                 "insert into outputStream; ",
-                        description =  "Returns the maximum values found within a set of price values."
+                        description =  "This query returns the maximum values found within a set of price values."
                 ),
                 @Example(
                         syntax = "from inputStream#extrema:minMax(price, 4, 4, 1, 2, 'min')\n" +
                                 "select *\n" +
                                 "insert into outputStream; ",
-                        description =  "returns the minimum values found within a set of price values."
+                        description =  "This query returns the minimum values found within a set of price values."
                 ),
                 @Example(
                         syntax = "from inputStream#extrema:minMax(price, 4, 4, 1, 2, 'minmax')\n" +
                                 "select *\n" +
                                 "insert into outputStream; ",
-                        description = "Returns both the minimum values and the maximum values found " +
+                        description = "This query returns both the minimum values and the maximum values found " +
                                 "within a set of price values."
                 )
         }

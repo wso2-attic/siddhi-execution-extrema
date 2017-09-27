@@ -53,10 +53,10 @@ import java.util.Queue;
 @Extension(
         name = "kernelMinMax",
         namespace = "extrema",
-        description = "kernalMinMax uses Gaussian Kernel to smooth the time series values in the given" +
-                " window size, and then determine the maxima and minima of that set of values. " +
-                "Returns the events with the minimum and/or maximum for the specified attribute " +
-                "within the given window length, with the extrema type as min or max as relevant.",
+        description = "This extension uses Gaussian Kernel to smooth the time series values in the given" +
+                " window size, and then determines the maxima and minima of that set of values. " +
+                "It returns the events with the minimum and/or maximum for the specified attribute " +
+                "within the given window length, with the extrema type as `min` or `max` as relevant.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the minimum and/or maximum value is required.",
@@ -69,14 +69,14 @@ import java.util.Queue;
                                 "maximum value for the given window should be identified.",
                         type = {DataType.INT}),
                 @Parameter(name = "extrema.type",
-                        description = "This can be min, max or minmax." +
-                                "min: If this is specified, minimum values are identified within the " +
-                                "given window length, and they are returned with min as their extrema type. " +
-                                "max: If this is specified, maximum values are identified within the given " +
-                                "window length, and they are returned with max as their extrema type. " +
-                                "minmax: If this is specified, both minimum and maximum values are " +
-                                "identified within the given window length and returned. The extrema " +
-                                "type is specified as min for the minimum events, and as max for the maximum events.",
+                        description = "This can be min, max or minmax.\n" +
+                                "`min`: If this is specified, minimum values are identified within the " +
+                                "given window length, and they are returned with `min` as their extrema type.\n" +
+                                "`max`: If this is specified, maximum values are identified within the given " +
+                                "window length, and they are returned with `max` as their extrema type.\n" +
+                                "`minmax`: If this is specified, both minimum and maximum values are identified " +
+                                "within the given window length and returned. The extrema type is specified as `min`" +
+                                " for the minimum events, and as `max` for the maximum events.",
                         type = {DataType.STRING})
         },
         examples = {

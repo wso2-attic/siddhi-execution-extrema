@@ -32,8 +32,8 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "topKTimeBatch",
         namespace = "extrema",
-        description = "topKTimeBatch counts the frequency of different values of a specified attribute " +
-                "inside a time window, and emits the highest (k) number of frequency values.",
+        description = "The `topKTimeBatch` extension counts the frequency of different values of a specified " +
+                "attribute within a time window, and emits the (k) number of values with the highest frequency.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the frequency is counted.",
@@ -43,7 +43,9 @@ import org.wso2.siddhi.annotation.util.DataType;
                         description = "The time window during which the frequency should be calculated.",
                         type = {DataType.INT, DataType.LONG}),
                 @Parameter(name = "k.value",
-                        description = "The number of top frequencies required.",
+                        description = "The number of frequent values that should be emitted as the output (e.g., if" +
+                                " 2 is specified, this extension returns the two attribute values (for the specified" +
+                                " attribute) that have the highest frequency.",
                         type = {DataType.INT})
         },
         examples = {
@@ -51,9 +53,10 @@ import org.wso2.siddhi.annotation.util.DataType;
                         syntax = "define stream inputStream (item string, price long);\n" +
                                 "from inputStream#extrema:topKTimeBatch(item, 1 sec,  3)\n" +
                                 "insert all events into outputStream;",
-                        description =  "In the given example query, a batch of 1 second will be collected. " +
-                                "Once the window is full, the 3 items with the highest frequency will be " +
-                                "emitted out and the window will be reset."
+                        description =  "This query counts the frequency of the values for the `item` attribute within" +
+                                " a time window of one second, and emits the 3 items. A batch of one second is" +
+                                " collected. Once the window is full, the three items with the highest frequency are " +
+                                "emitted and the window is reset."
                 )
         }
 )

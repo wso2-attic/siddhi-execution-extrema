@@ -40,8 +40,8 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "maxByLength",
         namespace = "extrema",
-        description = "The event with the maximum value for the given attribute in the specified " +
-                "sliding window is emitted.",
+        description = "This returns the event with the maximum value for the given attribute in the specified " +
+                "sliding window.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the maximum value is required.",
@@ -57,8 +57,8 @@ import org.wso2.siddhi.annotation.util.DataType;
                                 "from cseEventStream#window.extrema:maxByLength(price, 4) " +
                                 "select symbol,price,volume\n" +
                                 "insert into outputStream ;",
-                        description = "In the given example query, a sliding window of length 4 is considered. " +
-                                "The event with the maximum price will be emitted out."
+                        description = "This query observes a sliding window of 4 events, and returns the event with " +
+                                "the maximum price."
                 )
         }
 )

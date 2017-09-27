@@ -39,7 +39,7 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "minByLengthBatch",
         namespace = "extrema",
-        description = "Calculates the minimum value of a specified attribute inside a batch window " +
+        description = "This extension calculates the minimum value of a specified attribute inside a batch window " +
                 "and emits it.",
         parameters = {
                 @Parameter(name = "attribute",
@@ -57,9 +57,8 @@ import org.wso2.siddhi.annotation.util.DataType;
                                 "from cseEventStream#window.extrema:minByLengthBatch(price, 4) " +
                                 "select symbol,price,volume\n" +
                                 "insert into outputStream ;",
-                        description =  "In the given example query, a batch of 4 events will be collected. " +
-                                "Once the window is full, the item with the minimum price in the batch will be " +
-                                "emitted out and the window will be reset."
+                        description =  " This query collects a batch of four events. Once the batch window is full," +
+                                " it outputs the item with the minimum price in the batch. Then the window is reset."
                 )
         }
 )

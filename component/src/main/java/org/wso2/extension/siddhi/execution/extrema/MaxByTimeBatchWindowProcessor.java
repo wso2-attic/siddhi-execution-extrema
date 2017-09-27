@@ -37,7 +37,8 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "maxbytimebatch",
         namespace = "extrema",
-        description = "Calculates the maximum value of a specified attribute within a time window, and emits it.",
+        description = "This extension calculates the maximum value of a specified attribute within a time window, " +
+                "and emits it.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the maximum value is required.",
@@ -53,9 +54,9 @@ import org.wso2.siddhi.annotation.util.DataType;
                                 "from cseEventStream#window.extrema:maxByTimeBatch(price, 1 sec) " +
                                 "select symbol,price,volume\n" +
                                 "insert into outputStream ;",
-                        description =  "In the given example query, a time-batch window of 1 second is considered. " +
-                                "After every second, the window will be reset, emitting the event with" +
-                                " the maximum price."
+                        description =  "This query considers a time-batch window of 1 second. After every second, " +
+                                "the window is reset, and the event with the maximum price is output."
+
                 )
         }
 )

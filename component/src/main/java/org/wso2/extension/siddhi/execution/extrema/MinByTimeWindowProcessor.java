@@ -38,9 +38,9 @@ import org.wso2.siddhi.annotation.util.DataType;
 @Extension(
         name = "minbytime",
         namespace = "extrema",
-        description = "Calculates the minimum value of a specified attribute within a sliding time " +
+        description = "This extension calculates the minimum value of a specified attribute within a sliding time " +
                 "window and emits it. The output is updated for every event arrival and expiry during " +
-                "the time.window.length specified.",
+                "the `time.window.length` specified.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the minimum value is required.",
@@ -56,9 +56,9 @@ import org.wso2.siddhi.annotation.util.DataType;
                                 "from cseEventStream#window.extrema:minByTime(price, 1 sec) " +
                                 "select symbol,price,volume\n" +
                                 "insert into outputStream;",
-                        description =  "In the given example query, a sliding time window of 1 second is considered. " +
-                                "This output is updated for every event arrival and expiry of every event " +
-                                "(after 1 second of its arrival)."
+                        description =  "This query outputs the event with the minimum price for a sliding time " +
+                                "window of one second. This output is updated for every event arrival and expiry of " +
+                                "every event (after one second of its arrival)."
                 )
         }
 )
