@@ -1,0 +1,1494 @@
+
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+      
+      
+      
+        <link rel="shortcut icon" href="../../images/favicon.ico">
+      
+      <meta name="generator" content="mkdocs-0.16.3, mkdocs-material-1.10.3">
+    
+    
+      
+        <title>4.0.4 - Siddhi-Execution-Extrema</title>
+      
+    
+    
+      <script src="../../assets/javascripts/modernizr-e826f8942a.js"></script>
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/application-9011e2d3f8.css">
+      
+        <link rel="stylesheet" href="../../assets/stylesheets/application-23f75ab9c7.palette.css">
+      
+    
+    
+      
+        
+        
+        
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    
+  </head>
+  
+  
+  
+  
+    <body data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="drawer">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="search">
+    <label class="md-overlay" data-md-component="overlay" for="drawer"></label>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="../.." title="Siddhi-Execution-Extrema" class="md-header-nav__button md-logo">
+          
+            
+              <img src="../../images/siddhi-logo-w.svg" width="24" height="24">
+            
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <span class="md-flex__ellipsis md-header-nav__title">
+          
+            
+              
+                <span class="md-header-nav__parent">
+                  API Docs
+                </span>
+              
+            
+            4.0.4
+          
+        </span>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <label class="md-icon md-icon--search md-header-nav__button" for="search"></label>
+          
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="search"></label>
+  <div class="md-search__inner">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" required placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query">
+      <label class="md-icon md-search__icon" for="search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset">&#xE5CD;</button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result" data-md-lang-search="" data-md-lang-tokenizer="[\s\-]+">
+          <div class="md-search-result__meta" data-md-lang-result-none="No matching documents" data-md-lang-result-one="1 matching document" data-md-lang-result-other="# matching documents">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+      </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="drawer">
+    <div class="md-nav__button md-logo">
+      
+        
+          <img src="../../images/siddhi-logo-w.svg">
+        
+      
+    </div>
+    Siddhi-Execution-Extrema
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../.." title="Welcome to WSO2 Siddhi Execution Extrema" class="md-nav__link">
+      Welcome to WSO2 Siddhi Execution Extrema
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
+    
+    <label class="md-nav__link" for="nav-2">
+      API Docs
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        API Docs
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="toc">
+        4.0.4
+      </label>
+    
+    <a href="./" title="4.0.4" class="md-nav__link md-nav__link--active">
+      4.0.4
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#extrema" title="Extrema" class="md-nav__link">
+    Extrema
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maxbytime-window" title="maxbytime (Window)" class="md-nav__link">
+    maxbytime (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maxbylengthbatch-window" title="maxByLengthBatch (Window)" class="md-nav__link">
+    maxByLengthBatch (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minbylengthbatch-window" title="minByLengthBatch (Window)" class="md-nav__link">
+    minByLengthBatch (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minbytime-window" title="minbytime (Window)" class="md-nav__link">
+    minbytime (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maxbytimebatch-window" title="maxbytimebatch (Window)" class="md-nav__link">
+    maxbytimebatch (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maxbylength-window" title="maxByLength (Window)" class="md-nav__link">
+    maxByLength (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minbylength-window" title="minByLength (Window)" class="md-nav__link">
+    minByLength (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minbytimebatch-window" title="minbytimebatch (Window)" class="md-nav__link">
+    minbytimebatch (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kernelminmax-stream-processor" title="kernelMinMax (Stream Processor)" class="md-nav__link">
+    kernelMinMax (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bottomktimebatch-stream-processor" title="bottomKTimeBatch (Stream Processor)" class="md-nav__link">
+    bottomKTimeBatch (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#topktimebatch-stream-processor" title="topKTimeBatch (Stream Processor)" class="md-nav__link">
+    topKTimeBatch (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bottomk-stream-processor" title="bottomK (Stream Processor)" class="md-nav__link">
+    bottomK (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#topklengthbatch-stream-processor" title="topKLengthBatch (Stream Processor)" class="md-nav__link">
+    topKLengthBatch (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minmax-stream-processor" title="minMax (Stream Processor)" class="md-nav__link">
+    minMax (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kalmanminmax-stream-processor" title="kalmanMinMax (Stream Processor)" class="md-nav__link">
+    kalmanMinMax (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#topk-stream-processor" title="topK (Stream Processor)" class="md-nav__link">
+    topK (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bottomklengthbatch-stream-processor" title="bottomKLengthBatch (Stream Processor)" class="md-nav__link">
+    bottomKLengthBatch (Stream Processor)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../latest/" title="latest" class="md-nav__link">
+      latest
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../license/" title="License" class="md-nav__link">
+      License
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#extrema" title="Extrema" class="md-nav__link">
+    Extrema
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maxbytime-window" title="maxbytime (Window)" class="md-nav__link">
+    maxbytime (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maxbylengthbatch-window" title="maxByLengthBatch (Window)" class="md-nav__link">
+    maxByLengthBatch (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minbylengthbatch-window" title="minByLengthBatch (Window)" class="md-nav__link">
+    minByLengthBatch (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minbytime-window" title="minbytime (Window)" class="md-nav__link">
+    minbytime (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maxbytimebatch-window" title="maxbytimebatch (Window)" class="md-nav__link">
+    maxbytimebatch (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maxbylength-window" title="maxByLength (Window)" class="md-nav__link">
+    maxByLength (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minbylength-window" title="minByLength (Window)" class="md-nav__link">
+    minByLength (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minbytimebatch-window" title="minbytimebatch (Window)" class="md-nav__link">
+    minbytimebatch (Window)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kernelminmax-stream-processor" title="kernelMinMax (Stream Processor)" class="md-nav__link">
+    kernelMinMax (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bottomktimebatch-stream-processor" title="bottomKTimeBatch (Stream Processor)" class="md-nav__link">
+    bottomKTimeBatch (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#topktimebatch-stream-processor" title="topKTimeBatch (Stream Processor)" class="md-nav__link">
+    topKTimeBatch (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bottomk-stream-processor" title="bottomK (Stream Processor)" class="md-nav__link">
+    bottomK (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#topklengthbatch-stream-processor" title="topKLengthBatch (Stream Processor)" class="md-nav__link">
+    topKLengthBatch (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minmax-stream-processor" title="minMax (Stream Processor)" class="md-nav__link">
+    minMax (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kalmanminmax-stream-processor" title="kalmanMinMax (Stream Processor)" class="md-nav__link">
+    kalmanMinMax (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#topk-stream-processor" title="topK (Stream Processor)" class="md-nav__link">
+    topK (Stream Processor)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bottomklengthbatch-stream-processor" title="bottomKLengthBatch (Stream Processor)" class="md-nav__link">
+    bottomKLengthBatch (Stream Processor)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="api-docs-v404">API Docs - v4.0.4</h1>
+<h2 id="extrema">Extrema</h2>
+<h3 id="maxbytime-window">maxbytime <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#window">(Window)</a></em></h3>
+<p style="word-wrap: break-word"><code>maxbytime</code> calculates the maximum value of a specified attribute within a sliding time window and emits it. The output is updated for every event arrival and expiry during the <code>time.window.length</code> specified.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:maxbytime(&lt;INT|FLOAT|DOUBLE|LONG|STRING&gt; attribute, &lt;INT|LONG&gt; time.window.length)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the maximum value is required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>FLOAT<br>DOUBLE<br>LONG<br>STRING</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">time.window.length</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the sliding time window observed.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream cseEventStream (symbol string, price float, volume int);
+from cseEventStream#window.extrema:maxByTime(price, 1 sec) select symbol,price,volume
+insert into outputStream ;
+</code></pre>
+
+<p style="word-wrap: break-word">This query considers a sliding time window of 1 second. This output is updated for every event arrival and expiry (after 1 second of its arrival).</p>
+
+<h3 id="maxbylengthbatch-window">maxByLengthBatch <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#window">(Window)</a></em></h3>
+<p style="word-wrap: break-word"><code>maxByLengthBatch</code> calculates and returns the maximum value of a specified attribute inside a batch window.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:maxByLengthBatch(&lt;INT|FLOAT|DOUBLE|LONG|STRING&gt; attribute, &lt;INT&gt; batch.length)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the maximum value is required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>FLOAT<br>DOUBLE<br>LONG<br>STRING</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">batch.length</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the batch observed.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream cseEventStream (symbol string, price float, volume int);
+
+from cseEventStream#window.extrema:maxByLengthBatch(price, 4) 
+select symbol,price,volume
+insert into outputStream ;
+</code></pre>
+
+<p style="word-wrap: break-word">This query collects a batch of 4 events. Once the window is full, the item with the maximum price in the batch is returned as the output, and the window is reset.</p>
+
+<h3 id="minbylengthbatch-window">minByLengthBatch <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#window">(Window)</a></em></h3>
+<p style="word-wrap: break-word"><code>minByLengthBatch</code> calculates the minimum value of a specified attribute inside a batch window and emits it.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:minByLengthBatch(&lt;INT|FLOAT|DOUBLE|LONG|STRING&gt; attribute, &lt;INT&gt; batch.length)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the minimum value is required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>FLOAT<br>DOUBLE<br>LONG<br>STRING</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">batch.length</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the batch involved.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream cseEventStream (symbol string, price float, volume int);
+
+from cseEventStream#window.extrema:minByLengthBatch(price, 4) select symbol,price,volume
+insert into outputStream ;
+</code></pre>
+
+<p style="word-wrap: break-word"> This query collects a batch of four events. Once the batch window is full, it outputs the item with the minimum price in the batch. Then the window is reset.</p>
+
+<h3 id="minbytime-window">minbytime <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#window">(Window)</a></em></h3>
+<p style="word-wrap: break-word"><code>minbytime</code> calculates the minimum value of a specified attribute within a sliding time window and emits it. The output is updated for every event arrival and expiry during the <code>time.window.length</code> specified.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:minbytime(&lt;INT|FLOAT|DOUBLE|LONG|STRING&gt; attribute, &lt;INT|LONG&gt; time.window.length)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the minimum value is required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>FLOAT<br>DOUBLE<br>LONG<br>STRING</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">time.window.length</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the sliding time window observed.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream cseEventStream (symbol string, price float, volume int);
+from cseEventStream#window.extrema:minByTime(price, 1 sec) select symbol,price,volume
+insert into outputStream;
+</code></pre>
+
+<p style="word-wrap: break-word">This query outputs the event with the minimum price for a sliding time window of one second. This output is updated for every event arrival and expiry of every event (after one second of its arrival).</p>
+
+<h3 id="maxbytimebatch-window">maxbytimebatch <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#window">(Window)</a></em></h3>
+<p style="word-wrap: break-word"><code>maxbytimebatch</code> calculates the maximum value of a specified attribute within a time window, and emits it.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:maxbytimebatch(&lt;INT|FLOAT|DOUBLE|LONG|STRING&gt; attribute, &lt;INT|LONG&gt; time.batch.length)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the maximum value is required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>FLOAT<br>DOUBLE<br>LONG<br>STRING</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">time.batch.length</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the time window observed.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream cseEventStream (symbol string, price float, volume int);
+from cseEventStream#window.extrema:maxByTimeBatch(price, 1 sec) select symbol,price,volume
+insert into outputStream ;
+</code></pre>
+
+<p style="word-wrap: break-word">This query considers a time-batch window of 1 second. After every second, the window is reset, and the event with the maximum price is output.</p>
+
+<h3 id="maxbylength-window">maxByLength <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#window">(Window)</a></em></h3>
+<p style="word-wrap: break-word"><code>maxByLength</code> returns the event with the maximum value for the given attribute in the specified sliding window.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:maxByLength(&lt;INT|FLOAT|DOUBLE|LONG|STRING&gt; attribute, &lt;INT|LONG&gt; sliding.window.length)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the maximum value is required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>FLOAT<br>DOUBLE<br>LONG<br>STRING</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">sliding.window.length</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the sliding window observed.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream cseEventStream (symbol string, price float, volume int);
+from cseEventStream#window.extrema:maxByLength(price, 4) select symbol,price,volume
+insert into outputStream ;
+</code></pre>
+
+<p style="word-wrap: break-word">This query observes a sliding window of 4 events, and returns the event with the maximum price.</p>
+
+<h3 id="minbylength-window">minByLength <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#window">(Window)</a></em></h3>
+<p style="word-wrap: break-word"><code>minByLength</code> derives the minimum value for the given attribute in the specified sliding window.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:minByLength(&lt;INT|FLOAT|DOUBLE|LONG|STRING&gt; attribute, &lt;INT|LONG&gt; sliding.window.length)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the minimum value is required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>FLOAT<br>DOUBLE<br>LONG<br>STRING</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">sliding.window.length</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the sliding window observed.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream cseEventStream (symbol string, price float, volume int);
+from cseEventStream#window.extrema:minByLength(price, 4) select symbol,price,volume
+insert into outputStream ;
+</code></pre>
+
+<p style="word-wrap: break-word">This query outputs the minimum price for a sliding length window of four events.</p>
+
+<h3 id="minbytimebatch-window">minbytimebatch <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#window">(Window)</a></em></h3>
+<p style="word-wrap: break-word"><code>minbytimebatch</code> calculates the minimum value of a specified attribute within a time window, and emits it.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:minbytimebatch(&lt;INT|FLOAT|DOUBLE|LONG|STRING&gt; attribute, &lt;INT|LONG&gt; time.batch.length)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the minimum value is required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>FLOAT<br>DOUBLE<br>LONG<br>STRING</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">time.batch.length</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the time window observed.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream cseEventStream (symbol string, price float, volume int);
+
+from cseEventStream#window.extrema:minByTimeBatch(price, 1 sec) select symbol,price,volume
+insert into outputStream ;
+</code></pre>
+
+<p style="word-wrap: break-word">This query considers a time-batch window of 1 second. After every second, the window is reset and it emits the event with the minimum price.</p>
+
+<h3 id="kernelminmax-stream-processor">kernelMinMax <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processor">(Stream Processor)</a></em></h3>
+<p style="word-wrap: break-word"><code>kernelMinMax</code> uses Gaussian Kernel to smooth the time series values in the given window size, and then determines the maxima and minima of that set of values. It returns the events with the minimum and/or maximum for the specified attribute within the given window length, with the extrema type as <code>min</code> or <code>max</code> as relevant.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:kernelMinMax(&lt;INT|FLOAT|DOUBLE|LONG&gt; attribute, &lt;DOUBLE&gt; bandwidth, &lt;INT&gt; window.size, &lt;STRING&gt; extrema.type)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the minimum and/or maximum value is required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>FLOAT<br>DOUBLE<br>LONG</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">bandwidth</td>
+        <td style="vertical-align: top; word-wrap: break-word">The bandwidth of the Gaussian Kernel calculation.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">DOUBLE</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">window.size</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the window within which the minimum and/or the maximum value for the given window should be identified.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">extrema.type</td>
+        <td style="vertical-align: top; word-wrap: break-word">This can be min, max or minmax.<br><code>min</code>: If this is specified, minimum values are identified within the given window length, and they are returned with <code>min</code> as their extrema type.<br><code>max</code>: If this is specified, maximum values are identified within the given window length, and they are returned with <code>max</code> as their extrema type.<br><code>minmax</code>: If this is specified, both minimum and maximum values are identified within the given window length and returned. The extrema type is specified as <code>min</code> for the minimum events, and as <code>max</code> for the maximum events.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">STRING</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream inputStream (item string, price long);
+
+from inputStream#extrema:kernelMinMax(price, 3, 7, ?max?)
+select *
+insert into outputStream;
+</code></pre>
+
+<p style="word-wrap: break-word">This query returns the maximum values for a set of price values.</p>
+
+<h3 id="bottomktimebatch-stream-processor">bottomKTimeBatch <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processor">(Stream Processor)</a></em></h3>
+<p style="word-wrap: break-word"><code>bottomKTimeBatch</code> counts the frequency of different values for a specified attribute inside a time window, and outputs a specified number of least frequently occuring values. Events are output only if there is a change in the <code>bottomK</code> results for each chunk of received events.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:bottomKTimeBatch(&lt;INT|LONG|FLOAT|DOUBLE|STRING|BOOL|OBJECT&gt; attribute, &lt;INT|LONG&gt; time.window, &lt;INT&gt; k.value)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the frequency is counted.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG<br>FLOAT<br>DOUBLE<br>STRING<br>BOOL<br>OBJECT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">time.window</td>
+        <td style="vertical-align: top; word-wrap: break-word">The time window during which the frequency should be calculated.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">k.value</td>
+        <td style="vertical-align: top; word-wrap: break-word">The number of least frequently occuring values that must be returned.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream inputStream (item string, price long);
+from inputStream#extrema:bottomKTimeBatch(item, 1 sec,  3)
+insert all events into outputStream;)
+</code></pre>
+
+<p style="word-wrap: break-word">This query collects a batch of events during a time window of one second. Once the window is full, the three items with the lowest frequency are output and the window is reset.</p>
+
+<h3 id="topktimebatch-stream-processor">topKTimeBatch <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processor">(Stream Processor)</a></em></h3>
+<p style="word-wrap: break-word"><code>topKTimeBatch</code> counts the frequency of different values of a specified attribute within a time window, and emits the (k) number of values with the highest frequency.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:topKTimeBatch(&lt;INT|LONG|FLOAT|DOUBLE|STRING|BOOL|OBJECT&gt; attribute, &lt;INT|LONG&gt; time.window, &lt;INT&gt; k.value)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the frequency is counted.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG<br>FLOAT<br>DOUBLE<br>STRING<br>BOOL<br>OBJECT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">time.window</td>
+        <td style="vertical-align: top; word-wrap: break-word">The time window during which the frequency should be calculated.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">k.value</td>
+        <td style="vertical-align: top; word-wrap: break-word">The number of frequent values that should be emitted as the output (e.g., if 2 is specified, this extension returns the two attribute values (for the specified attribute) that have the highest frequency.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream inputStream (item string, price long);
+from inputStream#extrema:topKTimeBatch(item, 1 sec,  3)
+insert all events into outputStream;
+</code></pre>
+
+<p style="word-wrap: break-word">This query counts the frequency of the values for the <code>item</code> attribute within a time window of one second, and emits the 3 items. A batch of one second is collected. Once the window is full, the three items with the highest frequency are emitted and the window is reset.</p>
+
+<h3 id="bottomk-stream-processor">bottomK <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processor">(Stream Processor)</a></em></h3>
+<p style="word-wrap: break-word"><code>bottomK</code> counts the frequency of different values for a specified attribute, and outputs the specified number of least frequently occuring values. Events are output only if there is a change in the bottomK results for each chunk of received events.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:bottomK(&lt;INT|LONG|FLOAT|DOUBLE|STRING|BOOL|OBJECT&gt; attribute, &lt;INT&gt; k.value)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the frequency is counted.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG<br>FLOAT<br>DOUBLE<br>STRING<br>BOOL<br>OBJECT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">k.value</td>
+        <td style="vertical-align: top; word-wrap: break-word">The number of bottom frequencies required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream inputStream (item string, price long);
+
+from inputStream#extrema:bottomK(item, 3)
+insert all events into outputStream;)
+</code></pre>
+
+<p style="word-wrap: break-word">This query outputs the three items with the lowest frequency counts.</p>
+
+<h3 id="topklengthbatch-stream-processor">topKLengthBatch <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processor">(Stream Processor)</a></em></h3>
+<p style="word-wrap: break-word"><code>topKLengthBatch</code> counts the frequency of different values of a specified attribute, within a batch window of a specified length, and emits the (k) number of values with the highest frequency.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:topKLengthBatch(&lt;INT|LONG|FLOAT|DOUBLE|STRING|BOOL|OBJECT&gt; attribute, &lt;INT&gt; window.length, &lt;INT&gt; k.value)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the frequency is counted.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG<br>FLOAT<br>DOUBLE<br>STRING<br>BOOL<br>OBJECT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">window.length</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the window.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">k.value</td>
+        <td style="vertical-align: top; word-wrap: break-word">The number of frequent values that should be emitted as the output (e.g., if2 is specified, this extension returns the two attribute values (for the specifiedattribute) that have the highest frequency.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream inputStream (item string, price long);
+
+from inputStream#extrema:topKLengthBatch(item, 6, 3)
+insert all events into outputStream;)
+</code></pre>
+
+<p style="word-wrap: break-word">This query collects a batch of six events. Once the window is full, the three items with the highest frequency are emitted and the window is reset.</p>
+
+<h3 id="minmax-stream-processor">minMax <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processor">(Stream Processor)</a></em></h3>
+<p style="word-wrap: break-word"><code>minMax</code> finds the minimum and/or the maximum value within a given length window (maxPreBound+maxPostBound), where following conditions are met. <br><br>For minimum: <br>An event where the value for the specified attribute is greater by the percentage specified as the <code>preBoundChange</code> must have arrived within the <code>maxPreBound</code> length window before the event with the minimum value.<br>An event where the value for the specified attribute is greater by the percentage specified as the <code>postBoundChange</code> must have arrived within the <code>maxPostBound</code> length window after the event with the minimum value.<br><br>For maximum: <br>An event where the value for the specified attribute is less by the percentage specified as the <code>preBoundChange</code> must have arrived within the <code>maxPreBound</code> length window before the event with the maximum value.<br>An event where the value for the specified attribute is less by the percentage specified as the <code>postBoundChange</code> must have arrived within the <code>maxPreBound</code> length window after the event with the maximum value.<br><br>The extension returns the events with the minimum and/or maximum for the specified attribute within the given window length, with the extrema type as min or max as relevant. These events are returned with the following additional parameters.<br><code>preBound</code>: The actual distance between the minimum/maximum value and the threshold value. This value must be within the <code>MaxPreBound</code> window.<br>postBound: The actual distance between the minimum/maximum value and the threshold value. This value must be within the <code>MaxPostBound</code> window.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:minMax(&lt;INT|FLOAT|DOUBLE|LONG&gt; attribute, &lt;INT&gt; max.pre.bound, &lt;INT&gt; max.post.bound, &lt;DOUBLE&gt; pre.bound.change, &lt;DOUBLE&gt; post.bound.change, &lt;STRING&gt; extrema.type)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the minimum and/or the maximum value is required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>FLOAT<br>DOUBLE<br>LONG</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">max.pre.bound</td>
+        <td style="vertical-align: top; word-wrap: break-word">The maximum pre window length to be considered (before the min/max event).</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">max.post.bound</td>
+        <td style="vertical-align: top; word-wrap: break-word">The maximum post window length to be considered (after the min/max event).</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">pre.bound.change</td>
+        <td style="vertical-align: top; word-wrap: break-word">The threshold value for  the percentage difference between the value that occurred in the <code>maxPreBound</code> length window before the maximum value, and the maximum value.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">DOUBLE</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">post.bound.change</td>
+        <td style="vertical-align: top; word-wrap: break-word">The threshold value for  the percentage difference between the value that occurred in the <code>maxPreBound</code> length window after the maximum value, and the maximum value.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">DOUBLE</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">extrema.type</td>
+        <td style="vertical-align: top; word-wrap: break-word">This can be min, max or minmax.<br><code>min</code>: If this is specified, minimum values are identified within the given window length, and they are returned with <code>min</code> as their extrema type.<br><code>max</code>: If this is specified, maximum values are identified within the given window length, and they are returned with <code>max</code> as their extrema type.<br><code>minmax</code>: If this is specified, both minimum and maximum values are identified within the given window length and returned. The extrema type is specified as <code>min</code> for the minimum events, and as <code>max</code> for the maximum events.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">STRING</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>from inputStream#extrema:minMax(price, 4, 4, 1, 2, 'max')
+select *
+insert into outputStream; 
+</code></pre>
+
+<p style="word-wrap: break-word">This query returns the maximum values found within a set of price values.</p>
+
+<p><span id="example-2" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 2</span></p>
+<pre><code>from inputStream#extrema:minMax(price, 4, 4, 1, 2, 'min')
+select *
+insert into outputStream; 
+</code></pre>
+
+<p style="word-wrap: break-word">This query returns the minimum values found within a set of price values.</p>
+
+<p><span id="example-3" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 3</span></p>
+<pre><code>from inputStream#extrema:minMax(price, 4, 4, 1, 2, 'minmax')
+select *
+insert into outputStream; 
+</code></pre>
+
+<p style="word-wrap: break-word">This query returns both the minimum values and the maximum values found within a set of price values.</p>
+
+<h3 id="kalmanminmax-stream-processor">kalmanMinMax <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processor">(Stream Processor)</a></em></h3>
+<p style="word-wrap: break-word"><code>kalmanMinMax</code> uses the Kalman filter to smooth the time series values in the given window size, and then determine the maxima and minima of that set of values. Returns the events with the minimum and/or maximum for the specified attribute within the given window length, with the extrema type as <code>min</code> or <code>max</code> as relevant.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:kalmanMinMax(&lt;INT|LONG|FLOAT|DOUBLE&gt; attribute, &lt;DOUBLE&gt; q, &lt;DOUBLE&gt; r, &lt;INT&gt; window.size, &lt;STRING&gt; extrema.type)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the minimum and/or maximum value is required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG<br>FLOAT<br>DOUBLE</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">q</td>
+        <td style="vertical-align: top; word-wrap: break-word">The standard deviation of the process noise.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">DOUBLE</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">r</td>
+        <td style="vertical-align: top; word-wrap: break-word">The standard deviation of the measurement noise.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">DOUBLE</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">window.size</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the window within which the minimum and/or the maximum value for the given window should be identified.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">extrema.type</td>
+        <td style="vertical-align: top; word-wrap: break-word">This can be <code>min</code>, <code>max</code> or <code>minmax</code>.<br><code>min</code>: If this is specified, minimum values are identified within the given window length, and they are returned with <code>min</code> as their extrema type.<br><code>max</code>: If this is specified, maximum values are identified within the given window length, and they are returned with <code>max</code> as their extrema type.<br><code>minmax</code>: If this is specified, both minimum and maximum values are identified within the given window length and returned. The extrema type is specified as <code>min</code> for the minimum events, and as <code>max</code> for the maximum events.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">STRING</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream inputStream (item string, price long);
+
+from inputStream#extrema:kalmanMinMax(price, 0.000001,0.0001, 25, 'min')insert all events into outputStream;)
+</code></pre>
+
+<p style="word-wrap: break-word">This query returns the minimum values for a set of price values.</p>
+
+<h3 id="topk-stream-processor">topK <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processor">(Stream Processor)</a></em></h3>
+<p style="word-wrap: break-word"><code>topK</code> counts the frequency of different values of a specified attribute, and emits the (k) number of values with the highest frequency.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:topK(&lt;INT|LONG|FLOAT|DOUBLE|STRING|BOOL|OBJECT&gt; attribute, &lt;INT&gt; k.value)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the frequency is counted.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG<br>FLOAT<br>DOUBLE<br>STRING<br>BOOL<br>OBJECT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">k.value</td>
+        <td style="vertical-align: top; word-wrap: break-word">The number of frequent values that should be emitted as the output (e.g., if2 is specified, this extension returns the two attribute values (for the specifiedattribute) that have the highest frequency.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream inputStream (item string, price long);
+
+from inputStream#extrema:topK(item, 3)
+insert all events into outputStream;)
+</code></pre>
+
+<p style="word-wrap: break-word">This query emits the three items with the highest frequency counts.</p>
+
+<h3 id="bottomklengthbatch-stream-processor">bottomKLengthBatch <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processor">(Stream Processor)</a></em></h3>
+<p style="word-wrap: break-word"><code>bottomKLengthBatc</code> counts the frequency of different values of a specified attribute inside a batch window, and returns the specified number of least frequently occuring values. The bottom K frequency values are returned per batch.</p>
+
+<p><span id="syntax" class="md-typeset" style="display: block; font-weight: bold;">Syntax</span></p>
+<pre><code>extrema:bottomKLengthBatch(&lt;INT|LONG|FLOAT|DOUBLE|STRING|BOOL|OBJECT&gt; attribute, &lt;INT&gt; window.length, &lt;INT&gt; k.value)
+</code></pre>
+
+<p><span id="query-parameters" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">QUERY PARAMETERS</span>
+<table>
+    <tr>
+        <th>Name</th>
+        <th style="min-width: 20em">Description</th>
+        <th>Default Value</th>
+        <th>Possible Data Types</th>
+        <th>Optional</th>
+        <th>Dynamic</th>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">attribute</td>
+        <td style="vertical-align: top; word-wrap: break-word">The attribute of which the frequency is counted.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT<br>LONG<br>FLOAT<br>DOUBLE<br>STRING<br>BOOL<br>OBJECT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">window.length</td>
+        <td style="vertical-align: top; word-wrap: break-word">The length of the window observed.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">k.value</td>
+        <td style="vertical-align: top; word-wrap: break-word">The number of bottom frequencies required.</td>
+        <td style="vertical-align: top"></td>
+        <td style="vertical-align: top">INT</td>
+        <td style="vertical-align: top">No</td>
+        <td style="vertical-align: top">No</td>
+    </tr>
+</table></p>
+<p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
+<span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
+<pre><code>define stream inputStream (item string, price long);
+
+from inputStream#extrema:bottomKLengthBatch(item, 6, 3)
+insert all events into outputStream;)
+</code></pre>
+
+<p style="word-wrap: break-word">This query collects a batch of six events. Once the batch window is full, the three items with the lowest frequency are output, and the window is reset.</p>
+                
+                  
+                
+              
+              
+                
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../.." title="Welcome to WSO2 Siddhi Execution Extrema" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Welcome to WSO2 Siddhi Execution Extrema
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../latest/" title="latest" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                latest
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        powered by
+        <a href="http://www.mkdocs.org" title="MkDocs">MkDocs</a>
+        and
+        <a href="http://squidfunk.github.io/mkdocs-material/" title="Material for MkDocs">
+          Material for MkDocs</a>
+      </div>
+      
+        
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../../assets/javascripts/application-f3ab9e5ff8.js"></script>
+      
+      
+      <script>app.initialize({url:{base:"../.."}})</script>
+      
+        <script src="../../javascripts/extra.js"></script>
+      
+    
+    
+      
+      <script>!function(e,t,a,n,o,c,i){e.GoogleAnalyticsObject=o,e[o]=e[o]||function(){(e[o].q=e[o].q||[]).push(arguments)},e[o].l=1*new Date,c=t.createElement(a),i=t.getElementsByTagName(a)[0],c.async=1,c.src=n,i.parentNode.insertBefore(c,i)}(window,document,"script","https://www.google-analytics.com/analytics.js","ga"),ga("create","UA-103065-28","auto"),ga("set","anonymizeIp",!0),ga("send","pageview");var links=document.getElementsByTagName("a");Array.prototype.map.call(links,function(e){e.host!=document.location.host&&e.addEventListener("click",function(){var t=e.getAttribute("data-md-action")||"follow";ga("send","event","outbound",t,e.href)})});var query=document.forms.search.query;query.addEventListener("blur",function(){if(this.value){var e=document.location.pathname;ga("send","pageview",e+"?q="+this.value)}})</script>
+      
+    
+  </body>
+</html>
