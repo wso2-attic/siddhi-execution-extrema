@@ -23,6 +23,6 @@ package org.wso2.extension.siddhi.execution.extrema.util;
 public class Constants {
     public static final String TOP_K_BOTTOM_K_ELEMENT = "Element";
     public static final String TOP_K_BOTTOM_K_FREQUENCY = "Frequency";
-    public static final String TOP_K_BOTTOM_K_TOP = "Top";
-    public static final String TOP_K_BOTTOM_K_BOTTOM = "Bottom";
+    public static final String TOP_K_BOTTOM_K_TOP = "top";
+    public static final String TOP_K_BOTTOM_K_BOTTOM = "bottom";
 }
