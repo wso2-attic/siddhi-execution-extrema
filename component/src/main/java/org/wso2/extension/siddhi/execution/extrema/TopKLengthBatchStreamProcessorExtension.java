@@ -23,6 +23,7 @@ import org.wso2.extension.siddhi.execution.extrema.util.TopKFinder;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
 import org.wso2.siddhi.annotation.Parameter;
+import org.wso2.siddhi.annotation.ReturnAttribute;
 import org.wso2.siddhi.annotation.util.DataType;
 
 /**
@@ -48,6 +49,23 @@ import org.wso2.siddhi.annotation.util.DataType;
                                 "2 is specified, this extension returns the two attribute values (for the specified" +
                                 "attribute) that have the highest frequency.",
                         type = {DataType.INT})
+        },
+        returnAttributes = {
+                @ReturnAttribute(
+                        name = "topNElement",
+                        description = "The value of the attribute that has the nth highest frequency. Here, N is an " +
+                                "integer that can have the values of 1 <= N <= k.value, where k.value is defined as " +
+                                "the function parameter.",
+                        type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
+                                DataType.STRING, DataType.BOOL, DataType.OBJECT}
+                ),
+                @ReturnAttribute(
+                        name = "topNFrequency",
+                        description = "The frequency of the value of the attribute that has the nth highest " +
+                                "frequency. Here, N is an integer that can have the values of 1 <= N <= k.value, " +
+                                "where k.value is defined as the function parameter.",
+                        type = {DataType.LONG}
+                )
         },
         examples = {
                 @Example(

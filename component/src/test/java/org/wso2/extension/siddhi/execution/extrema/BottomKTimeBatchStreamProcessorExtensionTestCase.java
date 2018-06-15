@@ -152,7 +152,7 @@ public class BottomKTimeBatchStreamProcessorExtensionTestCase {
         String query = ("@info(name = 'query1') " +
                 "from inputStream1#extrema:bottomKTimeBatch(item, 1 sec, 3) as stream1 " +
                 "join inputStream2#window.timeBatch(1 sec) as stream2 " +
-                "on stream1.Bottom1Element==stream2.item " +
+                "on stream1.bottom1Element==stream2.item " +
                 "select stream2.item as item, stream2.type as type " +
                 "insert into outputStream;");
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.

@@ -146,7 +146,7 @@ public class BottomKLengthBatchStreamProcessorExtensionTestCase {
         String query = ("@info(name = 'query1') " +
                 "from inputStream1#extrema:bottomKLengthBatch(item, 6, 3) as stream1 " +
                 "join inputStream2#window.lengthBatch(3)  as stream2 " +
-                "on stream1.Bottom1Element==stream2.item " +
+                "on stream1.bottom1Element==stream2.item " +
                 "select stream2.item as item, stream2.type as type " +
                 "insert into outputStream;");
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.
