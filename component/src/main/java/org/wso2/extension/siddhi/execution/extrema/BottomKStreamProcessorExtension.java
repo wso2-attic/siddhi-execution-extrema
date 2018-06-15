@@ -23,6 +23,7 @@ import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
 import org.wso2.siddhi.annotation.Parameter;
+import org.wso2.siddhi.annotation.ReturnAttribute;
 import org.wso2.siddhi.annotation.util.DataType;
 
 /**
@@ -43,6 +44,23 @@ import org.wso2.siddhi.annotation.util.DataType;
                 @Parameter(name = "k.value",
                         description = "The number of bottom frequencies required.",
                         type = {DataType.INT})
+        },
+        returnAttributes = {
+                @ReturnAttribute(
+                        name = "bottomNElement",
+                        description = "The value of the attribute that has the nth lowest frequency. Here, " +
+                                "N is an integer that can have the values of 1 <= N <= k.value, where k.value is " +
+                                "defined as the function parameter.",
+                        type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
+                                DataType.STRING, DataType.BOOL, DataType.OBJECT}
+                ),
+                @ReturnAttribute(
+                        name = "bottomNFrequency",
+                        description = "The frequency of the value of the attribute that has the nth lowest " +
+                                "frequency. Here, N is an integer that can have the values of 1 <= N <= k.value, " +
+                                "where k.value is defined as the function parameter.",
+                        type = {DataType.LONG}
+                )
         },
         examples = {
                 @Example(
