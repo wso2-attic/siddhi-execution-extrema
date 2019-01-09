@@ -52,10 +52,10 @@ import org.wso2.siddhi.annotation.util.DataType;
         },
         examples = {
                 @Example(
-                        syntax = "define stream cseEventStream (symbol string, price float, volume int);\n" +
+                        syntax = "define stream CseEventStream (symbol string, price float, volume int);\n" +
                                 "from cseEventStream#window.extrema:maxByTime(price, 1 sec) " +
                                 "select symbol,price,volume\n" +
-                                "insert into outputStream ;",
+                                "insert into OutputStream ;",
                         description = "This query considers a sliding time window of 1 second. This output is " +
                                 "updated for every event arrival and expiry (after 1 second of its arrival)."
                 )

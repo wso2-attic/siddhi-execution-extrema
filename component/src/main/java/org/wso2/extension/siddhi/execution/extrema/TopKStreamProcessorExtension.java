@@ -50,25 +50,26 @@ import org.wso2.siddhi.annotation.util.DataType;
                 @ReturnAttribute(
                         name = "topNElement",
                         description = "The value of the attribute that has the nth highest frequency. Here, N is an " +
-                                "integer that can have the values of 1 <= N <= k.value, where k.value is defined as " +
-                                "the function parameter.",
+                                "integer that can hold any value within the range, 1 <= N <= k.value, " +
+                                "where 'k.value' defines the number of frequent values that should be returned.",
                         type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
                                 DataType.STRING, DataType.BOOL, DataType.OBJECT}
                 ),
                 @ReturnAttribute(
                         name = "topNFrequency",
                         description = "The frequency of the value of the attribute that has the nth highest " +
-                                "frequency. Here, N is an integer that can have the values of 1 <= N <= k.value, " +
-                                "where k.value is defined as the function parameter.",
+                                "frequency. Here, N is an integer that can hold any value within the range," +
+                                " of 1 <= N <= k.value, where 'k.value' defines the number of frequent values" +
+                                " that should be returned.",
                         type = {DataType.LONG}
                 )
         },
         examples = {
                 @Example(
-                        syntax = "define stream inputStream (item string, price long);\n" +
+                        syntax = "define stream InputStream (item string, price long);\n" +
                                 "\n" +
                                 "from inputStream#extrema:topK(item, 3)\n" +
-                                "insert all events into outputStream;)",
+                                "insert all events into OutputStream;)",
                         description = "This query emits the three items with the highest frequency counts."
                 )
         }

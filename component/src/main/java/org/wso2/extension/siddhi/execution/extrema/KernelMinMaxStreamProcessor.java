@@ -53,9 +53,9 @@ import java.util.Queue;
 @Extension(
         name = "kernelMinMax",
         namespace = "extrema",
-        description = "`kernelMinMax` uses Gaussian Kernel to smooth the time series values in the given" +
+        description = "`kernelMinMax` uses Gaussian Kernel to smooth values of the series within the given" +
                 " window size, and then determines the maxima and minima of that set of values. " +
-                "It returns the events with the minimum and/or maximum for the specified attribute " +
+                "It returns the events with the minimum and/or maximum values for the specified attribute " +
                 "within the given window length, with the extrema type as `min` or `max` as relevant.",
         parameters = {
                 @Parameter(name = "attribute",
@@ -69,7 +69,8 @@ import java.util.Queue;
                                 "maximum value for the given window should be identified.",
                         type = {DataType.INT}),
                 @Parameter(name = "extrema.type",
-                        description = "This can be min, max or minmax.\n" +
+                        description = "This parameter can denote the minimum value, maximum value or " +
+                                "both minimum and maximum values.\n" +
                                 "`min`: If this is specified, minimum values are identified within the " +
                                 "given window length, and they are returned with `min` as their extrema type.\n" +
                                 "`max`: If this is specified, maximum values are identified within the given " +
@@ -81,12 +82,14 @@ import java.util.Queue;
         },
         examples = {
                 @Example(
-                        syntax = "define stream inputStream (item string, price long);\n" +
+                        syntax = "define stream InputStream (item string, price long);\n" +
                                 "\n" +
                                 "from inputStream#extrema:kernelMinMax(price, 3, 7, ‘max’)\n" +
                                 "select *\n" +
-                                "insert into outputStream;",
-                        description =  "This query returns the maximum values for a set of price values."
+                                "insert into OutputStream;",
+                        description =  "This query returns the maximum values for a set of price values while the " +
+                                "bandwidth of the Gaussian Kernel calculation is three and the length of the " +
+                                "window is seven."
                 )
         }
 )

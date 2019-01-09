@@ -52,11 +52,11 @@ import org.wso2.siddhi.annotation.util.DataType;
         },
         examples = {
                 @Example(
-                        syntax = "define stream cseEventStream (symbol string, price float, volume int);\n" +
+                        syntax = "define stream CseEventStream (symbol string, price float, volume int);\n" +
                                 "\n" +
-                                "from cseEventStream#window.extrema:minByLengthBatch(price, 4) " +
+                                "from CseEventStream#window.extrema:minByLengthBatch(price, 4) " +
                                 "select symbol,price,volume\n" +
-                                "insert into outputStream ;",
+                                "insert into OutputStream ;",
                         description =  " This query collects a batch of four events. Once the batch window is full," +
                                 " it outputs the item with the minimum price in the batch. Then the window is reset."
                 )

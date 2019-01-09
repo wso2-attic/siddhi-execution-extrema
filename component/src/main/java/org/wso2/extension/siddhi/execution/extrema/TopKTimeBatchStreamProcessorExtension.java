@@ -41,7 +41,7 @@ import org.wso2.siddhi.annotation.util.DataType;
                         type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
                                 DataType.STRING, DataType.BOOL, DataType.OBJECT}),
                 @Parameter(name = "time.window",
-                        description = "The time window during which the frequency should be calculated.",
+                        description = "The time window for which the frequency should be calculated.",
                         type = {DataType.INT, DataType.LONG}),
                 @Parameter(name = "k.value",
                         description = "The number of frequent values that should be emitted as the output (e.g., if" +
@@ -53,24 +53,26 @@ import org.wso2.siddhi.annotation.util.DataType;
                 @ReturnAttribute(
                         name = "topNElement",
                         description = "The value of the attribute that has the nth highest frequency. Here, N is an " +
-                                "integer that can have the values of 1 <= N <= k.value, where k.value is defined as " +
-                                "the function parameter.",
+                                "integer that can hold any value within the range, 1 <= N <= k.value, " +
+                                "where 'k.value' is defines the number of frequent values that is required " +
+                                "to be returned.",
                         type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
                                 DataType.STRING, DataType.BOOL, DataType.OBJECT}
                 ),
                 @ReturnAttribute(
                         name = "topNFrequency",
                         description = "The frequency of the value of the attribute that has the nth highest " +
-                                "frequency. Here, N is an integer that can have the values of 1 <= N <= k.value, " +
-                                "where k.value is defined as the function parameter.",
+                                "frequency. Here, N is an integer that can hold any value within the range" +
+                                " 1 <= N <= k.value, where 'k.value' defines the number of frequent values " +
+                                "that is required to be returned.",
                         type = {DataType.LONG}
                 )
         },
         examples = {
                 @Example(
-                        syntax = "define stream inputStream (item string, price long);\n" +
+                        syntax = "define stream InputStream (item string, price long);\n" +
                                 "from inputStream#extrema:topKTimeBatch(item, 1 sec,  3)\n" +
-                                "insert all events into outputStream;",
+                                "insert all events into OutputStream;",
                         description =  "This query counts the frequency of the values for the `item` attribute within" +
                                 " a time window of one second, and emits the 3 items. A batch of one second is" +
                                 " collected. Once the window is full, the three items with the highest frequency are " +
