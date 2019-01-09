@@ -50,11 +50,11 @@ import org.wso2.siddhi.annotation.util.DataType;
         },
         examples = {
                 @Example(
-                        syntax = "define stream cseEventStream (symbol string, price float, volume int);\n" +
+                        syntax = "define stream CseEventStream (symbol string, price float, volume int);\n" +
                                 "\n" +
                                 "from cseEventStream#window.extrema:minByTimeBatch(price, 1 sec) " +
                                 "select symbol,price,volume\n" +
-                                "insert into outputStream ;",
+                                "insert into OutputStream ;",
                         description =  "This query considers a time-batch window of 1 second. After every second, " +
                                 "the window is reset and it emits the event with the minimum price."
 

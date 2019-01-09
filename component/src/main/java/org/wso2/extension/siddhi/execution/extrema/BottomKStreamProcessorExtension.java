@@ -34,41 +34,44 @@ import org.wso2.siddhi.annotation.util.DataType;
         name = "bottomK",
         namespace = "extrema",
         description = "`bottomK` counts the frequency of different values for a specified attribute, " +
-                "and outputs the specified number of least frequently occuring values. Events are output only if " +
-                "there is a change in the bottomK results for each chunk of received events.",
+                "and returns the number of least frequently occurring values. The events are returned only if " +
+                "there is a change in the 'bottomK' results for each chunk of received events.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the frequency is counted.",
                         type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
                                 DataType.STRING, DataType.BOOL, DataType.OBJECT}),
                 @Parameter(name = "k.value",
-                        description = "The number of bottom frequencies required.",
+                        description = "The number of lowest frequencies required.",
                         type = {DataType.INT})
         },
         returnAttributes = {
                 @ReturnAttribute(
                         name = "bottomNElement",
                         description = "The value of the attribute that has the nth lowest frequency. Here, " +
-                                "N is an integer that can have the values of 1 <= N <= k.value, where k.value is " +
-                                "defined as the function parameter.",
+                                "N is an integer that can hold any value within the range," +
+                                " 1 <= N <= k.value, where 'k.value' " +
+                                "defines the number of attributes that are required to be returned as " +
+                                "the ones with the lowest frequencies.",
                         type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
                                 DataType.STRING, DataType.BOOL, DataType.OBJECT}
                 ),
                 @ReturnAttribute(
                         name = "bottomNFrequency",
                         description = "The frequency of the value of the attribute that has the nth lowest " +
-                                "frequency. Here, N is an integer that can have the values of 1 <= N <= k.value, " +
-                                "where k.value is defined as the function parameter.",
+                                "frequency. Here, N is an integer that can hold any value within the range," +
+                                " 1 <= N <= k.value, where 'k.value' defines the number of attributes that are " +
+                                "required to be returned as the ones with the lowest frequencies.",
                         type = {DataType.LONG}
                 )
         },
         examples = {
                 @Example(
-                        syntax = "define stream inputStream (item string, price long);\n" +
+                        syntax = "define stream InputStream (item string, price long);\n" +
                                 "\n" +
                                 "from inputStream#extrema:bottomK(item, 3)\n" +
-                                "insert all events into outputStream;)",
-                        description =  "This query outputs the three items with the lowest frequency counts."
+                                "insert all events into OutputStream;)",
+                        description =  "This query returns the three items with the lowest frequency counts."
                 )
         }
 )

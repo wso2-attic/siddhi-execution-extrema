@@ -129,21 +129,21 @@ import java.util.Map;
         },
         examples = {
                 @Example(
-                        syntax = "from inputStream#extrema:minMax(price, 4, 4, 1, 2, 'max')\n" +
+                        syntax = "from InputStream#extrema:minMax(price, 4, 4, 1, 2, 'max')\n" +
                                 "select *\n" +
-                                "insert into outputStream; ",
+                                "insert into OutputStream; ",
                         description =  "This query returns the maximum values found within a set of price values."
                 ),
                 @Example(
-                        syntax = "from inputStream#extrema:minMax(price, 4, 4, 1, 2, 'min')\n" +
+                        syntax = "from InputStream#extrema:minMax(price, 4, 4, 1, 2, 'min')\n" +
                                 "select *\n" +
-                                "insert into outputStream; ",
+                                "insert into OutputStream; ",
                         description =  "This query returns the minimum values found within a set of price values."
                 ),
                 @Example(
-                        syntax = "from inputStream#extrema:minMax(price, 4, 4, 1, 2, 'minmax')\n" +
+                        syntax = "from InputStream#extrema:minMax(price, 4, 4, 1, 2, 'minmax')\n" +
                                 "select *\n" +
-                                "insert into outputStream; ",
+                                "insert into OutputStream; ",
                         description = "This query returns both the minimum values and the maximum values found " +
                                 "within a set of price values."
                 )

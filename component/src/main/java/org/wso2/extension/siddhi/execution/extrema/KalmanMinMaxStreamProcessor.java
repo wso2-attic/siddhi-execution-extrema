@@ -52,10 +52,10 @@ import java.util.Queue;
 @Extension(
         name = "kalmanMinMax",
         namespace = "extrema",
-        description = "`kalmanMinMax` uses the Kalman filter to smooth the time series values in the given window " +
-                "size, and then determine the maxima and minima of that set of values. Returns the events with the " +
-                "minimum and/or maximum for the specified attribute within the given window length, with the extrema" +
-                " type as `min` or `max` as relevant.",
+        description = "`kalmanMinMax` uses the Kalman filter to smooth the values of the time series in the given " +
+                "window size, and then determines the maxima and minima of that set of values." +
+                " It returns the events with the minimum and/or maximum values for the specified attribute" +
+                " within the given window length, with the extrema type as `min` or `max` as relevant.",
         parameters = {
                 @Parameter(name = "attribute",
                         description = "The attribute of which the minimum and/or maximum value is required.",
@@ -83,11 +83,12 @@ import java.util.Queue;
         },
         examples = {
                 @Example(
-                        syntax = "define stream inputStream (item string, price long);\n" +
+                        syntax = "define stream InputStream (item string, price long);\n" +
                                 "\n" +
                                 "from inputStream#extrema:kalmanMinMax(price, 0.000001,0.0001, 25, 'min')" +
-                                "insert all events into outputStream;)",
-                        description =  "This query returns the minimum values for a set of price values."
+                                "insert all events into OutputStream;)",
+                        description =  "This function returns the minimum value of a set of price values, to the " +
+                                "output stream."
                 )
         }
 )

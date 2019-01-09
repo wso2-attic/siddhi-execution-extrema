@@ -34,7 +34,7 @@ import org.wso2.siddhi.annotation.util.DataType;
         name = "bottomKTimeBatch",
         namespace = "extrema",
         description = "`bottomKTimeBatch` counts the frequency of different values for a specified attribute " +
-                "inside a time window, and outputs a specified number of least frequently occuring values. Events " +
+                "inside a time window, and outputs a specified number of least frequently occurring values. Events " +
                 "are output only if there is a change in the `bottomK` results for each chunk of received events.",
         parameters = {
                 @Parameter(name = "attribute",
@@ -52,24 +52,25 @@ import org.wso2.siddhi.annotation.util.DataType;
                 @ReturnAttribute(
                         name = "bottomNElement",
                         description = "The value of the attribute that has the nth lowest frequency. Here, " +
-                                "N is an integer that can have the values of 1 <= N <= k.value, where k.value is " +
-                                "defined as the function parameter.",
+                                "N is an integer that can hold any value within the range, 1 <= N <= k.value, " +
+                                "where 'k.value' defines the number of least frequently occurring values that" +
+                                " must be returned.",
                         type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
                                 DataType.STRING, DataType.BOOL, DataType.OBJECT}
                 ),
                 @ReturnAttribute(
                         name = "bottomNFrequency",
                         description = "The frequency of the value of the attribute that has the nth lowest " +
-                                "frequency. Here, N is an integer that can have the values of 1 <= N <= k.value, " +
-                                "where k.value is defined as the function parameter.",
+                                "frequency. Here, N is an integer that can hold any value within the range," +
+                                " 1 <= N <= k.value.",
                         type = {DataType.LONG}
                 )
         },
         examples = {
                 @Example(
-                        syntax = "define stream inputStream (item string, price long);\n" +
+                        syntax = "define stream InputStream (item string, price long);\n" +
                                 "from inputStream#extrema:bottomKTimeBatch(item, 1 sec,  3)\n" +
-                                "insert all events into outputStream;)",
+                                "insert all events into OutputStream;)",
                         description = "This query collects a batch of events during a time window of one second. " +
                                 "Once the window is full, the three items with the lowest frequency are output " +
                                 "and the window is reset."
