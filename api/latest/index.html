@@ -106,7 +106,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#api-docs-v4016" tabindex="1" class="md-skip">
+      <a href="#api-docs-v4017" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -275,6 +275,18 @@
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../4.0.17/" title="4.0.17" class="md-nav__link">
+      4.0.17
+    </a>
+  </li>
+
         
           
           
@@ -795,7 +807,7 @@
                   <a href="https://github.com/wso2-extensions/siddhi-execution-extrema/edit/master/docs/api/latest.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <h1 id="api-docs-v4016">API Docs - v4.0.16<a class="headerlink" href="#api-docs-v4016" title="Permanent link">&para;</a></h1>
+                <h1 id="api-docs-v4017">API Docs - v4.0.17<a class="headerlink" href="#api-docs-v4017" title="Permanent link">&para;</a></h1>
 <h2 id="extrema">Extrema<a class="headerlink" href="#extrema" title="Permanent link">&para;</a></h2>
 <h3 id="bottomk-stream-processor">bottomK <em><a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processor">(Stream Processor)</a></em><a class="headerlink" href="#bottomk-stream-processor" title="Permanent link">&para;</a></h3>
 <p style="word-wrap: break-word"><code>bottomK</code> counts the frequency of different values for a specified attribute, and returns the number of least frequently occurring values. The events are returned only if there is a change in the 'bottomK' results for each chunk of received events.</p>
@@ -854,8 +866,8 @@
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream InputStream (item string, price long);
 
-from inputStream#extrema:bottomK(item, 3)
-insert all events into OutputStream;)
+from InputStream#extrema:bottomK(item, 3)
+insert all events into OutputStream;
 </pre></div>
 
 
@@ -926,8 +938,8 @@ insert all events into OutputStream;)
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream InputStream (item string, price long);
 
-from inputStream#extrema:bottomKLengthBatch(item, 6, 3)
-insert all events into OutputStream;)
+from InputStream#extrema:bottomKLengthBatch(item, 6, 3)
+insert all events into OutputStream;
 </pre></div>
 
 
@@ -997,8 +1009,8 @@ insert all events into OutputStream;)
 <p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream InputStream (item string, price long);
-from inputStream#extrema:bottomKTimeBatch(item, 1 sec,  3)
-insert all events into OutputStream;)
+from InputStream#extrema:bottomKTimeBatch(item, 1 sec,  3)
+insert all events into OutputStream;
 </pre></div>
 
 
@@ -1067,7 +1079,7 @@ insert all events into OutputStream;)
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream InputStream (item string, price long);
 
-from inputStream#extrema:kalmanMinMax(price, 0.000001,0.0001, 25, &#39;min&#39;)insert all events into OutputStream;)
+from InputStream#extrema:kalmanMinMax(price, 0.000001,0.0001, 25, &#39;min&#39;)insert all events into OutputStream;
 </pre></div>
 
 
@@ -1128,7 +1140,7 @@ from inputStream#extrema:kalmanMinMax(price, 0.000001,0.0001, 25, &#39;min&#39;)
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream InputStream (item string, price long);
 
-from inputStream#extrema:kernelMinMax(price, 3, 7, ?max?)
+from InputStream#extrema:kernelMinMax(price, 3, 7, ?max?)
 select *
 insert into OutputStream;
 </pre></div>
@@ -1288,8 +1300,8 @@ insert into OutputStream;
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream InputStream (item string, price long);
 
-from inputStream#extrema:topK(item, 3)
-insert all events into OutputStream;)
+from InputStream#extrema:topK(item, 3)
+insert all events into OutputStream;
 </pre></div>
 
 
@@ -1361,7 +1373,7 @@ insert all events into OutputStream;)
 <div class="codehilite"><pre><span></span>define stream InputStream (item string, price long);
 
 from InputStream#extrema:topKLengthBatch(item, 6, 3)
-insert all events into OutputStream;)
+insert all events into OutputStream;
 </pre></div>
 
 
@@ -1419,7 +1431,7 @@ insert all events into OutputStream;)
     </tr>
     <tr>
         <td style="vertical-align: top">topNElement</td>
-        <td style="vertical-align: top; word-wrap: break-word">The value of the attribute that has the nth highest frequency. Here, N is an integer that can hold any value within the range, 1 &lt;= N &lt;= k.value, where 'k.value' is defines the number of frequent values that is required to be returned.</td>
+        <td style="vertical-align: top; word-wrap: break-word">The value of the attribute that has the nth highest frequency. Here, N is an integer that can hold any value within the range, 1 &lt;= N &lt;= k.value, where 'k.value' defines the number of frequent values that is required to be returned.</td>
         <td style="vertical-align: top">INT<br>LONG<br>FLOAT<br>DOUBLE<br>STRING<br>BOOL<br>OBJECT</td>
     </tr>
     <tr>
@@ -1431,7 +1443,7 @@ insert all events into OutputStream;)
 <p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream InputStream (item string, price long);
-from inputStream#extrema:topKTimeBatch(item, 1 sec,  3)
+from InputStream#extrema:topKTimeBatch(item, 1 sec,  3)
 insert all events into OutputStream;
 </pre></div>
 
@@ -1476,8 +1488,8 @@ insert all events into OutputStream;
 <p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream CseEventStream (symbol string, price float, volume int);
-from cseEventStream#window.extrema:maxByLength(price, 4) select symbol,price,volume
-insert into OutputStream ;
+from CseEventStream#window.extrema:maxByLength(price, 4) select symbol,price,volume
+insert into OutputStream;
 </pre></div>
 
 
@@ -1522,9 +1534,9 @@ insert into OutputStream ;
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream CseEventStream (symbol string, price float, volume int);
 
-from cseEventStream#window.extrema:maxByLengthBatch(price, 4) 
+from CseEventStream#window.extrema:maxByLengthBatch(price, 4) 
 select symbol,price,volume
-insert into OutputStream ;
+insert into OutputStream;
 </pre></div>
 
 
@@ -1568,7 +1580,7 @@ insert into OutputStream ;
 <p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream CseEventStream (symbol string, price float, volume int);
-from cseEventStream#window.extrema:maxByTime(price, 1 sec) select symbol,price,volume
+from CseEventStream#window.extrema:maxByTime(price, 1 sec) select symbol,price,volume
 insert into OutputStream ;
 </pre></div>
 
@@ -1613,7 +1625,7 @@ insert into OutputStream ;
 <p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream CseEventStream (symbol string, price float, volume int);
-from cseEventStream#window.extrema:maxByTimeBatch(price, 1 sec) select symbol,price,volume
+from CseEventStream#window.extrema:maxByTimeBatch(price, 1 sec) select symbol,price,volume
 insert into OutputStream ;
 </pre></div>
 
@@ -1658,7 +1670,7 @@ insert into OutputStream ;
 <p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream CseEventStream (symbol string, price float, volume int);
-from cseEventStream#window.extrema:minByLength(price, 4) select symbol,price,volume
+from CseEventStream#window.extrema:minByLength(price, 4) select symbol,price,volume
 insert into OutputStream ;
 </pre></div>
 
@@ -1749,7 +1761,7 @@ insert into OutputStream ;
 <p><span id="examples" class="md-typeset" style="display: block; font-weight: bold;">Examples</span>
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream CseEventStream (symbol string, price float, volume int);
-from cseEventStream#window.extrema:minByTime(price, 1 sec) select symbol,price,volume
+from CseEventStream#window.extrema:minByTime(price, 1 sec) select symbol,price,volume
 insert into OutputStream;
 </pre></div>
 
@@ -1795,7 +1807,7 @@ insert into OutputStream;
 <span id="example-1" class="md-typeset" style="display: block; color: rgba(0, 0, 0, 0.54); font-size: 12.8px; font-weight: bold;">EXAMPLE 1</span></p>
 <div class="codehilite"><pre><span></span>define stream CseEventStream (symbol string, price float, volume int);
 
-from cseEventStream#window.extrema:minByTimeBatch(price, 1 sec) select symbol,price,volume
+from CseEventStream#window.extrema:minByTimeBatch(price, 1 sec) select symbol,price,volume
 insert into OutputStream ;
 </pre></div>
 
