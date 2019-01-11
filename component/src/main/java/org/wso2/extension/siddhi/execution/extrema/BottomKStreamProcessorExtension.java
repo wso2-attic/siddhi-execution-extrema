@@ -70,7 +70,7 @@ import org.wso2.siddhi.annotation.util.DataType;
                         syntax = "define stream InputStream (item string, price long);\n" +
                                 "\n" +
                                 "from InputStream#extrema:bottomK(item, 3)\n" +
-                                "insert all events into OutputStream;)",
+                                "insert all events into OutputStream;",
                         description =  "This query returns the three items with the lowest frequency counts."
                 )
         }
