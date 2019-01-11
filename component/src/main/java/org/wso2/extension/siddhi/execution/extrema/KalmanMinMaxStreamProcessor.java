@@ -85,7 +85,7 @@ import java.util.Queue;
                 @Example(
                         syntax = "define stream InputStream (item string, price long);\n" +
                                 "\n" +
-                                "from inputStream#extrema:kalmanMinMax(price, 0.000001,0.0001, 25, 'min')" +
+                                "from InputStream#extrema:kalmanMinMax(price, 0.000001,0.0001, 25, 'min')" +
                                 "insert all events into OutputStream;)",
                         description =  "This function returns the minimum value of a set of price values, to the " +
                                 "output stream."

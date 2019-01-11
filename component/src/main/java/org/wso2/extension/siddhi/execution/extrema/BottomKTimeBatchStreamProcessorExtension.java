@@ -69,7 +69,7 @@ import org.wso2.siddhi.annotation.util.DataType;
         examples = {
                 @Example(
                         syntax = "define stream InputStream (item string, price long);\n" +
-                                "from inputStream#extrema:bottomKTimeBatch(item, 1 sec,  3)\n" +
+                                "from InputStream#extrema:bottomKTimeBatch(item, 1 sec,  3)\n" +
                                 "insert all events into OutputStream;)",
                         description = "This query collects a batch of events during a time window of one second. " +
                                 "Once the window is full, the three items with the lowest frequency are output " +

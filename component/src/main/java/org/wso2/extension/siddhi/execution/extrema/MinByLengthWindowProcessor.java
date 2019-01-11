@@ -53,7 +53,7 @@ import org.wso2.siddhi.annotation.util.DataType;
         examples = {
                 @Example(
                         syntax = "define stream CseEventStream (symbol string, price float, volume int);\n" +
-                                "from cseEventStream#window.extrema:minByLength(price, 4) " +
+                                "from CseEventStream#window.extrema:minByLength(price, 4) " +
                                 "select symbol,price,volume\n" +
                                 "insert into OutputStream ;",
                         description =  "This query outputs the minimum price for a sliding length window of four " +
