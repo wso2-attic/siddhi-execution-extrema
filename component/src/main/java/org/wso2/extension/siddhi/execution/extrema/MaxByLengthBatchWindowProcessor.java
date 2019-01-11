@@ -54,9 +54,9 @@ import org.wso2.siddhi.annotation.util.DataType;
                 @Example(
                         syntax = "define stream CseEventStream (symbol string, price float, volume int);\n" +
                                 "\n" +
-                                "from cseEventStream#window.extrema:maxByLengthBatch(price, 4) \n" +
+                                "from CseEventStream#window.extrema:maxByLengthBatch(price, 4) \n" +
                                 "select symbol,price,volume\n" +
-                                "insert into OutputStream ;",
+                                "insert into OutputStream;",
                         description =  "This query collects a batch of 4 events. Once the window is full, the item " +
                                 "with the maximum price in the batch is returned as the output, and the window is " +
                                 "reset."

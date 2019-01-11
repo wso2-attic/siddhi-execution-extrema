@@ -72,7 +72,7 @@ import org.wso2.siddhi.annotation.util.DataType;
                         syntax = "define stream InputStream (item string, price long);\n" +
                                 "\n" +
                                 "from InputStream#extrema:topKLengthBatch(item, 6, 3)\n" +
-                                "insert all events into OutputStream;)",
+                                "insert all events into OutputStream;",
                         description = "This query collects a batch of six events. Once the window is full, the three" +
                                 " items with the highest frequency are emitted and the window is reset."
                 )

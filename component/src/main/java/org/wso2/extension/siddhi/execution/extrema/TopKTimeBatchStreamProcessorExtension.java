@@ -54,7 +54,7 @@ import org.wso2.siddhi.annotation.util.DataType;
                         name = "topNElement",
                         description = "The value of the attribute that has the nth highest frequency. Here, N is an " +
                                 "integer that can hold any value within the range, 1 <= N <= k.value, " +
-                                "where 'k.value' is defines the number of frequent values that is required " +
+                                "where 'k.value' defines the number of frequent values that is required " +
                                 "to be returned.",
                         type = {DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE,
                                 DataType.STRING, DataType.BOOL, DataType.OBJECT}
@@ -71,7 +71,7 @@ import org.wso2.siddhi.annotation.util.DataType;
         examples = {
                 @Example(
                         syntax = "define stream InputStream (item string, price long);\n" +
-                                "from inputStream#extrema:topKTimeBatch(item, 1 sec,  3)\n" +
+                                "from InputStream#extrema:topKTimeBatch(item, 1 sec,  3)\n" +
                                 "insert all events into OutputStream;",
                         description =  "This query counts the frequency of the values for the `item` attribute within" +
                                 " a time window of one second, and emits the 3 items. A batch of one second is" +

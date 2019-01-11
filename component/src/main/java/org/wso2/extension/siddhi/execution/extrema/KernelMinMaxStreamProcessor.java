@@ -84,7 +84,7 @@ import java.util.Queue;
                 @Example(
                         syntax = "define stream InputStream (item string, price long);\n" +
                                 "\n" +
-                                "from inputStream#extrema:kernelMinMax(price, 3, 7, ‘max’)\n" +
+                                "from InputStream#extrema:kernelMinMax(price, 3, 7, ‘max’)\n" +
                                 "select *\n" +
                                 "insert into OutputStream;",
                         description =  "This query returns the maximum values for a set of price values while the " +
