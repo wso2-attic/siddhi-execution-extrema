@@ -27,7 +27,7 @@
 
     <groupId>org.wso2.extension.siddhi.execution.extrema</groupId>
     <artifactId>siddhi-execution-extrema-parent</artifactId>
-    <version>4.1.2-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Siddhi Execution Extrema Extension Parent</name>
     <url>http://wso2.org</url>
@@ -47,9 +47,9 @@
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <siddhi.version>4.5.0</siddhi.version>
-        <siddhi.version.range>[4.0.0,5.0.0)</siddhi.version.range>
-        <siddhi.extension.kalman.filter.version>4.1.0</siddhi.extension.kalman.filter.version>
+        <siddhi.version>5.1.2</siddhi.version>
+        <siddhi.version.range>[5.0.0,6.0.0)</siddhi.version.range>
+        <siddhi.extension.kalman.filter.version>5.0.1</siddhi.extension.kalman.filter.version>
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <commons-math3.version>3.2</commons-math3.version>
         <jama.version>1.0.3</jama.version>
@@ -70,12 +70,12 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.wso2.siddhi</groupId>
+                <groupId>io.siddhi</groupId>
                 <artifactId>siddhi-core</artifactId>
                 <version>${siddhi.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.siddhi</groupId>
+                <groupId>io.siddhi</groupId>
                 <artifactId>siddhi-query-api</artifactId>
                 <version>${siddhi.version}</version>
             </dependency>
@@ -156,7 +156,6 @@
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>2.3.5</version>
                     <extensions>true</extensions>
                     <configuration>
                         <obrRepository>NONE</obrRepository>

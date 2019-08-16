@@ -17,14 +17,18 @@
  */
 package org.wso2.extension.siddhi.execution.extrema;
 
+import io.siddhi.annotation.Example;
+import io.siddhi.annotation.Extension;
+import io.siddhi.annotation.Parameter;
+import io.siddhi.annotation.ReturnAttribute;
+import io.siddhi.annotation.util.DataType;
+
+import io.siddhi.query.api.definition.Attribute;
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.extension.siddhi.execution.extrema.util.TopKFinder;
-import org.wso2.siddhi.annotation.Example;
-import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.ReturnAttribute;
-import org.wso2.siddhi.annotation.util.DataType;
+
+import java.util.List;
 
 /**
  * topKLengthBatch counts the frequency of different values of a specified attribute inside a
@@ -88,5 +92,10 @@ public class TopKLengthBatchStreamProcessorExtension extends AbstractKLengthBatc
     @Override
     protected String getExtensionNamePrefix() {
         return Constants.TOP_K_BOTTOM_K_TOP;
+    }
+
+    @Override
+    public List<Attribute> getReturnAttributes() {
+        return attributeList;
     }
 }
