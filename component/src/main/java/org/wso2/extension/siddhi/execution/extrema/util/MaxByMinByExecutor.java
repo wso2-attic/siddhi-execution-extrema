@@ -18,8 +18,8 @@
 
 package org.wso2.extension.siddhi.execution.extrema.util;
 
-import org.wso2.siddhi.core.event.stream.StreamEvent;
-import org.wso2.siddhi.core.executor.ExpressionExecutor;
+import io.siddhi.core.event.stream.StreamEvent;
+import io.siddhi.core.executor.ExpressionExecutor;
 
 import java.util.TreeMap;
 

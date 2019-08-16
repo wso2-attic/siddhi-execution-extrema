@@ -18,30 +18,33 @@
 
 package org.wso2.extension.siddhi.execution.extrema;
 
+import io.siddhi.core.config.SiddhiQueryContext;
+import io.siddhi.core.event.ComplexEventChunk;
+import io.siddhi.core.event.state.StateEvent;
+import io.siddhi.core.event.stream.StreamEvent;
+import io.siddhi.core.event.stream.StreamEventCloner;
+import io.siddhi.core.event.stream.holder.StreamEventClonerHolder;
+import io.siddhi.core.executor.ConstantExpressionExecutor;
+import io.siddhi.core.executor.ExpressionExecutor;
+import io.siddhi.core.executor.VariableExpressionExecutor;
+import io.siddhi.core.query.processor.ProcessingMode;
+import io.siddhi.core.query.processor.Processor;
+import io.siddhi.core.query.processor.SchedulingProcessor;
+import io.siddhi.core.query.processor.stream.window.BatchingFindableWindowProcessor;
+import io.siddhi.core.table.Table;
+import io.siddhi.core.util.Scheduler;
+import io.siddhi.core.util.collection.operator.CompiledCondition;
+import io.siddhi.core.util.collection.operator.MatchingMetaInfoHolder;
+import io.siddhi.core.util.collection.operator.Operator;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.parser.OperatorParser;
+import io.siddhi.core.util.snapshot.state.State;
+import io.siddhi.core.util.snapshot.state.StateFactory;
+import io.siddhi.query.api.definition.Attribute;
+import io.siddhi.query.api.exception.SiddhiAppValidationException;
+import io.siddhi.query.api.expression.Expression;
 import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByConstants;
 import org.wso2.extension.siddhi.execution.extrema.util.MaxByMinByExecutor;
-import org.wso2.siddhi.core.config.SiddhiAppContext;
-import org.wso2.siddhi.core.event.ComplexEventChunk;
-import org.wso2.siddhi.core.event.state.StateEvent;
-import org.wso2.siddhi.core.event.stream.StreamEvent;
-import org.wso2.siddhi.core.event.stream.StreamEventCloner;
-import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
-import org.wso2.siddhi.core.executor.ExpressionExecutor;
-import org.wso2.siddhi.core.executor.VariableExpressionExecutor;
-import org.wso2.siddhi.core.query.processor.Processor;
-import org.wso2.siddhi.core.query.processor.SchedulingProcessor;
-import org.wso2.siddhi.core.query.processor.stream.window.FindableProcessor;
-import org.wso2.siddhi.core.query.processor.stream.window.WindowProcessor;
-import org.wso2.siddhi.core.table.Table;
-import org.wso2.siddhi.core.util.Scheduler;
-import org.wso2.siddhi.core.util.collection.operator.CompiledCondition;
-import org.wso2.siddhi.core.util.collection.operator.MatchingMetaInfoHolder;
-import org.wso2.siddhi.core.util.collection.operator.Operator;
-import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.core.util.parser.OperatorParser;
-import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
-import org.wso2.siddhi.query.api.expression.Expression;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,18 +58,18 @@ import java.util.TreeMap;
  * according to given attribute as events arrive and expire
  */
 
-public abstract class MaxByMinByTimeWindowProcessor extends WindowProcessor
-        implements SchedulingProcessor, FindableProcessor {
+public abstract class MaxByMinByTimeWindowProcessor
+        extends BatchingFindableWindowProcessor<MaxByMinByTimeWindowProcessor.ExtensionState>
+        implements SchedulingProcessor {
 
-    protected String maxByMinByType;
-    protected String windowType;
+    String maxByMinByType;
+    String windowType;
     private long timeInMilliSeconds;
     private Scheduler scheduler;
-    private SiddhiAppContext siddhiAppContext;
+    private SiddhiQueryContext siddhiQueryContext;
     private volatile long lastTimestamp = Long.MIN_VALUE;
     private ExpressionExecutor sortByAttribute;
     private StreamEvent currentEvent;
-    private MaxByMinByExecutor minByMaxByExecutor;
     private ComplexEventChunk<StreamEvent> expiredEventChunk;
 
     /**
@@ -93,16 +96,17 @@ public abstract class MaxByMinByTimeWindowProcessor extends WindowProcessor
      * The init method of the WindowProcessor, this method will be called before other methods
      *
      * @param attributeExpressionExecutors the executors of each function parameters
-     * @param siddhiAppContext             the context of the execution plan
+     * @param siddhiQueryContext             the context of the siddhi query
      */
     @Override
-    protected void init(ExpressionExecutor[] attributeExpressionExecutors,
-                        ConfigReader configReader,
-                        boolean outputExpectsExpiredEvents,
-                        SiddhiAppContext siddhiAppContext) {
-        this.siddhiAppContext = siddhiAppContext;
+    protected StateFactory<ExtensionState> init(ExpressionExecutor[] attributeExpressionExecutors,
+                                                ConfigReader configReader,
+                                                StreamEventClonerHolder streamEventClonerHolder,
+                                                boolean outputExpectsExpiredEvents,
+                                                boolean findToBeExecuted, SiddhiQueryContext siddhiQueryContext) {
+        this.siddhiQueryContext = siddhiQueryContext;
         this.expiredEventChunk = new ComplexEventChunk<StreamEvent>(false);
-        minByMaxByExecutor = new MaxByMinByExecutor();
+        MaxByMinByExecutor minByMaxByExecutor = new MaxByMinByExecutor();
         if (attributeExpressionExecutors.length == 2) {
             Attribute.Type attributeType = attributeExpressionExecutors[0].getReturnType();
             sortByAttribute = attributeExpressionExecutors[0];
@@ -139,6 +143,7 @@ public abstract class MaxByMinByTimeWindowProcessor extends WindowProcessor
                     "Invalid no of arguments passed to " + windowType + ", " + "required 2, but found "
                             + attributeExpressionExecutors.length + " input attributes");
         }
+        return () -> new ExtensionState(minByMaxByExecutor);
     }
 
     /**
@@ -150,15 +155,15 @@ public abstract class MaxByMinByTimeWindowProcessor extends WindowProcessor
      */
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
-                           StreamEventCloner streamEventCloner) {
+                           StreamEventCloner streamEventCloner, ExtensionState state) {
         synchronized (this) {
             StreamEvent streamEvent = null;
             while (streamEventChunk.hasNext()) {
                 streamEvent = streamEventChunk.next();
-                long currentTime = siddhiAppContext.getTimestampGenerator().currentTime();
+                long currentTime = siddhiQueryContext.getSiddhiAppContext().getTimestampGenerator().currentTime();
 
                 // Iterate through the sortedEventMap and remove the expired events
-                Set set = minByMaxByExecutor.getSortedEventMap().entrySet();
+                Set set = state.minByMaxByExecutor.getSortedEventMap().entrySet();
                 Iterator iterator = set.iterator();
                 while (iterator.hasNext()) {
                     Map.Entry entry = (Map.Entry) iterator.next();
@@ -184,7 +189,7 @@ public abstract class MaxByMinByTimeWindowProcessor extends WindowProcessor
                 //Add the current event to sortedEventMap
                 if (streamEvent.getType() == StreamEvent.Type.CURRENT) {
                     StreamEvent clonedEvent = streamEventCloner.copyStreamEvent(streamEvent);
-                    minByMaxByExecutor.insert(clonedEvent, sortByAttribute.execute(clonedEvent));
+                    state.minByMaxByExecutor.insert(clonedEvent, sortByAttribute.execute(clonedEvent));
                     if (lastTimestamp < clonedEvent.getTimestamp()) {
                         scheduler.notifyAt(clonedEvent.getTimestamp() + timeInMilliSeconds);
                         lastTimestamp = clonedEvent.getTimestamp();
@@ -197,9 +202,9 @@ public abstract class MaxByMinByTimeWindowProcessor extends WindowProcessor
             if (streamEvent != null && streamEvent.getType() == StreamEvent.Type.CURRENT) {
                 StreamEvent tempEvent;
                 if (maxByMinByType.equals(MaxByMinByConstants.MIN_BY)) {
-                    tempEvent = minByMaxByExecutor.getResult(MaxByMinByConstants.MIN_BY);
+                    tempEvent = state.minByMaxByExecutor.getResult(MaxByMinByConstants.MIN_BY);
                 } else {
-                    tempEvent = minByMaxByExecutor.getResult(MaxByMinByConstants.MAX_BY);
+                    tempEvent = state.minByMaxByExecutor.getResult(MaxByMinByConstants.MAX_BY);
                 }
                 if (tempEvent != currentEvent) {
                     StreamEvent event = streamEventCloner.copyStreamEvent(tempEvent);
@@ -213,18 +218,19 @@ public abstract class MaxByMinByTimeWindowProcessor extends WindowProcessor
     }
 
     @Override
-    public synchronized StreamEvent find(StateEvent matchingEvent, CompiledCondition compiledCondition) {
+    public StreamEvent find(StateEvent matchingEvent, CompiledCondition compiledCondition,
+                            StreamEventCloner streamEventCloner, ExtensionState state) {
         return ((Operator) compiledCondition).find(matchingEvent, expiredEventChunk, streamEventCloner);
     }
 
     @Override
-    public synchronized CompiledCondition compileCondition(Expression expression,
-                                                           MatchingMetaInfoHolder matchingMetaInfoHolder,
-                                              SiddhiAppContext siddhiAppContext,
+    public CompiledCondition compileCondition(Expression condition,
+                                              MatchingMetaInfoHolder matchingMetaInfoHolder,
                                               List<VariableExpressionExecutor> variableExpressionExecutors,
-                                              Map<String, Table> tableMap, String queryName) {
-        return OperatorParser.constructOperator(expiredEventChunk, expression, matchingMetaInfoHolder,
-                siddhiAppContext, variableExpressionExecutors, tableMap, this.queryName);
+                                              Map<String, Table> tableMap, ExtensionState state,
+                                              SiddhiQueryContext siddhiQueryContext) {
+        return OperatorParser.constructOperator(expiredEventChunk, condition, matchingMetaInfoHolder,
+                variableExpressionExecutors, tableMap, siddhiQueryContext);
     }
 
     /**
@@ -248,31 +254,38 @@ public abstract class MaxByMinByTimeWindowProcessor extends WindowProcessor
         //Do nothing
     }
 
-    /**
-     * Used to collect the serializable state of the processing element, that need to be
-     * persisted for the reconstructing the element to the same state on a different point of time
-     *
-     * @return stateful objects of the processing element as an array
-     */
     @Override
-    public Map<String, Object> currentState() {
-        return new HashMap<String, Object>() {
-            {
-                put("sortedMap", minByMaxByExecutor.getSortedEventMap());
-            }
-        };
+    public ProcessingMode getProcessingMode() {
+        return ProcessingMode.SLIDE;
     }
 
-    /**
-     * Used to restore serialized state of the processing element, for reconstructing
-     * the element to the same state as if was on a previous point of time.
-     *
-     * @param state the stateful objects of the element as an array on
-     *              the same order provided by currentState().
-     */
-    @Override
-    public void restoreState(Map<String, Object> state) {
-        minByMaxByExecutor.setSortedEventMap((TreeMap) state.get("sortedMap"));
+    static class ExtensionState extends State {
+
+        private MaxByMinByExecutor minByMaxByExecutor;
+
+        private ExtensionState(MaxByMinByExecutor minByMaxByExecutor) {
+            this.minByMaxByExecutor = minByMaxByExecutor;
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
+
+        @Override
+        public Map<String, Object> snapshot() {
+            return new HashMap<String, Object>() {
+                {
+                    put("sortedMap", minByMaxByExecutor.getSortedEventMap());
+                }
+            };
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void restore(Map<String, Object> state) {
+            minByMaxByExecutor.setSortedEventMap((TreeMap) state.get("sortedMap"));
+        }
     }
 }
 

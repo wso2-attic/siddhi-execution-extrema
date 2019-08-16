@@ -17,34 +17,39 @@
  */
 package org.wso2.extension.siddhi.execution.extrema;
 
+import io.siddhi.core.config.SiddhiQueryContext;
+import io.siddhi.core.event.ComplexEvent;
+import io.siddhi.core.event.ComplexEventChunk;
+import io.siddhi.core.event.state.StateEvent;
+import io.siddhi.core.event.stream.MetaStreamEvent;
+import io.siddhi.core.event.stream.StreamEvent;
+import io.siddhi.core.event.stream.StreamEventCloner;
+import io.siddhi.core.event.stream.holder.StreamEventClonerHolder;
+import io.siddhi.core.event.stream.populater.ComplexEventPopulater;
+import io.siddhi.core.executor.ConstantExpressionExecutor;
+import io.siddhi.core.executor.ExpressionExecutor;
+import io.siddhi.core.executor.VariableExpressionExecutor;
+import io.siddhi.core.query.processor.ProcessingMode;
+import io.siddhi.core.query.processor.Processor;
+import io.siddhi.core.query.processor.SchedulingProcessor;
+import io.siddhi.core.query.processor.stream.StreamProcessor;
+import io.siddhi.core.query.processor.stream.window.FindableProcessor;
+import io.siddhi.core.table.Table;
+import io.siddhi.core.util.Scheduler;
+import io.siddhi.core.util.collection.operator.CompiledCondition;
+import io.siddhi.core.util.collection.operator.MatchingMetaInfoHolder;
+import io.siddhi.core.util.collection.operator.Operator;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.parser.OperatorParser;
+import io.siddhi.core.util.snapshot.state.State;
+import io.siddhi.core.util.snapshot.state.StateFactory;
+import io.siddhi.query.api.definition.AbstractDefinition;
+import io.siddhi.query.api.definition.Attribute;
+import io.siddhi.query.api.exception.SiddhiAppValidationException;
+import io.siddhi.query.api.expression.Expression;
 import org.wso2.extension.siddhi.execution.extrema.util.AbstractTopKBottomKFinder;
 import org.wso2.extension.siddhi.execution.extrema.util.Constants;
 import org.wso2.extension.siddhi.execution.extrema.util.Counter;
-import org.wso2.siddhi.core.config.SiddhiAppContext;
-import org.wso2.siddhi.core.event.ComplexEvent;
-import org.wso2.siddhi.core.event.ComplexEventChunk;
-import org.wso2.siddhi.core.event.state.StateEvent;
-import org.wso2.siddhi.core.event.stream.StreamEvent;
-import org.wso2.siddhi.core.event.stream.StreamEventCloner;
-import org.wso2.siddhi.core.event.stream.populater.ComplexEventPopulater;
-import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
-import org.wso2.siddhi.core.executor.ExpressionExecutor;
-import org.wso2.siddhi.core.executor.VariableExpressionExecutor;
-import org.wso2.siddhi.core.query.processor.Processor;
-import org.wso2.siddhi.core.query.processor.SchedulingProcessor;
-import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.core.query.processor.stream.window.FindableProcessor;
-import org.wso2.siddhi.core.table.Table;
-import org.wso2.siddhi.core.util.Scheduler;
-import org.wso2.siddhi.core.util.collection.operator.CompiledCondition;
-import org.wso2.siddhi.core.util.collection.operator.MatchingMetaInfoHolder;
-import org.wso2.siddhi.core.util.collection.operator.Operator;
-import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.core.util.parser.OperatorParser;
-import org.wso2.siddhi.query.api.definition.AbstractDefinition;
-import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
-import org.wso2.siddhi.query.api.expression.Expression;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,85 +74,76 @@ import java.util.Map;
  * Events will not emit if there is no change from the last send topK/bottomK results
  */
 public abstract class AbstractKTimeBatchStreamProcessorExtension
-        extends StreamProcessor implements SchedulingProcessor, FindableProcessor {
-    private static final String TOP_K_BOTTOM_K_FINDER = "topKBottomKFinder";
-    private static final String WINDOW_TIME = "windowTime";
-    private static final String QUERY_SIZE = "querySize";
-    private static final String START_TIME = "startTime";
-    private static final String LAST_STREAM_EVENT = "lastStreamEvent";
-    private static final String EXPIRED_EVENT_CHUNK = "expiredEventChunk";
-
-    private long windowTime;
-    private int querySize;          // The K value
-    private long startTime = 0L;
+        extends StreamProcessor<AbstractKTimeBatchStreamProcessorExtension.ExtensionState>
+        implements SchedulingProcessor, FindableProcessor {
 
     private Scheduler scheduler;
     private VariableExpressionExecutor attrVariableExpressionExecutor;
-    private AbstractTopKBottomKFinder<Object> topKBottomKFinder;
 
     private long nextEmitTime = -1;
     private boolean isStartTimeEnabled = false;
     private Object[] lastOutputData;
-    private StreamEvent lastStreamEvent;     // Used for returning the topK/bottomK items and frequencies
-    private ComplexEventChunk<StreamEvent> expiredEventChunk;
+    protected List<Attribute> attributeList = new ArrayList<>();
 
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
-                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
+                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater,
+                           ExtensionState state) {
         ComplexEventChunk<StreamEvent> outputStreamEventChunk = new ComplexEventChunk<StreamEvent>(true);
         synchronized (this) {
             if (nextEmitTime == -1) {   // In the first time process method is called
-                long currentTime = siddhiAppContext.getTimestampGenerator().currentTime();
+                long currentTime = siddhiQueryContext.getSiddhiAppContext().getTimestampGenerator().currentTime();
                 if (isStartTimeEnabled) {
-                    long elapsedTimeSinceLastEmit = (currentTime - startTime) % windowTime;
-                    nextEmitTime = currentTime + (windowTime - elapsedTimeSinceLastEmit);
+                    long elapsedTimeSinceLastEmit = (currentTime - state.startTime) % state.windowTime;
+                    nextEmitTime = currentTime + (state.windowTime - elapsedTimeSinceLastEmit);
                 } else {
-                    nextEmitTime = siddhiAppContext.getTimestampGenerator().currentTime() + windowTime;
+                    nextEmitTime = siddhiQueryContext.getSiddhiAppContext().getTimestampGenerator().currentTime()
+                            + state.windowTime;
                 }
-                topKBottomKFinder = createNewTopKBottomKFinder();
+                state.topKBottomKFinder = createNewTopKBottomKFinder();
                 scheduler.notifyAt(nextEmitTime);
             }
 
-            long currentTime = siddhiAppContext.getTimestampGenerator().currentTime();
+            long currentTime = siddhiQueryContext.getSiddhiAppContext().getTimestampGenerator().currentTime();
             boolean sendEvents = false;
             if (currentTime >= nextEmitTime) {
-                nextEmitTime += windowTime;
+                nextEmitTime += state.windowTime;
                 scheduler.notifyAt(nextEmitTime);
                 sendEvents = true;
             }
 
-            if (currentTime >= startTime) {
+            if (currentTime >= state.startTime) {
                 while (streamEventChunk.hasNext()) {
                     StreamEvent streamEvent = streamEventChunk.next();
 
                     // New current event tasks
                     if (streamEvent.getType() == ComplexEvent.Type.CURRENT) {
-                        lastStreamEvent = streamEventCloner.copyStreamEvent(streamEvent);
-                        topKBottomKFinder.offer(attrVariableExpressionExecutor.execute(lastStreamEvent));
+                        state.lastStreamEvent = streamEventCloner.copyStreamEvent(streamEvent);
+                        state.topKBottomKFinder.offer(attrVariableExpressionExecutor.execute(state.lastStreamEvent));
                     }
                 }
             }
 
             // End of window tasks
             if (sendEvents) {
-                if (expiredEventChunk.getFirst() != null) {
+                if (state.expiredEventChunk.getFirst() != null) {
                     // Adding the expired events
-                    if (outputExpectsExpiredEvents) {
-                        expiredEventChunk.getFirst().setTimestamp(currentTime);
-                        outputStreamEventChunk.add(expiredEventChunk.getFirst());
-                        expiredEventChunk.clear();
+                    if (state.outputExpectsExpiredEvents) {
+                        state.expiredEventChunk.getFirst().setTimestamp(currentTime);
+                        outputStreamEventChunk.add(state.expiredEventChunk.getFirst());
+                        state.expiredEventChunk.clear();
                     }
 
                     // Adding the reset event
-                    StreamEvent resetEvent = streamEventCloner.copyStreamEvent(lastStreamEvent);
+                    StreamEvent resetEvent = streamEventCloner.copyStreamEvent(state.lastStreamEvent);
                     resetEvent.setType(ComplexEvent.Type.RESET);
                     outputStreamEventChunk.add(resetEvent);
                 }
 
                 // Adding the last event with the topK frequencies for the window
-                if (lastStreamEvent != null) {
-                    Object[] outputStreamEventData = new Object[2 * querySize];
-                    List<Counter<Object>> topKCounters = topKBottomKFinder.get(querySize);
+                if (state.lastStreamEvent != null) {
+                    Object[] outputStreamEventData = new Object[2 * state.querySize];
+                    List<Counter<Object>> topKCounters = state.topKBottomKFinder.get(state.querySize);
                     boolean isSameAsLastEmission = true;
                     int i = 0;
                     while (i < topKCounters.size()) {
@@ -163,18 +159,18 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
                     }
                     if (!isSameAsLastEmission) {
                         lastOutputData = outputStreamEventData;
-                        complexEventPopulater.populateComplexEvent(lastStreamEvent, outputStreamEventData);
-                        outputStreamEventChunk.add(lastStreamEvent);
+                        complexEventPopulater.populateComplexEvent(state.lastStreamEvent, outputStreamEventData);
+                        outputStreamEventChunk.add(state.lastStreamEvent);
 
                         // Setting the event to be expired in the next window
-                        StreamEvent expiredStreamEvent = streamEventCloner.copyStreamEvent(lastStreamEvent);
+                        StreamEvent expiredStreamEvent = streamEventCloner.copyStreamEvent(state.lastStreamEvent);
                         expiredStreamEvent.setType(ComplexEvent.Type.EXPIRED);
-                        expiredEventChunk.add(expiredStreamEvent);
+                        state.expiredEventChunk.add(expiredStreamEvent);
                     }
                 }
 
                 // Resetting window
-                topKBottomKFinder = createNewTopKBottomKFinder();
+                state.topKBottomKFinder = createNewTopKBottomKFinder();
             }
         }
 
@@ -186,10 +182,17 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
     }
 
     @Override
-    protected List<Attribute> init(AbstractDefinition abstractDefinition,
-                                   ExpressionExecutor[] attributeExpressionExecutors,
-                                   ConfigReader configReader,
-                                   SiddhiAppContext siddhiAppContext) {
+    protected StateFactory<ExtensionState> init(MetaStreamEvent metaStreamEvent,
+                                                AbstractDefinition inputDefinition,
+                                                ExpressionExecutor[] attributeExpressionExecutors,
+                                                ConfigReader configReader,
+                                                StreamEventClonerHolder streamEventClonerHolder,
+                                                boolean outputExpectsExpiredEvents, boolean findToBeExecuted,
+                                                SiddhiQueryContext siddhiQueryContext) {
+        int querySize;
+        long windowTime;
+        long startTime = 0L;
+        ComplexEventChunk<StreamEvent> expiredEventChunk;
         if (attributeExpressionExecutors.length == 3 ||
                 attributeExpressionExecutors.length == 4) {
             expiredEventChunk = new ComplexEventChunk<StreamEvent>(true);
@@ -269,7 +272,7 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
                 Attribute.Type attributeType = attributeExpressionExecutors[3].getReturnType();
                 if (attributeType == Attribute.Type.INT) {
                     isStartTimeEnabled = true;
-                    startTime = this.siddhiAppContext.getTimestampGenerator().currentTime() +
+                    startTime = siddhiQueryContext.getSiddhiAppContext().getTimestampGenerator().currentTime() +
                             (Integer) ((ConstantExpressionExecutor) attributeExpressionExecutors[3]).getValue();
                     if (startTime < 0) {
                         throw new SiddhiAppValidationException(
@@ -299,7 +302,10 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
                     Attribute.Type.LONG)
             );
         }
-        return newAttributes;
+        this.attributeList = newAttributes;
+        long finalStartTime = startTime;
+        return () -> new ExtensionState(querySize, windowTime, finalStartTime, outputExpectsExpiredEvents,
+        null, null, expiredEventChunk);
     }
 
     @Override
@@ -313,46 +319,8 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
     }
 
     @Override
-    public Map<String, Object> currentState() {
-        synchronized (this) {
-            if (outputExpectsExpiredEvents) {
-                return new HashMap<String, Object>() {
-                    {
-                        put(TOP_K_BOTTOM_K_FINDER, topKBottomKFinder);
-                        put(WINDOW_TIME, windowTime);
-                        put(QUERY_SIZE, querySize);
-                        put(START_TIME, startTime);
-                        put(LAST_STREAM_EVENT, lastStreamEvent);
-                        put(EXPIRED_EVENT_CHUNK, expiredEventChunk);
-                    }
-                };
-            } else {
-                return new HashMap<String, Object>() {
-                    {
-                        put(TOP_K_BOTTOM_K_FINDER, topKBottomKFinder);
-                        put(WINDOW_TIME, windowTime);
-                        put(QUERY_SIZE, querySize);
-                        put(START_TIME, startTime);
-                        put(LAST_STREAM_EVENT, lastStreamEvent);
-                    }
-                };
-            }
-        }
-    }
-
-    @Override
-    public void restoreState(Map<String, Object> state) {
-        synchronized (this) {
-            topKBottomKFinder = (AbstractTopKBottomKFinder<Object>) state.get(TOP_K_BOTTOM_K_FINDER);
-            windowTime = (Long) state.get(WINDOW_TIME);
-            querySize = (Integer) state.get(QUERY_SIZE);
-            startTime = (Long) state.get(START_TIME);
-
-            lastStreamEvent = (StreamEvent) state.get(LAST_STREAM_EVENT);
-            if (state.size() == 6) {
-                expiredEventChunk = (ComplexEventChunk<StreamEvent>) state.get(EXPIRED_EVENT_CHUNK);
-            }
-        }
+    public ProcessingMode getProcessingMode() {
+        return ProcessingMode.BATCH;
     }
 
     @Override
@@ -366,21 +334,45 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
     }
 
     @Override
-    public synchronized StreamEvent find(StateEvent matchingEvent, CompiledCondition compiledCondition) {
-        return ((Operator) compiledCondition).find(matchingEvent, expiredEventChunk, streamEventCloner);
+    public StreamEvent find(StateEvent matchingEvent, CompiledCondition compiledCondition) {
+        ExtensionState state = stateHolder.getState();
+        try {
+            return find(matchingEvent, compiledCondition, streamEventClonerHolder.getStreamEventCloner(),
+                    state);
+        } finally {
+            stateHolder.returnState(state);
+        }
+
+    }
+
+    public StreamEvent find(StateEvent matchingEvent, CompiledCondition compiledCondition,
+                            StreamEventCloner streamEventCloner, ExtensionState state) {
+        return ((Operator) compiledCondition).find(matchingEvent, state.expiredEventChunk, streamEventCloner);
     }
 
     @Override
-    public synchronized CompiledCondition compileCondition(Expression expression,
-                                                           MatchingMetaInfoHolder matchingMetaInfoHolder,
-                                              SiddhiAppContext siddhiAppContext,
+    public CompiledCondition compileCondition(Expression condition, MatchingMetaInfoHolder matchingMetaInfoHolder,
                                               List<VariableExpressionExecutor> variableExpressionExecutors,
-                                              Map<String, Table> tableMap, String queryName) {
-        if (expiredEventChunk == null) {
-            expiredEventChunk = new ComplexEventChunk<StreamEvent>(true);
+                                              Map<String, Table> tableMap, SiddhiQueryContext siddhiQueryContext) {
+        ExtensionState state = stateHolder.getState();
+        try {
+            return compileCondition(condition, matchingMetaInfoHolder, variableExpressionExecutors, tableMap,
+                    state, siddhiQueryContext);
+        } finally {
+            stateHolder.returnState(state);
         }
-        return OperatorParser.constructOperator(expiredEventChunk, expression, matchingMetaInfoHolder,
-                siddhiAppContext, variableExpressionExecutors, tableMap, this.queryName);
+    }
+
+    public CompiledCondition compileCondition(Expression condition,
+                                              MatchingMetaInfoHolder matchingMetaInfoHolder,
+                                              List<VariableExpressionExecutor> variableExpressionExecutors,
+                                              Map<String, Table> tableMap, ExtensionState state,
+                                              SiddhiQueryContext siddhiQueryContext) {
+        if (state.expiredEventChunk == null) {
+            state.expiredEventChunk = new ComplexEventChunk<StreamEvent>(true);
+        }
+        return OperatorParser.constructOperator(state.expiredEventChunk, condition, matchingMetaInfoHolder,
+                variableExpressionExecutors, tableMap, siddhiQueryContext);
     }
 
     /**
@@ -399,4 +391,84 @@ public abstract class AbstractKTimeBatchStreamProcessorExtension
      * @return Name prefix. Should be either "Top" or "Bottom"
      */
     protected abstract String getExtensionNamePrefix();
+
+    static class ExtensionState extends State {
+        private static final String TOP_K_BOTTOM_K_FINDER = "topKBottomKFinder";
+        private static final String WINDOW_TIME = "windowTime";
+        private static final String QUERY_SIZE = "querySize";
+        private static final String START_TIME = "startTime";
+        private static final String LAST_STREAM_EVENT = "lastStreamEvent";
+        private static final String EXPIRED_EVENT_CHUNK = "expiredEventChunk";
+
+        private int querySize;          // The K value
+        private long windowTime;
+        private long startTime = 0L;
+        private boolean outputExpectsExpiredEvents;
+        private AbstractTopKBottomKFinder<Object> topKBottomKFinder;
+
+        // Event used for adding the topK/bottomK items and frequencies added to it
+        private StreamEvent lastStreamEvent;
+        private ComplexEventChunk<StreamEvent> expiredEventChunk;
+
+        private ExtensionState(int querySize, long windowTime, long startTime, boolean outputExpectsExpiredEvents,
+                               StreamEvent lastStreamEvent, AbstractTopKBottomKFinder<Object> topKBottomKFinder,
+                               ComplexEventChunk<StreamEvent> expiredEventChunk) {
+            this.querySize = querySize;
+            this.windowTime = windowTime;
+            this.startTime = startTime;
+            this.outputExpectsExpiredEvents = outputExpectsExpiredEvents;
+            this.lastStreamEvent = lastStreamEvent;
+            this.topKBottomKFinder = topKBottomKFinder;
+            this.expiredEventChunk = expiredEventChunk;
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
+
+        @Override
+        public Map<String, Object> snapshot() {
+            synchronized (this) {
+                if (outputExpectsExpiredEvents) {
+                    return new HashMap<String, Object>() {
+                        {
+                            put(TOP_K_BOTTOM_K_FINDER, topKBottomKFinder);
+                            put(WINDOW_TIME, windowTime);
+                            put(QUERY_SIZE, querySize);
+                            put(START_TIME, startTime);
+                            put(LAST_STREAM_EVENT, lastStreamEvent);
+                            put(EXPIRED_EVENT_CHUNK, expiredEventChunk);
+                        }
+                    };
+                } else {
+                    return new HashMap<String, Object>() {
+                        {
+                            put(TOP_K_BOTTOM_K_FINDER, topKBottomKFinder);
+                            put(WINDOW_TIME, windowTime);
+                            put(QUERY_SIZE, querySize);
+                            put(START_TIME, startTime);
+                            put(LAST_STREAM_EVENT, lastStreamEvent);
+                        }
+                    };
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void restore(Map<String, Object> state) {
+            synchronized (this) {
+                topKBottomKFinder = (AbstractTopKBottomKFinder<Object>) state.get(TOP_K_BOTTOM_K_FINDER);
+                windowTime = (Long) state.get(WINDOW_TIME);
+                querySize = (Integer) state.get(QUERY_SIZE);
+                startTime = (Long) state.get(START_TIME);
+
+                lastStreamEvent = (StreamEvent) state.get(LAST_STREAM_EVENT);
+                if (state.size() == 6) {
+                    expiredEventChunk = (ComplexEventChunk<StreamEvent>) state.get(EXPIRED_EVENT_CHUNK);
+                }
+            }
+        }
+    }
 }

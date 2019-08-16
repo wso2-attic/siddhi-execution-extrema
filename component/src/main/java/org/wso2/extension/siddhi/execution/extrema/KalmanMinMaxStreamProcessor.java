@@ -19,24 +19,29 @@
 package org.wso2.extension.siddhi.execution.extrema;
 
 
+import io.siddhi.annotation.Example;
+import io.siddhi.annotation.Extension;
+import io.siddhi.annotation.Parameter;
+import io.siddhi.annotation.util.DataType;
+import io.siddhi.core.config.SiddhiQueryContext;
+import io.siddhi.core.event.ComplexEventChunk;
+import io.siddhi.core.event.stream.MetaStreamEvent;
+import io.siddhi.core.event.stream.StreamEvent;
+import io.siddhi.core.event.stream.StreamEventCloner;
+import io.siddhi.core.event.stream.holder.StreamEventClonerHolder;
+import io.siddhi.core.event.stream.populater.ComplexEventPopulater;
+import io.siddhi.core.executor.ConstantExpressionExecutor;
+import io.siddhi.core.executor.ExpressionExecutor;
+import io.siddhi.core.query.processor.ProcessingMode;
+import io.siddhi.core.query.processor.Processor;
+import io.siddhi.core.query.processor.stream.StreamProcessor;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.snapshot.state.State;
+import io.siddhi.core.util.snapshot.state.StateFactory;
+import io.siddhi.query.api.definition.AbstractDefinition;
+import io.siddhi.query.api.definition.Attribute;
+import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.wso2.extension.siddhi.execution.extrema.util.ExtremaCalculator;
-import org.wso2.siddhi.annotation.Example;
-import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.util.DataType;
-import org.wso2.siddhi.core.config.SiddhiAppContext;
-import org.wso2.siddhi.core.event.ComplexEventChunk;
-import org.wso2.siddhi.core.event.stream.StreamEvent;
-import org.wso2.siddhi.core.event.stream.StreamEventCloner;
-import org.wso2.siddhi.core.event.stream.populater.ComplexEventPopulater;
-import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
-import org.wso2.siddhi.core.executor.ExpressionExecutor;
-import org.wso2.siddhi.core.query.processor.Processor;
-import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.query.api.definition.AbstractDefinition;
-import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,26 +97,24 @@ import java.util.Queue;
                 )
         }
 )
-public class KalmanMinMaxStreamProcessor extends StreamProcessor {
+public class KalmanMinMaxStreamProcessor extends StreamProcessor<KalmanMinMaxStreamProcessor.ExtensionState> {
 
-    private static final String EVENT_STACK = "eventStack";
-    private static final String VALUE_STACK = "valueStack";
-    private static final String UNIQUE_QUEUE = "uniqueQueue";
-
-    ExtremaType extremaType;
-    ExtremaCalculator extremaCalculator = null;
+    private ExtremaType extremaType;
+    private ExtremaCalculator extremaCalculator = null;
     private int windowSize = 0;
-    private LinkedList<StreamEvent> eventStack = null;
-    private Queue<Double> valueStack = null;
-    private Queue<StreamEvent> uniqueQueue = null;
     private double q;
     private double r;
     private int minEventPos;
     private int maxEventPos;
+    private StreamEventCloner streamEventCloner;
+
+    private List<Attribute> attributeList = new ArrayList<>();
 
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
-                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
+                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater,
+                           ExtensionState state) {
+        this.streamEventCloner = streamEventCloner;
         ComplexEventChunk<StreamEvent> returnEventChunk = new ComplexEventChunk<StreamEvent>(false);
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
@@ -120,19 +123,19 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
                 streamEventChunk.remove();
                 Double eventKey = (Double) attributeExpressionExecutors[0].execute(event);
                 extremaCalculator = new ExtremaCalculator(q, r);
-                eventStack.add(event);
-                valueStack.add(eventKey);
+                state.eventStack.add(event);
+                state.valueStack.add(eventKey);
 
-                if (eventStack.size() > windowSize) {
+                if (state.eventStack.size() > windowSize) {
 
-                    Queue<Double> output = extremaCalculator.kalmanFilter(valueStack);
+                    Queue<Double> output = extremaCalculator.kalmanFilter(state.valueStack);
                     StreamEvent maximumEvent;
                     StreamEvent minimumEvent;
 
                     switch (extremaType) {
                         case MINMAX:
-                            maximumEvent = getMaxEvent(output);
-                            minimumEvent = getMinEvent(output);
+                            maximumEvent = getMaxEvent(output, state);
+                            minimumEvent = getMinEvent(output, state);
                             if (maximumEvent != null && minimumEvent != null) {
                                 if (maxEventPos > minEventPos) {
                                     returnEventChunk.add(minimumEvent);
@@ -148,20 +151,20 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
                             }
                             break;
                         case MIN:
-                            minimumEvent = getMinEvent(output);
+                            minimumEvent = getMinEvent(output, state);
                             if (minimumEvent != null) {
                                 returnEventChunk.add(minimumEvent);
                             }
                             break;
                         case MAX:
-                            maximumEvent = getMaxEvent(output);
+                            maximumEvent = getMaxEvent(output, state);
                             if (maximumEvent != null) {
                                 returnEventChunk.add(maximumEvent);
                             }
                             break;
                     }
-                    eventStack.remove();
-                    valueStack.remove();
+                    state.eventStack.remove();
+                    state.valueStack.remove();
                 }
             }
         }
@@ -171,10 +174,13 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
     }
 
     @Override
-    protected List<Attribute> init(AbstractDefinition inputDefinition,
-                                   ExpressionExecutor[] attributeExpressionExecutors,
-                                   ConfigReader configReader,
-                                   SiddhiAppContext siddhiAppContext) {
+    protected StateFactory<ExtensionState> init(MetaStreamEvent metaStreamEvent,
+                                                AbstractDefinition inputDefinition,
+                                                ExpressionExecutor[] attributeExpressionExecutors,
+                                                ConfigReader configReader,
+                                                StreamEventClonerHolder streamEventClonerHolder,
+                                                boolean outputExpectsExpiredEvents, boolean findToBeExecuted,
+                                                SiddhiQueryContext siddhiQueryContext) {
         if (attributeExpressionExecutors.length != 5) {
             throw new SiddhiAppValidationException("Invalid no of arguments passed to " +
                     "KalmanMinMaxStreamProcessor, required 5, but found " + attributeExpressionExecutors.length);
@@ -224,24 +230,26 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
         } else {
             extremaType = ExtremaType.MINMAX;
         }
-        eventStack = new LinkedList<StreamEvent>();
-        valueStack = new LinkedList<Double>();
-        uniqueQueue = new LinkedList<StreamEvent>();
+
+        LinkedList<StreamEvent> eventStack = new LinkedList<StreamEvent>();
+        Queue<Double> valueStack = new LinkedList<Double>();
+        Queue<StreamEvent> uniqueQueue = new LinkedList<StreamEvent>();
 
         List<Attribute> attributeList = new ArrayList<Attribute>();
         attributeList.add(new Attribute("extremaType", Attribute.Type.STRING));
-        return attributeList;
+        this.attributeList = attributeList;
+        return () -> new ExtensionState(eventStack, valueStack, uniqueQueue);
 
     }
 
-    private StreamEvent getMinEvent(Queue<Double> output) {
+    private StreamEvent getMinEvent(Queue<Double> output, ExtensionState state) {
         // value 2 is an optimized value for stock market domain, this value may change for other domains
         Integer smoothenedMinEventPosition = extremaCalculator.findMin(output, 2);
         if (smoothenedMinEventPosition != null) {
             //value 10 is an optimized value for stock market domain, this value may change for other domains
-            Integer minEventPosition = extremaCalculator.findMin(valueStack, 10);
+            Integer minEventPosition = extremaCalculator.findMin(state.valueStack, 10);
             if (minEventPosition != null) {
-                StreamEvent returnMinimumEvent = getExtremaEvent(minEventPosition);
+                StreamEvent returnMinimumEvent = getExtremaEvent(minEventPosition, state);
                 if (returnMinimumEvent != null) {
                     minEventPos = minEventPosition;
                     complexEventPopulater.populateComplexEvent(returnMinimumEvent, new Object[]{"min"});
@@ -252,14 +260,14 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
         return null;
     }
 
-    private StreamEvent getMaxEvent(Queue<Double> output) {
+    private StreamEvent getMaxEvent(Queue<Double> output, ExtensionState state) {
         // value 2 is an optimized value for stock market domain, this value may change for other domains
         Integer smoothenedMaxEventPosition = extremaCalculator.findMax(output, 2);
         if (smoothenedMaxEventPosition != null) {
             //value 10 is an optimized value for stock market domain, this value may change for other domains
-            Integer maxEventPosition = extremaCalculator.findMax(valueStack, 10);
+            Integer maxEventPosition = extremaCalculator.findMax(state.valueStack, 10);
             if (maxEventPosition != null) {
-                StreamEvent returnMaximumEvent = getExtremaEvent(maxEventPosition);
+                StreamEvent returnMaximumEvent = getExtremaEvent(maxEventPosition, state);
                 if (returnMaximumEvent != null) {
                     maxEventPos = maxEventPosition;
                     complexEventPopulater.populateComplexEvent(returnMaximumEvent, new Object[]{"max"});
@@ -270,14 +278,14 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
         return null;
     }
 
-    private StreamEvent getExtremaEvent(Integer eventPosition) {
-        StreamEvent extremaEvent = eventStack.get(eventPosition);
-        if (!uniqueQueue.contains(extremaEvent)) {
+    private StreamEvent getExtremaEvent(Integer eventPosition, ExtensionState state) {
+        StreamEvent extremaEvent = state.eventStack.get(eventPosition);
+        if (!state.uniqueQueue.contains(extremaEvent)) {
             //value 5 is an optimized value for stock market domain, this value may change for other domains
-            if (uniqueQueue.size() > 5) {
-                uniqueQueue.remove();
+            if (state.uniqueQueue.size() > 5) {
+                state.uniqueQueue.remove();
             }
-            uniqueQueue.add(extremaEvent);
+            state.uniqueQueue.add(extremaEvent);
             return streamEventCloner.copyStreamEvent(extremaEvent);
         }
         return null;
@@ -294,25 +302,13 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
     }
 
     @Override
-    public Map<String, Object> currentState() {
-        synchronized (this) {
-            return new HashMap<String, Object>() {
-                {
-                    put(EVENT_STACK, eventStack);
-                    put(VALUE_STACK, valueStack);
-                    put(UNIQUE_QUEUE, uniqueQueue);
-                }
-            };
-        }
+    public List<Attribute> getReturnAttributes() {
+        return this.attributeList;
     }
 
     @Override
-    public void restoreState(Map<String, Object> state) {
-        synchronized (this) {
-            eventStack = (LinkedList<StreamEvent>) state.get(EVENT_STACK);
-            valueStack = (Queue<Double>) state.get(VALUE_STACK);
-            uniqueQueue = (Queue<StreamEvent>) state.get(UNIQUE_QUEUE);
-        }
+    public ProcessingMode getProcessingMode() {
+        return ProcessingMode.BATCH;
     }
 
     /**
@@ -323,5 +319,48 @@ public class KalmanMinMaxStreamProcessor extends StreamProcessor {
         MIN, MAX, MINMAX
     }
 
+    static class ExtensionState extends State {
+        private static final String EVENT_STACK = "eventStack";
+        private static final String VALUE_STACK = "valueStack";
+        private static final String UNIQUE_QUEUE = "uniqueQueue";
 
+        private LinkedList<StreamEvent> eventStack;
+        private Queue<Double> valueStack;
+        private Queue<StreamEvent> uniqueQueue;
+
+        public ExtensionState(LinkedList<StreamEvent> eventStack, Queue<Double> valueStack,
+                               Queue<StreamEvent> uniqueQueue) {
+            this.eventStack = eventStack;
+            this.valueStack = valueStack;
+            this.uniqueQueue = uniqueQueue;
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
+
+        @Override
+        public Map<String, Object> snapshot() {
+            synchronized (this) {
+                return new HashMap<String, Object>() {
+                    {
+                        put(EVENT_STACK, eventStack);
+                        put(VALUE_STACK, valueStack);
+                        put(UNIQUE_QUEUE, uniqueQueue);
+                    }
+                };
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void restore(Map<String, Object> state) {
+            synchronized (this) {
+                eventStack = (LinkedList<StreamEvent>) state.get(EVENT_STACK);
+                valueStack = (Queue<Double>) state.get(VALUE_STACK);
+                uniqueQueue = (Queue<StreamEvent>) state.get(UNIQUE_QUEUE);
+            }
+        }
+    }
 }

@@ -18,24 +18,29 @@
 
 package org.wso2.extension.siddhi.execution.extrema;
 
-import org.wso2.siddhi.annotation.Example;
-import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.util.DataType;
-import org.wso2.siddhi.core.config.SiddhiAppContext;
-import org.wso2.siddhi.core.event.ComplexEventChunk;
-import org.wso2.siddhi.core.event.stream.StreamEvent;
-import org.wso2.siddhi.core.event.stream.StreamEventCloner;
-import org.wso2.siddhi.core.event.stream.populater.ComplexEventPopulater;
-import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
-import org.wso2.siddhi.core.executor.ExpressionExecutor;
-import org.wso2.siddhi.core.executor.VariableExpressionExecutor;
-import org.wso2.siddhi.core.query.processor.Processor;
-import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.query.api.definition.AbstractDefinition;
-import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
+import io.siddhi.annotation.Example;
+import io.siddhi.annotation.Extension;
+import io.siddhi.annotation.Parameter;
+import io.siddhi.annotation.util.DataType;
+import io.siddhi.core.config.SiddhiQueryContext;
+import io.siddhi.core.event.ComplexEventChunk;
+import io.siddhi.core.event.stream.MetaStreamEvent;
+import io.siddhi.core.event.stream.StreamEvent;
+import io.siddhi.core.event.stream.StreamEventCloner;
+import io.siddhi.core.event.stream.holder.StreamEventClonerHolder;
+import io.siddhi.core.event.stream.populater.ComplexEventPopulater;
+import io.siddhi.core.executor.ConstantExpressionExecutor;
+import io.siddhi.core.executor.ExpressionExecutor;
+import io.siddhi.core.executor.VariableExpressionExecutor;
+import io.siddhi.core.query.processor.ProcessingMode;
+import io.siddhi.core.query.processor.Processor;
+import io.siddhi.core.query.processor.stream.StreamProcessor;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.snapshot.state.State;
+import io.siddhi.core.util.snapshot.state.StateFactory;
+import io.siddhi.query.api.definition.AbstractDefinition;
+import io.siddhi.query.api.definition.Attribute;
+import io.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
 import java.util.Deque;
@@ -149,26 +154,13 @@ import java.util.Map;
                 )
         }
 )
-public class MinMaxStreamProcessor extends StreamProcessor {
+public class MinMaxStreamProcessor extends StreamProcessor<MinMaxStreamProcessor.ExtensionState> {
     private ExtremaType extremaType; // Whether to find min and/or max
-    private LinkedList<StreamEvent> eventStack = null; // Stores all the events within maxPreBound + maxPostBound window
-    private LinkedList<AttributeDetails> valueStack = null; // Stores all the values within maxPreBound + maxPostBound
-    // window
-    private AttributeDetails valueRemoved = null; // Expired event
-    private Deque<AttributeDetails> maxDeque = new LinkedList<AttributeDetails>(); // Stores all the values which could
-    // be next max (including current
-    // max)
-    private Deque<AttributeDetails> minDeque = new LinkedList<AttributeDetails>(); // Stores all the values which could
-    // be next min (including current
-    // min)
-    private AttributeDetails currentMax = null; // Current max (before testing preBoundChange, postBoundChange
-    // conditions)
-    private AttributeDetails currentMin = null; // Current min (before testing preBoundChange, postBoundChange
-    // conditions)
     private int maxPreBound; // maxPreBound window length
     private int maxPostBound; // maxPostBound window length
     private double preBoundChange; // preBoundChange percentage
     private double postBoundChange; // postBoundChange percentage
+    private List<Attribute> attributeList = new ArrayList<>();
 
     /**
      * The main processing method that will be called upon event arrival
@@ -180,7 +172,8 @@ public class MinMaxStreamProcessor extends StreamProcessor {
      */
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
-                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
+                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater,
+                           ExtensionState state) {
         ComplexEventChunk<StreamEvent> returnEventChunk = new ComplexEventChunk<StreamEvent>(false);
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
@@ -189,36 +182,38 @@ public class MinMaxStreamProcessor extends StreamProcessor {
 
                 // Variable value of the latest event
                 double value = ((Number) attributeExpressionExecutors[0].execute(event)).doubleValue();
-                eventStack.add(event);
+                state.eventStack.add(event);
 
                 // Create an object holding latest event value and insert into valueStack and valueStackLastL
                 AttributeDetails newInput = new AttributeDetails();
                 newInput.setValue(value);
-                valueStack.add(newInput);
+                state.valueStack.add(newInput);
 
                 switch (extremaType) {
                     case MINMAX:
                         // Retain only maxPreBound+maxPostBound events
-                        if (eventStack.size() > maxPreBound + maxPostBound) {
-                            eventStack.remove();
-                            valueRemoved = valueStack.remove();
+                        if (state.eventStack.size() > maxPreBound + maxPostBound) {
+                            state.eventStack.remove();
+                            state.valueRemoved = state.valueStack.remove();
                         }
-                        currentMax = maxDequeIterator(newInput);
-                        currentMin = minDequeIterator(newInput);
+                        state.currentMax = maxDequeIterator(newInput, state);
+                        state.currentMin = minDequeIterator(newInput, state);
                         // Find whether current max satisfies preBoundChange, postBoundChange conditions
                         // and output value if so
-                        if (newInput.getValue() <= currentMax.getMaxThreshold() && !currentMax.isOutputAsRealMax()
-                                && currentMax.isEligibleForRealMax()) {
-                            StreamEvent returnEvent = findIfActualMax(newInput);
+                        if (newInput.getValue() <= state.currentMax.getMaxThreshold()
+                                && !state.currentMax.isOutputAsRealMax()
+                                && state.currentMax.isEligibleForRealMax()) {
+                            StreamEvent returnEvent = findIfActualMax(newInput, state);
                             if (returnEvent != null) {
                                 returnEventChunk.add(returnEvent);
                             }
                         }
                         // Find whether current min satisfies preBoundChange, postBoundChange conditions
                         // and output value if so
-                        if (newInput.getValue() >= currentMin.getMinThreshold() && !currentMin.isOutputAsRealMin()
-                                && currentMin.isEligibleForRealMin()) {
-                            StreamEvent returnEvent = findIfActualMin(newInput);
+                        if (newInput.getValue() >= state.currentMin.getMinThreshold()
+                                && !state.currentMin.isOutputAsRealMin()
+                                && state.currentMin.isEligibleForRealMin()) {
+                            StreamEvent returnEvent = findIfActualMin(newInput, state);
                             if (returnEvent != null) {
                                 returnEventChunk.add(returnEvent);
                             }
@@ -226,16 +221,17 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                         break;
                     case MAX:
                         // Retain only maxPreBound+maxPostBound events
-                        if (eventStack.size() > maxPreBound + maxPostBound) {
-                            eventStack.remove();
-                            valueRemoved = valueStack.remove();
+                        if (state.eventStack.size() > maxPreBound + maxPostBound) {
+                            state.eventStack.remove();
+                            state.valueRemoved = state.valueStack.remove();
                         }
-                        currentMax = maxDequeIterator(newInput);
+                        state.currentMax = maxDequeIterator(newInput, state);
                         // Find whether current max satisfies preBoundChange, postBoundChange conditions
                         // and output value if so
-                        if (newInput.getValue() <= currentMax.getMaxThreshold() && !currentMax.isOutputAsRealMax()
-                                && currentMax.isEligibleForRealMax()) {
-                            StreamEvent returnEvent = findIfActualMax(newInput);
+                        if (newInput.getValue() <= state.currentMax.getMaxThreshold()
+                                && !state.currentMax.isOutputAsRealMax()
+                                && state.currentMax.isEligibleForRealMax()) {
+                            StreamEvent returnEvent = findIfActualMax(newInput, state);
                             if (returnEvent != null) {
                                 returnEventChunk.add(returnEvent);
                             }
@@ -243,16 +239,17 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                         break;
                     case MIN:
                         // Retain only maxPreBound+maxPostBound events
-                        if (eventStack.size() > maxPreBound + maxPostBound) {
-                            eventStack.remove();
-                            valueRemoved = valueStack.remove();
+                        if (state.eventStack.size() > maxPreBound + maxPostBound) {
+                            state.eventStack.remove();
+                            state.valueRemoved = state.valueStack.remove();
                         }
-                        currentMin = minDequeIterator(newInput);
+                        state.currentMin = minDequeIterator(newInput, state);
                         // Find whether current min satisfies preBoundChange, postBoundChange conditions
                         // and output value if so
-                        if (newInput.getValue() >= currentMin.getMinThreshold() && !currentMin.isOutputAsRealMin()
-                                && currentMin.isEligibleForRealMin()) {
-                            StreamEvent returnEvent = findIfActualMin(newInput);
+                        if (newInput.getValue() >= state.currentMin.getMinThreshold()
+                                && !state.currentMin.isOutputAsRealMin()
+                                && state.currentMin.isEligibleForRealMin()) {
+                            StreamEvent returnEvent = findIfActualMin(newInput, state);
                             if (returnEvent != null) {
                                 returnEventChunk.add(returnEvent);
                             }
@@ -283,14 +280,17 @@ public class MinMaxStreamProcessor extends StreamProcessor {
      *
      * @param inputDefinition              the incoming stream definition
      * @param attributeExpressionExecutors the executors of each function parameters
-     * @param executionPlanContext         the context of the execution plan
+     * @param siddhiQueryContext         the context of the siddhi query
      * @return the additional output attributes (extremaType, preBound, postBound) introduced by the function
      */
     @Override
-    protected List<Attribute> init(AbstractDefinition inputDefinition,
-                                   ExpressionExecutor[] attributeExpressionExecutors,
-                                   ConfigReader configReader,
-                                   SiddhiAppContext executionPlanContext) {
+    protected StateFactory<ExtensionState> init(MetaStreamEvent metaStreamEvent,
+                                                AbstractDefinition inputDefinition,
+                                                ExpressionExecutor[] attributeExpressionExecutors,
+                                                ConfigReader configReader,
+                                                StreamEventClonerHolder streamEventClonerHolder,
+                                                boolean outputExpectsExpiredEvents, boolean findToBeExecuted,
+                                                SiddhiQueryContext siddhiQueryContext) {
         if (attributeExpressionExecutors.length != 6) {
             throw new SiddhiAppValidationException(
                     "Invalid no of arguments passed to MinMaxStreamProcessor, required 6, but found "
@@ -396,14 +396,15 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                     + "extrema type, but found value " + extremaType);
         }
 
-        eventStack = new LinkedList<StreamEvent>();
-        valueStack = new LinkedList<AttributeDetails>();
+        LinkedList<StreamEvent> eventStack = new LinkedList<StreamEvent>();
+        LinkedList<AttributeDetails> valueStack = new LinkedList<AttributeDetails>();
 
         List<Attribute> attributeList = new ArrayList<Attribute>();
         attributeList.add(new Attribute("extremaType", Attribute.Type.STRING));
         attributeList.add(new Attribute("preBound", Attribute.Type.INT));
         attributeList.add(new Attribute("postBound", Attribute.Type.INT));
-        return attributeList;
+        this.attributeList = attributeList;
+        return () -> new ExtensionState(eventStack, valueStack);
     }
 
     /**
@@ -421,35 +422,35 @@ public class MinMaxStreamProcessor extends StreamProcessor {
      * preBound (distance at which a value satisfying preBoundChange condition is found),
      * postBound (distance at which a value satisfying postBoundChange condition is found)
      */
-    private StreamEvent findIfActualMin(AttributeDetails latestEvent) {
-        int indexCurrentMin = valueStack.indexOf(currentMin);
-        int postBound = valueStack.indexOf(latestEvent) - indexCurrentMin;
+    private StreamEvent findIfActualMin(AttributeDetails latestEvent, ExtensionState state) {
+        int indexCurrentMin = state.valueStack.indexOf(state.currentMin);
+        int postBound = state.valueStack.indexOf(latestEvent) - indexCurrentMin;
         // If latest event is at a distance greater than maxPostBound from min, min is not eligible to be sent as output
         if (postBound > maxPostBound) {
-            currentMin.notEligibleForRealMin();
+            state.currentMin.notEligibleForRealMin();
             return null;
         }
         // If maxPreBound is 0, no need to check preBoundChange. Send output with postBound value
         if (maxPreBound == 0) {
-            StreamEvent outputEvent = eventStack.get(indexCurrentMin);
+            StreamEvent outputEvent = state.eventStack.get(indexCurrentMin);
             complexEventPopulater.populateComplexEvent(outputEvent, new Object[]{"min", 0, postBound});
-            currentMin.sentOutputAsRealMin();
+            state.currentMin.sentOutputAsRealMin();
             return outputEvent;
         }
         int preBound = 1;
-        double dThreshold = currentMin.getValue() + currentMin.getValue() * preBoundChange / 100;
+        double dThreshold = state.currentMin.getValue() + state.currentMin.getValue() * preBoundChange / 100;
         while (preBound <= maxPreBound && indexCurrentMin - preBound >= 0) {
-            if (valueStack.get(indexCurrentMin - preBound).getValue() >= dThreshold) {
-                StreamEvent outputEvent = eventStack.get(indexCurrentMin);
+            if (state.valueStack.get(indexCurrentMin - preBound).getValue() >= dThreshold) {
+                StreamEvent outputEvent = state.eventStack.get(indexCurrentMin);
                 complexEventPopulater.populateComplexEvent(outputEvent, new Object[]{"min", preBound, postBound});
-                currentMin.sentOutputAsRealMin();
+                state.currentMin.sentOutputAsRealMin();
                 return outputEvent;
             }
             ++preBound;
         }
         // Completed iterating through maxPreBound older events. No events which satisfy preBoundChange condition found.
         // Therefore min is not eligible to be sent as output.
-        currentMin.notEligibleForRealMin();
+        state.currentMin.notEligibleForRealMin();
         return null;
     }
 
@@ -468,35 +469,35 @@ public class MinMaxStreamProcessor extends StreamProcessor {
      * preBound (distance at which a value satisfying preBoundChange condition is found),
      * postBound (distance at which a value satisfying postBoundChange condition is found)
      */
-    private StreamEvent findIfActualMax(AttributeDetails latestEvent) {
-        int indexCurrentMax = valueStack.indexOf(currentMax);
-        int postBound = valueStack.indexOf(latestEvent) - indexCurrentMax;
+    private StreamEvent findIfActualMax(AttributeDetails latestEvent, ExtensionState state) {
+        int indexCurrentMax = state.valueStack.indexOf(state.currentMax);
+        int postBound = state.valueStack.indexOf(latestEvent) - indexCurrentMax;
         // If latest event is at a distance greater than maxPostBound from max, max is not eligible to be sent as output
         if (postBound > maxPostBound) {
-            currentMax.notEligibleForRealMax();
+            state.currentMax.notEligibleForRealMax();
             return null;
         }
         // If maxPreBound is 0, no need to check preBoundChange. Send output with postBound value
         if (maxPreBound == 0) {
-            StreamEvent outputEvent = eventStack.get(indexCurrentMax);
+            StreamEvent outputEvent = state.eventStack.get(indexCurrentMax);
             complexEventPopulater.populateComplexEvent(outputEvent, new Object[]{"max", 0, postBound});
-            currentMax.sentOutputAsRealMax();
+            state.currentMax.sentOutputAsRealMax();
             return outputEvent;
         }
         int preBound = 1;
-        double dThreshold = currentMax.getValue() - currentMax.getValue() * preBoundChange / 100;
+        double dThreshold = state.currentMax.getValue() - state.currentMax.getValue() * preBoundChange / 100;
         while (preBound <= maxPreBound && indexCurrentMax - preBound >= 0) {
-            if (valueStack.get(indexCurrentMax - preBound).getValue() <= dThreshold) {
-                StreamEvent outputEvent = eventStack.get(indexCurrentMax);
+            if (state.valueStack.get(indexCurrentMax - preBound).getValue() <= dThreshold) {
+                StreamEvent outputEvent = state.eventStack.get(indexCurrentMax);
                 complexEventPopulater.populateComplexEvent(outputEvent, new Object[]{"max", preBound, postBound});
-                currentMax.sentOutputAsRealMax();
+                state.currentMax.sentOutputAsRealMax();
                 return outputEvent;
             }
             ++preBound;
         }
         // Completed iterating through maxPreBound older events. No events which satisfy preBoundChange condition found.
         // Therefore max is not eligible to be sent as output.
-        currentMax.notEligibleForRealMax();
+        state.currentMax.notEligibleForRealMax();
         return null;
     }
 
@@ -507,15 +508,15 @@ public class MinMaxStreamProcessor extends StreamProcessor {
      * @param valObject latest incoming value
      * @return maximum value (without checking preBoundChange, postBoundChange conditions)
      */
-    private AttributeDetails maxDequeIterator(AttributeDetails valObject) {
-        if (valueRemoved != null) {
-            for (Iterator<AttributeDetails> iterator = maxDeque.descendingIterator(); iterator.hasNext(); ) {
+    private AttributeDetails maxDequeIterator(AttributeDetails valObject, ExtensionState state) {
+        if (state.valueRemoved != null) {
+            for (Iterator<AttributeDetails> iterator = state.maxDeque.descendingIterator(); iterator.hasNext(); ) {
                 AttributeDetails possibleMaxValue = iterator.next();
                 if (possibleMaxValue.getValue() < valObject.getValue()
-                        || possibleMaxValue.getValue() <= valueRemoved.getValue()) {
+                        || possibleMaxValue.getValue() <= state.valueRemoved.getValue()) {
                     if (possibleMaxValue.getValue() < valObject.getValue()) {
                         iterator.remove();
-                    } else if (valueRemoved.equals(possibleMaxValue)) {
+                    } else if (state.valueRemoved.equals(possibleMaxValue)) {
                         // If expired value is in maxDeque, it must be removed
                         iterator.remove();
                     }
@@ -524,7 +525,7 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                 }
             }
         } else {
-            for (Iterator<AttributeDetails> iterator = maxDeque.descendingIterator(); iterator.hasNext(); ) {
+            for (Iterator<AttributeDetails> iterator = state.maxDeque.descendingIterator(); iterator.hasNext(); ) {
                 if (iterator.next().getValue() < valObject.getValue()) {
                     iterator.remove();
                 } else {
@@ -533,8 +534,8 @@ public class MinMaxStreamProcessor extends StreamProcessor {
             }
         }
         valObject.setMaxThreshold();
-        maxDeque.addLast(valObject);
-        return maxDeque.peek();
+        state.maxDeque.addLast(valObject);
+        return state.maxDeque.peek();
     }
 
     /**
@@ -544,15 +545,15 @@ public class MinMaxStreamProcessor extends StreamProcessor {
      * @param valObject latest incoming value
      * @return minimum value (without checking preBoundChange, postBoundChange conditions)
      */
-    private AttributeDetails minDequeIterator(AttributeDetails valObject) {
-        if (valueRemoved != null) {
-            for (Iterator<AttributeDetails> iterator = minDeque.descendingIterator(); iterator.hasNext(); ) {
+    private AttributeDetails minDequeIterator(AttributeDetails valObject, ExtensionState state) {
+        if (state.valueRemoved != null) {
+            for (Iterator<AttributeDetails> iterator = state.minDeque.descendingIterator(); iterator.hasNext(); ) {
                 AttributeDetails possibleMinValue = iterator.next();
                 if (possibleMinValue.getValue() > valObject.getValue()
-                        || possibleMinValue.getValue() >= valueRemoved.getValue()) {
+                        || possibleMinValue.getValue() >= state.valueRemoved.getValue()) {
                     if (possibleMinValue.getValue() > valObject.getValue()) {
                         iterator.remove();
-                    } else if (valueRemoved.equals(possibleMinValue)) {
+                    } else if (state.valueRemoved.equals(possibleMinValue)) {
                         // If removed value is in minDeque, it must be removed
                         iterator.remove();
                     }
@@ -561,7 +562,7 @@ public class MinMaxStreamProcessor extends StreamProcessor {
                 }
             }
         } else {
-            for (Iterator<AttributeDetails> iterator = minDeque.descendingIterator(); iterator.hasNext(); ) {
+            for (Iterator<AttributeDetails> iterator = state.minDeque.descendingIterator(); iterator.hasNext(); ) {
                 if (iterator.next().getValue() > valObject.getValue()) {
                     iterator.remove();
                 } else {
@@ -570,8 +571,8 @@ public class MinMaxStreamProcessor extends StreamProcessor {
             }
         }
         valObject.setMinThreshold();
-        minDeque.addLast(valObject);
-        return minDeque.peek();
+        state.minDeque.addLast(valObject);
+        return state.minDeque.peek();
     }
 
     /**
@@ -590,46 +591,14 @@ public class MinMaxStreamProcessor extends StreamProcessor {
 
     }
 
-    /**
-     * Used to collect the serializable state of the processing element, that need to be
-     * persisted to reconstruct the element to the same state on a different point of time
-     *
-     * @return stateful objects of the processing element as an array
-     */
     @Override
-    public Map<String, Object> currentState() {
-        synchronized (this) {
-            return new HashMap<String, Object>() {
-                {
-                    put("eventStack", eventStack);
-                    put("valueStack", valueStack);
-                    put("maxDeque", maxDeque);
-                    put("minDeque", minDeque);
-                    put("valueRemoved", valueRemoved);
-                    put("currentMax", currentMax);
-                    put("currentMin", currentMin);
-                }
-            };
-        }
+    public List<Attribute> getReturnAttributes() {
+        return this.attributeList;
     }
 
-    /**
-     * Used to restore serialized state of the processing element, for reconstructing
-     * the element to the same state as if was on a previous point of time.
-     *
-     * @param state the stateful objects of the element as an array on the same order provided by currentState().
-     */
     @Override
-    public void restoreState(Map<String, Object> state) {
-        synchronized (this) {
-            eventStack = (LinkedList<StreamEvent>) state.get("eventStack");
-            valueStack = (LinkedList<AttributeDetails>) state.get("valueStack");
-            maxDeque = (Deque<AttributeDetails>) state.get("maxDeque");
-            minDeque = (Deque<AttributeDetails>) state.get("minDeque");
-            valueRemoved = (AttributeDetails) state.get("valueRemoved");
-            currentMax = (AttributeDetails) state.get("currentMax");
-            currentMin = (AttributeDetails) state.get("currentMin");
-        }
+    public ProcessingMode getProcessingMode() {
+        return ProcessingMode.SLIDE;
     }
 
     private enum ExtremaType {
@@ -768,6 +737,66 @@ public class MinMaxStreamProcessor extends StreamProcessor {
          */
         private boolean isOutputAsRealMax() {
             return outputAsRealMax;
+        }
+    }
+
+    static class ExtensionState extends State {
+
+        // Stores all the events within maxPreBound + maxPostBound window
+        private LinkedList<StreamEvent> eventStack;
+        // Stores all the values within maxPreBound + maxPostBound
+        private LinkedList<AttributeDetails> valueStack;
+        // window
+        private AttributeDetails valueRemoved = null; // Expired event
+        // Stores all the values which could
+        private Deque<AttributeDetails> maxDeque = new LinkedList<AttributeDetails>();
+        // Stores all the values which could
+        private Deque<AttributeDetails> minDeque = new LinkedList<AttributeDetails>();
+        // be next min (including current
+        // min)
+        private AttributeDetails currentMax = null; // Current max (before testing preBoundChange, postBoundChange
+        // conditions)
+        private AttributeDetails currentMin = null; // Current min (before testing preBoundChange, postBoundChange
+
+        private ExtensionState(LinkedList<StreamEvent> eventStack, LinkedList<AttributeDetails> valueStack) {
+            this.eventStack = eventStack;
+            this.valueStack = valueStack;
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
+
+        @Override
+        public Map<String, Object> snapshot() {
+            synchronized (this) {
+                return new HashMap<String, Object>() {
+                    {
+                        put("eventStack", eventStack);
+                        put("valueStack", valueStack);
+                        put("maxDeque", maxDeque);
+                        put("minDeque", minDeque);
+                        put("valueRemoved", valueRemoved);
+                        put("currentMax", currentMax);
+                        put("currentMin", currentMin);
+                    }
+                };
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void restore(Map<String, Object> state) {
+            synchronized (this) {
+                eventStack = (LinkedList<StreamEvent>) state.get("eventStack");
+                valueStack = (LinkedList<AttributeDetails>) state.get("valueStack");
+                maxDeque = (Deque<AttributeDetails>) state.get("maxDeque");
+                minDeque = (Deque<AttributeDetails>) state.get("minDeque");
+                valueRemoved = (AttributeDetails) state.get("valueRemoved");
+                currentMax = (AttributeDetails) state.get("currentMax");
+                currentMin = (AttributeDetails) state.get("currentMin");
+            }
         }
     }
 }
